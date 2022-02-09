@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 class Palette {
   static ThemeData lightTheme = ThemeData(
-    fontFamily: GoogleFonts.workSans().fontFamily,
-    primarySwatch: Colors.red,
+    // fontFamily: GoogleFonts.workSans().fontFamily,
+    primarySwatch: Colors.cyan,
   );
   static ThemeData darkTheme = ThemeData(
       colorScheme: const ColorScheme.dark(),

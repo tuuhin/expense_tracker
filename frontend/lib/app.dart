@@ -9,6 +9,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthCubit _auth = BlocProvider.of<AuthCubit>(context);
+    print(_auth);
     return const Authentication();
   }
 }
