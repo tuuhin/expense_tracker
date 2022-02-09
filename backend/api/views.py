@@ -26,19 +26,6 @@ def sources(request):
         return Response(income_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# @api_view(http_method_names=['PUT'])
-# @permission_classes([IsAuthenticated])
-# def update_source(request, source_id):
-#     current_source = Source.objects.get(pk=source_id)
-#     data = request.data
-#     data['user'] = request.user.pk
-#     source = SourceSerializer(
-#         data=data, instance=current_source)
-#     if source.is_valid():
-#         source.save()
-#         return Response(source.data, status=status.HTTP_202_ACCEPTED)
-#     return Response(source.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @api_view(http_method_names=['GET', 'POST'])
 def categories(request):
     if request.method == 'GET':
