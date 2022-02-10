@@ -3,6 +3,6 @@ import 'package:meta/meta.dart';
 
 part 'themecubit_state.dart';
 
-class ThemecubitCubit extends Cubit<ThemecubitState> {
-  ThemecubitCubit() : super(ThemecubitInitial());
+class ThemeCubit extends Cubit<ThemeState> {
+  ThemeCubit() : super(ThemeLight());
 }

@@ -1,6 +1,8 @@
 part of 'themecubit_cubit.dart';
 
 @immutable
-abstract class ThemecubitState {}
+abstract class ThemeState {}
 
-class ThemecubitInitial extends ThemecubitState {}
+class ThemeLight extends ThemeState {}
+
+class ThemeDark extends ThemeState {}

@@ -5,12 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/utils/palette.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
   await dotenv.load(fileName: '.env');
+  await Hive.initFlutter();
   runApp(const MyApp());
 }
 
@@ -19,12 +21,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'Expense Tracker',
-        debugShowCheckedModeBanner: false,
-        theme: Palette.lightTheme,
-        darkTheme: Palette.darkTheme,
-        home: const _App());
+    return BlocProvider<AuthCubit>(
+        create: (context) => AuthCubit(), child: const _App());
   }
 }
 
@@ -33,9 +31,11 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthCubit>(
-      create: (context) => AuthCubit(),
-      child: const App(),
-    );
+    return MaterialApp(
+        title: 'Expense Tracker',
+        debugShowCheckedModeBanner: false,
+        theme: Palette.lightTheme,
+        darkTheme: Palette.darkTheme,
+        home: const App());
   }
 }

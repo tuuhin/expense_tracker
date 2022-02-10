@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -10,5 +9,15 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoggedIn());
   }
 
-  void logOut() => emit(AuthLoggedOut());
+  void logOut() {
+    emit(AuthLoggedOut());
+  }
+
+  void failedLogin() {
+    emit(AuthLoggedOut());
+  }
+
+  void openLoader() {
+    emit(AuthLoading());
+  }
 }
