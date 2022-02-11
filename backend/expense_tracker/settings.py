@@ -13,20 +13,27 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from os import path
 from datetime import timedelta
+import environ
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Loading the enviroment variables from file
+env = environ.Env()
+env.read_env(path.join(BASE_DIR, '.env.production'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--@9okg4s#_ah4a^9x0kc7$6iecrshvat)1$z)kr9jw(wo(phej'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if env('DEBUG') == 'True' else False
 
-ALLOWED_HOSTS = ['backend-expense-tracker.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = [env('ALLOWED_HOST'),
+                 '127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -41,7 +48,8 @@ INSTALLED_APPS = [
     'api',
     'authentication',
     'rest_framework',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'drf_multiple_model',
 ]
 
 MIDDLEWARE = [
@@ -60,6 +68,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'expense_tracker.urls'
 
 REST_FRAMEWORK = {
+    
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ), 'DEFAULT_PERMISSION_CLASSES': [
@@ -68,8 +77,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': False,
@@ -131,11 +140,11 @@ DATABASES = {
 
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': 'ec2-63-35-79-208.eu-west-1.compute.amazonaws.com',
-        'NAME': "db3t42no04csb3",
-        'USER': 'awqxbnhtsnpred',
-        'PASSWORD': 'cb3b2dd24ac221ace38048680866d6d6783c8ca33c40edec3492c7513698c96e',
-        'PORT': '5432',
+        'HOST': env('HOST'),
+        'NAME': env('NAME'),
+        'USER': env('USER'),
+        'PASSWORD': env('PASSWORD'),
+        'PORT': env('PORT'),
 
     }
 

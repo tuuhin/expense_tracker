@@ -7,7 +7,6 @@ from .serializers import (CategorySerializer, ExpenseSerializer,
 from .models import Expenses, Income, Category, Source
 # Create your views here.
 
-
 @api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def sources(request):
@@ -61,7 +60,7 @@ def income(request):
 @permission_classes([IsAuthenticated])
 def expenses(request):
     if request.method == 'GET':
-        expenses = Expenses.objects.filter(request.user)
+        expenses = Expenses.objects.filter(user=request.user)
         expense_serializer = ExpenseSerializer(data=expenses, many=True)
         return Response(expense_serializer.data, status=status.HTTP_200_OK)
     if request.method == 'POST':

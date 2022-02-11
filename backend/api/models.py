@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Source(models.Model):
     source_title = models.CharField(max_length=50, unique=True)
     source_desc = models.CharField(max_length=250, blank=True)
@@ -27,9 +26,8 @@ class Income(models.Model):
     income_amount = models.PositiveIntegerField(default=0)
     income_desc = models.CharField(max_length=200, blank=True)
     added_at = models.DateTimeField(auto_now_add=True)
-    categories = models.ManyToManyField(Category)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    source = models.ForeignKey(Source, on_delete=models.CASCADE)
+    source = models.ManyToManyField(Source, blank=False)
 
     class Meta:
         ordering = ('-added_at',)
@@ -44,7 +42,7 @@ class Expenses(models.Model):
     expense_amount = models.PositiveIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
-    categories = models.ManyToManyField(Category, blank=True)
+    categories = models.ManyToManyField(Category, blank=False)
 
     class Meta:
         ordering = ('-added_at',)
