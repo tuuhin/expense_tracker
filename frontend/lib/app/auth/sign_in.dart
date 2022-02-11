@@ -79,14 +79,9 @@ class _SignInPageState extends State<SignInPage> {
                           builder: (BuildContext context) =>
                               showErrorDialog(context));
                     }
-                    _authProvider.openLoader();
-                    bool value = await _auth.logUserIn(
+                    await _auth.logUserIn(
                         username: _username.text, password: _password.text);
-                    if (value) {
-                      _authProvider.login();
-                    } else {
-                      _authProvider.failedLogin();
-                    }
+                    _authProvider.changeAuthState();
                   },
                   child: const Text('Fetch data'),
                 ),

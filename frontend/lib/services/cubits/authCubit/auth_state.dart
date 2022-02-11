@@ -7,4 +7,4 @@ class AuthLoggedIn extends AuthState {}
 
 class AuthLoggedOut extends AuthState {}
 
-class AuthLoading extends AuthState {}
+class AuthStaleState extends AuthState {}

@@ -2,10 +2,12 @@ import 'package:expense_tracker/domain/data/secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 
-class DioApiClient {
-  static final SecureStorage _storage = SecureStorage();
+class ApiClient {
   static final String _auth = dotenv.get('AUTH_ENDPOINT');
   static final String _api = dotenv.get('API_ENDPOINT');
+
+  static final SecureStorage _storage = SecureStorage();
+
   static final Dio _tokenBearer = Dio()
     ..options = BaseOptions(
       baseUrl: _auth,
@@ -21,6 +23,7 @@ class DioApiClient {
       if (_accessToken != null) {
         options.headers.addAll({'Authorization': 'Bearer $_accessToken'});
       }
+
       return handler.next(options);
     }, onResponse: (
       Response response,
@@ -43,9 +46,16 @@ class DioApiClient {
     ..options = BaseOptions(
       headers: {'Content-type': 'application/json'},
       baseUrl: _api,
-      connectTimeout: 6000,
-      receiveTimeout: 10000,
     );
 
-  Future<void> getIncomes() async {}
+  Future<void> getIncomes() async {
+    try {
+      Response _resp = await _dio.get('/income');
+      print(_resp.data);
+    } on DioError catch (e) {
+      print(e.response);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 }

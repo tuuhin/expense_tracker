@@ -1,5 +1,4 @@
-import 'package:expense_tracker/app/auth/sign_in.dart';
-import 'package:expense_tracker/app/auth/sign_up.dart';
+import 'package:expense_tracker/app/auth/auth.dart';
 import 'package:flutter/material.dart';
 
 class Authentication extends StatefulWidget {
@@ -12,12 +11,16 @@ class Authentication extends StatefulWidget {
 class _AuthenticationState extends State<Authentication>
     with SingleTickerProviderStateMixin {
   late TabController _controller;
-  final List<Widget> _screens = const [SignInPage(), SignUpPage(),];
+  final List<Widget> _screens = const [
+    AuthGetStarted(),
+    SignInPage(),
+    SignUpPage(),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 2, vsync: this);
+    _controller = TabController(length: 3, vsync: this);
   }
 
   @override

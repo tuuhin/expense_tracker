@@ -1,1 +1,1 @@
-/// [ReUsables] containes all the reusable widgets
+/// [Reusables] containes all the reusable widgets
