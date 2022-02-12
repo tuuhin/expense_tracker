@@ -11,12 +11,6 @@ class Authentication extends StatefulWidget {
 class _AuthenticationState extends State<Authentication>
     with SingleTickerProviderStateMixin {
   late TabController _controller;
-  final List<Widget> _screens = const [
-    AuthGetStarted(),
-    SignInPage(),
-    SignUpPage(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -26,7 +20,11 @@ class _AuthenticationState extends State<Authentication>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: TabBarView(controller: _controller, children: _screens),
+      body: TabBarView(controller: _controller, children: [
+        AuthGetStarted(controller: _controller),
+        SignInPage(controller: _controller),
+        SignUpPage(controller: _controller),
+      ]),
     );
   }
 }
