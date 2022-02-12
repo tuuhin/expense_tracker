@@ -144,7 +144,7 @@ DATABASES = {
         'NAME': env('NAME'),
         'USER': env('USER'),
         'PASSWORD': env('PASSWORD'),
-        'PORT': env('PORT'),
+        'PORT': 5432,
 
     }
 
