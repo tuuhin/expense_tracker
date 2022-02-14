@@ -18,6 +18,7 @@ class UserSerializer(ModelSerializer):
                   'email', 'first_name', 'last_name')
         extra_kwargs = {
             'email': {'required': True},
+            'password': {'write_only': True}
         }
 
     def get_tokens(self, pk):
