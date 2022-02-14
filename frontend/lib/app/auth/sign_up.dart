@@ -1,4 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:expense_tracker/services/api/api_auth.dart';
+import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SignUpPage extends StatefulWidget {
   final TabController controller;
@@ -9,17 +13,54 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  late TextEditingController _username;
-  late TextEditingController _email;
-  late TextEditingController _password;
-  bool isPasswordVisible = false;
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final ApiAuth _apiAuth = ApiAuth();
+  late AuthCubit _authCubit;
+  bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _username = TextEditingController();
-    _email = TextEditingController();
-    _password = TextEditingController();
+    _authCubit = BlocProvider.of<AuthCubit>(context);
+  }
+
+  Future<void> registerUser(BuildContext context) async {
+    if (_username.text.isEmpty ||
+        _email.text.isEmpty ||
+        _password.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Some the fields are blank')));
+    } else if (_username.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Username field is blank')));
+    } else if (_email.text.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Email field is blank')));
+    } else if (!RegExp(r'\b[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+        .hasMatch(_email.text)) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Improper email ')));
+    } else if (_password.text.length <= 5) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Password is too small')));
+    } else {
+      setState(() => _isLoading = !_isLoading);
+      Response? _response = await _apiAuth.createUser(
+          username: _username.text,
+          password: _password.text,
+          email: _email.text);
+
+      if (_response!.statusCode != 201) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_response.toString())));
+      } else {
+        _authCubit.checkAuthState();
+      }
+      setState(() => _isLoading = !_isLoading);
+    }
   }
 
   @override
@@ -44,7 +85,7 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
           Positioned(
               left: 20,
-              bottom: 340,
+              bottom: 350,
               child: Text(
                 'Get Started',
                 style: Theme.of(context)
@@ -52,6 +93,11 @@ class _SignUpPageState extends State<SignUpPage> {
                     .headline6!
                     .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
               )),
+          Positioned(
+              left: 20,
+              bottom: 330,
+              child: Text('Track your expenses in a modern manner... ',
+                  style: Theme.of(context).textTheme.caption)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
             child: Column(
@@ -77,7 +123,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 10),
                 TextField(
                   controller: _password,
-                  obscureText: !isPasswordVisible,
+                  obscureText: !_isPasswordVisible,
                   obscuringCharacter: '*',
                   keyboardType: TextInputType.visiblePassword,
                   decoration: InputDecoration(
@@ -86,8 +132,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     prefixIcon: const Icon(Icons.password),
                     suffixIcon: IconButton(
                         onPressed: () => setState(
-                            () => isPasswordVisible = !isPasswordVisible),
-                        icon: Icon(!isPasswordVisible
+                            () => _isPasswordVisible = !_isPasswordVisible),
+                        icon: Icon(!_isPasswordVisible
                             ? Icons.visibility_off
                             : Icons.visibility)),
                   ),
@@ -99,14 +145,14 @@ class _SignUpPageState extends State<SignUpPage> {
                       fixedSize: Size(_screenWidth, 50),
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(20)))),
-                  onPressed: () async {
-                    //registration logic
-                  },
-                  child: Text('Register',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6!
-                          .copyWith(color: Colors.white)),
+                  onPressed: () => registerUser(context),
+                  child: !_isLoading
+                      ? Text('Register',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline6!
+                              .copyWith(color: Colors.white))
+                      : const CircularProgressIndicator(),
                 ),
                 const Divider(),
                 GestureDetector(

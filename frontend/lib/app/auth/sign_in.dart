@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:expense_tracker/services/api/api_auth.dart';
 import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
 import 'package:flutter/material.dart';
@@ -14,25 +15,40 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  final ApiAuth _auth = ApiAuth();
+  final ApiAuth _apiAuth = ApiAuth();
+  late AuthCubit _authCubit;
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
-  Widget showErrorDialog(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Invalid Credentials'),
-      content: const Text('please put valid credentials'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Continue'),
-        )
-      ],
-    );
+  @override
+  void initState() {
+    super.initState();
+    _authCubit = BlocProvider.of<AuthCubit>(context);
   }
 
-  bool isPasswordVisible = false;
+  Future<void> _signInUser(BuildContext context) async {
+    if (_username.text.isEmpty || _password.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Some the fields are blank')));
+    } else {
+      setState(() => _isLoading = !_isLoading);
+      Response? _respn = await _apiAuth.logUserIn(
+          username: _username.text, password: _password.text);
+
+      if (_respn!.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_respn.data['detail'].toString())));
+      } else {
+        _authCubit.checkAuthState();
+      }
+      setState(() => _isLoading = !_isLoading);
+    }
+
+    // _authProvider.changeAuthState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    AuthCubit _authProvider = BlocProvider.of<AuthCubit>(context);
     final double _screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Stack(
@@ -75,7 +91,7 @@ class _SignInPageState extends State<SignInPage> {
                 const SizedBox(height: 10),
                 TextField(
                   controller: _password,
-                  obscureText: !isPasswordVisible,
+                  obscureText: !_isPasswordVisible,
                   obscuringCharacter: '*',
                   keyboardType: TextInputType.visiblePassword,
                   decoration: InputDecoration(
@@ -83,8 +99,8 @@ class _SignInPageState extends State<SignInPage> {
                     prefixIcon: const Icon(Icons.password),
                     suffixIcon: IconButton(
                         onPressed: () => setState(
-                            () => isPasswordVisible = !isPasswordVisible),
-                        icon: Icon(!isPasswordVisible
+                            () => _isPasswordVisible = !_isPasswordVisible),
+                        icon: Icon(!_isPasswordVisible
                             ? Icons.visibility_off
                             : Icons.visibility)),
                   ),
@@ -96,22 +112,14 @@ class _SignInPageState extends State<SignInPage> {
                       fixedSize: Size(_screenWidth, 50),
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(20)))),
-                  onPressed: () async {
-                    if (_username.text.isEmpty || _password.text.isEmpty) {
-                      return showDialog(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              showErrorDialog(context));
-                    }
-                    await _auth.logUserIn(
-                        username: _username.text, password: _password.text);
-                    _authProvider.changeAuthState();
-                  },
-                  child: Text('Sign In',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6!
-                          .copyWith(color: Colors.white)),
+                  onPressed: () => _signInUser(context),
+                  child: !_isLoading
+                      ? Text('Sign In',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline6!
+                              .copyWith(color: Colors.white))
+                      : const CircularProgressIndicator(),
                 ),
                 const Divider(),
                 GestureDetector(

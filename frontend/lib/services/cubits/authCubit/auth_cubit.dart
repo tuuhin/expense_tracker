@@ -16,9 +16,7 @@ class AuthCubit extends Cubit<AuthState> {
     _logOut();
   }
 
-  void checkAuthState() => changeAuthState();
-
-  void changeAuthState() async {
+  void checkAuthState() async {
     String? _token = await _storage.getAccessToken();
     if (_token == null) return _logOut();
     return _login();

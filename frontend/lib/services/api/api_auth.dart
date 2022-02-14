@@ -11,16 +11,28 @@ class ApiAuth {
       baseUrl: _endPoint,
     );
 
-  Future<bool?> signUserIn(
-      {required String username,
-      required String password,
-      required String email}) async {}
+  Future<Response?> createUser({
+    required String username,
+    required String password,
+    required String email,
+  }) async {
+    try {
+      Response _resp = await _dio.post('/create',
+          data: {'username': username, 'password': password, 'email': email});
+      Map _response = _resp.data as Map;
 
-  Future<void> logUserOut() async {
-    await _storage.removeTokens();
+      await _storage.setAccessToken(_response['access']);
+      await _storage.setRefreshToken(_response['refresh']);
+
+      return _resp;
+    } on DioError catch (e) {
+      return e.response;
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
-  Future<bool> logUserIn({
+  Future<Response?> logUserIn({
     required String username,
     required String password,
   }) async {
@@ -28,18 +40,17 @@ class ApiAuth {
       Response _resp = await _dio
           .post('/token', data: {'username': username, 'password': password});
       Map _responseData = _resp.data as Map;
-      print(_responseData);
 
       await _storage.setAccessToken(_responseData['access']);
       await _storage.setRefreshToken(_responseData['refresh']);
 
-      return true;
+      return _resp;
     } on DioError catch (e) {
-      print(e.response);
-      return false;
+      print('error');
+      print(e.response!.statusCode);
+      return e.response;
     } catch (e) {
       print(e.toString());
-      return false;
     }
   }
 }
