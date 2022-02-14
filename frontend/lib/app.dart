@@ -1,5 +1,5 @@
 import 'package:expense_tracker/app/auth/auth.dart';
-import 'package:expense_tracker/app/home/home.dart';
+import 'package:expense_tracker/app/home/drawer.dart';
 import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +17,7 @@ class App extends StatelessWidget {
           return const AuthLoading();
         }
         if (state is AuthLoggedOut) return const Authentication();
-        if (state is AuthLoggedIn) return const Home();
+        if (state is AuthLoggedIn) return const CustomDrawer();
         return const SizedBox.expand();
       },
     );

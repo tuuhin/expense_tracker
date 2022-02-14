@@ -36,12 +36,12 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ThemeCubit _theme = BlocProvider.of<ThemeCubit>(context);
-    print(_theme.isDark);
+    ThemeCubit _theme = BlocProvider.of<ThemeCubit>(context, listen: true);
+
     return MaterialApp(
         title: 'Expense Tracker',
         debugShowCheckedModeBanner: false,
-        // themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
+        themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
         theme: Palette.lightTheme,
         darkTheme: Palette.darkTheme,
         home: const App());
