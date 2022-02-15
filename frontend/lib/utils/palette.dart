@@ -13,7 +13,6 @@ class Palette {
     inputDecorationTheme: const InputDecorationTheme(
       suffixIconColor: Colors.black87,
       prefixIconColor: secondary,
-      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: secondary, width: 1.75),
           borderRadius: BorderRadius.all(Radius.circular(25))),
@@ -26,15 +25,15 @@ class Palette {
     colorScheme: const ColorScheme.dark()
         .copyWith(primary: primary, secondary: secondary),
     fontFamily: GoogleFonts.workSans().fontFamily,
+    androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
     inputDecorationTheme: const InputDecorationTheme(
       prefixIconColor: primary,
       suffixIconColor: Colors.white70,
-      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: secondary, width: 1.75),
-          borderRadius: BorderRadius.all(Radius.circular(25))),
+          borderRadius: BorderRadius.all(Radius.circular(10))),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(25))),
+          borderRadius: BorderRadius.all(Radius.circular(10))),
     ),
   );
 }

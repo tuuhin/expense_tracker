@@ -15,13 +15,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     MainTab(),
     StatisticsTab(),
     EntriesTab(),
+    ProfileTab(),
   ];
 
   @override
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -93,6 +94,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   IconButton(
                       onPressed: () => _animateTabs(2),
                       icon: const Icon(Icons.note)),
+                  IconButton(
+                      onPressed: () => _animateTabs(3),
+                      icon: const Icon(Icons.person))
                 ],
               ),
             )

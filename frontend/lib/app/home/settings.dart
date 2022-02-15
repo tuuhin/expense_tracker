@@ -78,6 +78,19 @@ class Settings extends StatelessWidget {
                   const Divider(),
                   ListTile(
                     dense: true,
+                    onTap: () {},
+                    title: const Text('Add Income Source'),
+                    leading: const Icon(Icons.add),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {},
+                    title: const Text('Add Expense categories'),
+                    leading: const Icon(Icons.add),
+                  ),
+                  const Divider(),
+                  ListTile(
+                    dense: true,
                     trailing: Switch(
                       value: _theme.isDark,
                       onChanged: (bool newValue) {

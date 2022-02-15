@@ -48,6 +48,23 @@ class ApiClient {
       baseUrl: _api,
     );
 
+  Future<void> addIncomeSource(String title,
+      {String? desc, bool? isSecure}) async {
+    print('$title, $desc, $isSecure');
+    try {
+      Response _resp = await _dio.post('/sources', data: {
+        'source_title': title,
+        'source_desc': desc,
+        'is_secure': isSecure
+      });
+      print(_resp);
+    } on DioError catch (e) {
+      print(e.response);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<void> getIncomes() async {
     try {
       Response _resp = await _dio.get('/income');
