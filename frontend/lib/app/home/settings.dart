@@ -1,6 +1,6 @@
 import 'package:expense_tracker/app/home/routes/add_income.dart';
-import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
-import 'package:expense_tracker/services/cubits/themeCubit/themecubit_cubit.dart';
+import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
+import 'package:expense_tracker/services/cubits/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vector_math/vector_math.dart' show radians;
@@ -9,7 +9,8 @@ class Settings extends StatelessWidget {
   const Settings({Key? key}) : super(key: key);
 
   void alertLogout(BuildContext context) async {
-    final AuthCubit _authCubit = BlocProvider.of<AuthCubit>(context);
+    final AuthenticationCubit _auth =
+        BlocProvider.of<AuthenticationCubit>(context);
     return await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -20,7 +21,7 @@ class Settings extends StatelessWidget {
               actions: [
                 TextButton(
                     onPressed: () {
-                      _authCubit.removeAuthState();
+                      _auth.logOut();
                       Navigator.of(context).pop();
                     },
                     child: Text('Logout',
@@ -121,15 +122,14 @@ class Settings extends StatelessWidget {
 }
 
 Route _addIncomeRoute() => PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 800),
+    transitionDuration: const Duration(milliseconds: 700),
+    reverseTransitionDuration: const Duration(milliseconds: 400),
     pageBuilder: (context, animation, secondaryAnimation) => const AddIncome(),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final Animation<double> rotation =
-          Tween<double>(begin: 270, end: 360).animate(animation);
+      final Animation<double> _rotation = Tween<double>(begin: 90, end: 0)
+          .animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut));
 
       return Transform(
-          transform: Matrix4.identity()
-            // ..scale(animation.value)
-            ..rotateY(-1 * radians(rotation.value)),
-          child: FadeTransition(opacity: animation, child: child));
+          transform: Matrix4.identity()..rotateY(radians(-1 * _rotation.value)),
+          child: child);
     });

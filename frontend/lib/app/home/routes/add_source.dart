@@ -1,4 +1,4 @@
-import 'package:expense_tracker/services/api/api_client.dart';
+import 'package:expense_tracker/services/api/income_client.dart';
 import 'package:flutter/material.dart';
 
 class AddSource extends StatefulWidget {
@@ -9,7 +9,7 @@ class AddSource extends StatefulWidget {
 }
 
 class _AddSourceState extends State<AddSource> {
-  final ApiClient _apiClient = ApiClient();
+  final IncomeClient _apiClient = IncomeClient();
   final TextEditingController _title = TextEditingController();
   final TextEditingController _desc = TextEditingController();
 
@@ -23,12 +23,21 @@ class _AddSourceState extends State<AddSource> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
                 content: const Text('Title can\'t be blank'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK I got  it!!'))
+                ],
               ));
       return;
     }
-    print('hi');
-    await _apiClient.addIncomeSource(_title.text,
+    bool? _isResponse = await _apiClient.addIncomeSource(_title.text,
         desc: _desc.text, isSecure: _isSecure);
+    if (_isResponse == true) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('New Source added  successfully')));
+    }
   }
 
   @override
@@ -40,7 +49,7 @@ class _AddSourceState extends State<AddSource> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _title,
@@ -50,7 +59,7 @@ class _AddSourceState extends State<AddSource> {
             ),
             const SizedBox(height: 10),
             TextField(
-              maxLines: 4,
+              maxLines: 3,
               controller: _desc,
               decoration: const InputDecoration(
                   hintText: 'Description',

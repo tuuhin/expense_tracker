@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:expense_tracker/domain/data/user_data.dart';
 import 'package:meta/meta.dart';
 
-part 'themecubit_state.dart';
+part 'theme_state.dart';
 
 class ThemeCubit extends Cubit<ThemeState> {
   ThemeCubit() : super(ThemeLight());

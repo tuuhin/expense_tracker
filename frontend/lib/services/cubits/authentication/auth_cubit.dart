@@ -1,8 +1,12 @@
+import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:expense_tracker/domain/data/secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:meta/meta.dart';
+part 'auth_state.dart';
 
-class ApiAuth {
+class AuthenticationCubit extends Cubit<AuthenticationState> {
+  AuthenticationCubit() : super(AuthModeStale());
   static final String _endPoint = dotenv.get('AUTH_ENDPOINT');
   static final SecureStorage _storage = SecureStorage();
   static final Dio _dio = Dio()
@@ -10,6 +14,9 @@ class ApiAuth {
       headers: {'Content-type': 'application/json'},
       baseUrl: _endPoint,
     );
+  void _login() => emit(AuthModeLoggedIn());
+
+  void _logOut() => emit(AuthModeLoggedOut());
 
   Future<Response?> createUser({
     required String username,
@@ -23,8 +30,7 @@ class ApiAuth {
 
       await _storage.setAccessToken(_response['access']);
       await _storage.setRefreshToken(_response['refresh']);
-
-      return _resp;
+      _login();
     } on DioError catch (e) {
       return e.response;
     } catch (e) {
@@ -43,6 +49,7 @@ class ApiAuth {
 
       await _storage.setAccessToken(_responseData['access']);
       await _storage.setRefreshToken(_responseData['refresh']);
+      _login();
 
       return _resp;
     } on DioError catch (e) {
@@ -52,5 +59,16 @@ class ApiAuth {
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  void checkAuthState() async {
+    String? _token = await _storage.getAccessToken();
+    if (_token == null) return _logOut();
+    return _login();
+  }
+
+  void logOut() async {
+    await _storage.removeTokens();
+    _logOut();
   }
 }

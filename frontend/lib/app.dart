@@ -1,6 +1,6 @@
 import 'package:expense_tracker/app/auth/auth.dart';
 import 'package:expense_tracker/app/home/drawer.dart';
-import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
+import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,15 +9,16 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthCubit _authProvider = BlocProvider.of<AuthCubit>(context);
-    return BlocBuilder<AuthCubit, AuthState>(
+    final AuthenticationCubit _authProvider =
+        BlocProvider.of<AuthenticationCubit>(context);
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
       builder: (context, state) {
-        if (state is AuthStaleState) {
+        if (state is AuthModeStale) {
           _authProvider.checkAuthState();
           return const AuthLoading();
         }
-        if (state is AuthLoggedOut) return const Authentication();
-        if (state is AuthLoggedIn) return const CustomDrawer();
+        if (state is AuthModeLoggedOut) return const Authentication();
+        if (state is AuthModeLoggedIn) return const CustomDrawer();
         return const SizedBox.expand();
       },
     );

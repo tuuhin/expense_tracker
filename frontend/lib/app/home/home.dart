@@ -1,4 +1,4 @@
-import 'package:expense_tracker/app/home/tabs/tabs.dart';
+import 'package:expense_tracker/app/home/screens/screens.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -21,7 +21,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     _tabController = TabController(length: 4, vsync: this);
   }
 

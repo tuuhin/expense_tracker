@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/services/api/api_auth.dart';
-import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
+import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,15 +14,15 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  final ApiAuth _apiAuth = ApiAuth();
-  late AuthCubit _authCubit;
+
+  late AuthenticationCubit _auth;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _authCubit = BlocProvider.of<AuthCubit>(context);
+    _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
   Future<void> _signInUser(BuildContext context) async {
@@ -32,14 +31,12 @@ class _SignInPageState extends State<SignInPage> {
           const SnackBar(content: Text('Some the fields are blank')));
     } else {
       setState(() => _isLoading = !_isLoading);
-      Response? _respn = await _apiAuth.logUserIn(
+      Response? _respn = await _auth.logUserIn(
           username: _username.text, password: _password.text);
 
       if (_respn!.statusCode != 200) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(_respn.data['detail'].toString())));
-      } else {
-        _authCubit.checkAuthState();
       }
       setState(() => _isLoading = !_isLoading);
     }

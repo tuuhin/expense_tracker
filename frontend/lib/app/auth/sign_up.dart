@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/services/api/api_auth.dart';
-import 'package:expense_tracker/services/cubits/authCubit/auth_cubit.dart';
+import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,15 +15,14 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  final ApiAuth _apiAuth = ApiAuth();
-  late AuthCubit _authCubit;
+  late AuthenticationCubit _auth;
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _authCubit = BlocProvider.of<AuthCubit>(context);
+    _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
   Future<void> registerUser(BuildContext context) async {
@@ -48,7 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
           .showSnackBar(const SnackBar(content: Text('Password is too small')));
     } else {
       setState(() => _isLoading = !_isLoading);
-      Response? _response = await _apiAuth.createUser(
+      Response? _response = await _auth.createUser(
           username: _username.text,
           password: _password.text,
           email: _email.text);
@@ -56,8 +54,6 @@ class _SignUpPageState extends State<SignUpPage> {
       if (_response!.statusCode != 201) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(_response.toString())));
-      } else {
-        _authCubit.checkAuthState();
       }
       setState(() => _isLoading = !_isLoading);
     }

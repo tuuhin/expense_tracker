@@ -1,7 +1,10 @@
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class UserData {
-  static Future<void> init() async => await Hive.openBox('userdata');
+  static Future<void> init() async {
+    await Hive.initFlutter();
+    await Hive.openBox('userdata');
+  }
 
   static final _box = Hive.box('userdata');
 

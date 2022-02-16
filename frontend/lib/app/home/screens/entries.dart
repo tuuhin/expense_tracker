@@ -5,7 +5,7 @@ class EntriesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
+    return const SizedBox.expand(
       child: Center(
         child: Text('entries'),
       ),

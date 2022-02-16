@@ -22,10 +22,9 @@ class Palette {
     primaryColor: const Color(0xff7fc3dc),
   );
   static ThemeData darkTheme = ThemeData(
-    colorScheme: const ColorScheme.dark()
-        .copyWith(primary: primary, secondary: secondary),
+    colorScheme: const ColorScheme.dark().copyWith(
+        primary: primary, secondary: secondary, error: Colors.redAccent),
     fontFamily: GoogleFonts.workSans().fontFamily,
-    androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
     inputDecorationTheme: const InputDecorationTheme(
       prefixIconColor: primary,
       suffixIconColor: Colors.white70,

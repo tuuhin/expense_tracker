@@ -1,4 +1,4 @@
-part of 'themecubit_cubit.dart';
+part of 'theme_cubit.dart';
 
 @immutable
 abstract class ThemeState {}
