@@ -38,9 +38,6 @@ class IncomeSerializer(ModelSerializer):
             'user': {'write_only': True}
         }
 
-# Expense part 
-
-
 
 class ExpenseSerializer(ModelSerializer):
     class Meta:

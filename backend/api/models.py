@@ -2,29 +2,28 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Source(models.Model):
-    source_title = models.CharField(max_length=50)
-    source_desc = models.CharField(max_length=250, blank=True)
+    title = models.CharField(max_length=50)
+    desc = models.CharField(max_length=250, blank=True,null=True)
     is_secure = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.source_title
-
+        return self.title
 
 class Category(models.Model):
-    category_title = models.CharField(max_length=50)
-    category_desc = models.CharField(max_length=250, blank=True)
+    title = models.CharField(max_length=50)
+    desc = models.CharField(max_length=250, blank=True,null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.category_title
+        return self.title
 
 
 
 class Income(models.Model):
-    income_title = models.CharField(max_length=50)
-    income_amount = models.PositiveIntegerField(default=0)
-    income_desc = models.CharField(max_length=200, blank=True)
+    title = models.CharField(max_length=50)
+    amount = models.FloatField(default=0)
+    desc = models.CharField(max_length=200, blank=True)
     added_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     source = models.ManyToManyField(Source, blank=False)
@@ -33,13 +32,13 @@ class Income(models.Model):
         ordering = ('-added_at',)
 
     def __str__(self):
-        return self.income_title
+        return self.title
 
 
 class Expenses(models.Model):
-    expense_title = models.CharField(max_length=50)
-    expense_desc = models.CharField(max_length=250, blank=True)
-    expense_amount = models.PositiveIntegerField(default=0)
+    title = models.CharField(max_length=50)
+    desc = models.CharField(max_length=250, blank=True)
+    amount = models.FloatField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
     categories = models.ManyToManyField(Category, blank=False)
@@ -48,4 +47,4 @@ class Expenses(models.Model):
         ordering = ('-added_at',)
 
     def __str__(self):
-        return self.expense_titlte
+        return self.title
