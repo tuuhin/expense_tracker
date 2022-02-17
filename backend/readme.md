@@ -1,1 +1,2 @@
-# Python Backend
+# Python Backend 
+This section contains the backend for this project.As a backend server we have used django and for the database for dev purpose we use sqlite and for production purpose it's postgress

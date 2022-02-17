@@ -1,3 +1,4 @@
+from django import http
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,9 +8,11 @@ from .serializers import (CategorySerializer, ExpenseSerializer,
 from .models import Expenses, Income, Category, Source
 # Create your views here.
 
+
 @api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def sources(request):
+
     if request.method == 'GET':
         sources = Source.objects.filter(user=request.user)
         source_serializer = SourceSerializer(sources, many=True)
@@ -23,6 +26,32 @@ def sources(request):
             income_serializer.save()
             return Response(income_serializer.data, status=status.HTTP_201_CREATED)
         return Response(income_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(http_method_names=['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def source_detail(request, pk):
+    user = request.user.pk
+
+    if request.method == 'PUT':
+        data = request.data
+        data['user'] = user
+        source_exists = Source.objects.get(pk=pk)
+        if source_exists:
+            source_serializer = SourceSerializer(source_exists, data=data)
+            if source_serializer.is_valid():
+                source_serializer.save()
+                return Response(source_serializer.data, status=status.HTTP_205_RESET_CONTENT)
+            return Response(source_serializer.errors, status=status.HTTP_424_FAILED_DEPENDENCY)
+        else:
+            return Response({'data': 'source don\'t exists'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        source_exists = Source.objects.filter(user=user, pk=pk)
+        if source_exists:
+            source_exists.delete()
+            return Response({'data': 'removed'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'data': 'error could not edit the source'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(http_method_names=['GET', 'POST'])
@@ -52,8 +81,19 @@ def income(request):
         data['user'] = request.user.pk
         serialized_income = IncomeSerializer(data=data)
         if serialized_income.is_valid():
+            serialized_income.save()
             return Response(serialized_income.data, status=status.HTTP_201_CREATED)
         return Response(serialized_income.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(http_method_names=['DELETE'])
+@permission_classes([IsAuthenticated])
+def income_details(request,pk):
+    user = request.user.pk
+    income_existis = Income.objects.filter(user=user,pk=pk)
+    if income_existis:
+        income_existis.delete()
+        return Response({'data': 'removed'}, status=status.HTTP_204_NO_CONTENT)
+    return Response({'data': 'error could not edit the source'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(http_method_names=['POST', 'GET'])
