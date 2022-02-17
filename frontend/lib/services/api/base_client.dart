@@ -39,10 +39,10 @@ abstract class Client {
                 .post('/refresh', data: {'refresh': _refreshToken});
             String newAccessToken = _ref.data['access'];
             _storage.setAccessToken(newAccessToken);
-            print('A new refresh token has been assigned ');
-            await dio.request(error.requestOptions.path,
+            print('A new access token has been assigned ');
+            Response _response = await dio.request(error.requestOptions.path,
                 data: error.requestOptions.data);
-            print('Again calling the same api');
+            handler.resolve(_response);
           } on DioError catch (error) {
             print(error.response);
             print('token invalid');
@@ -50,7 +50,7 @@ abstract class Client {
             print(e.toString());
           }
         }
-        return handler.next(error);
+        // return handler.next(error);
       },
     ))
     ..options = BaseOptions(

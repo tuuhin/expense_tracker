@@ -63,26 +63,38 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return GestureDetector(
       onTap: _closeMenu,
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
           leading: IconButton(
             onPressed: _openMenu,
-            icon: const Icon(Icons.menu),
+            icon: Icon(Icons.menu,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.black
+                    : Colors.white),
           ),
           centerTitle: true,
+          backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Text('hi world'),
         ),
-        body: TabBarView(
-            controller: _tabController,
-            physics: _getScrollMode(),
-            children: _screens),
+        body: Stack(
+          children: [
+            SizedBox.expand(
+                child: CustomPaint(
+              foregroundPainter: BackGroundDesign(),
+            )),
+            TabBarView(
+                controller: _tabController,
+                physics: _getScrollMode(),
+                children: _screens),
+          ],
+        ),
         bottomNavigationBar: BottomAppBar(
             shape: const CircularNotchedRectangle(),
             child: Container(
               color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
               height: 60,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
                       onPressed: () => _animateTabs(0),
@@ -95,15 +107,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       icon: const Icon(Icons.note)),
                   IconButton(
                       onPressed: () => _animateTabs(3),
-                      icon: const Icon(Icons.person))
+                      icon: const Icon(Icons.person)),
+                  const SizedBox(width: 20),
                 ],
               ),
-            )
-            // child: BottomNavigationBar(items: const [
-            //   BottomNavigationBarItem(icon: Icon(Icons.add), label: 'tuhin'),
-            //   BottomNavigationBarItem(icon: Icon(Icons.add), label: 'boy')
-            // ]),
-            ),
+            )),
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
         floatingActionButton: FloatingActionButton(
           onPressed: _openMenu,
@@ -112,4 +120,26 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       ),
     );
   }
+}
+
+class BackGroundDesign extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint _paint = Paint()
+      ..strokeWidth = 10
+      ..color = Color(0xffd5d5d5)
+      ..style = PaintingStyle.fill;
+
+    Path _path = Path()
+      ..moveTo(size.width, 0)
+      ..lineTo(size.width, size.height * 0.2)
+      ..cubicTo(size.width * 0.65, size.height * 0.2, size.width * 0.45,
+          size.height * 0.6, 0, size.height * 0.5)
+      ..lineTo(0, 0);
+
+    canvas.drawPath(_path, _paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

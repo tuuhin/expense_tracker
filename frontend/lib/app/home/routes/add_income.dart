@@ -1,7 +1,9 @@
 import 'package:expense_tracker/app/home/routes/add_source.dart';
-import 'package:expense_tracker/app/home/routes/get_sources.dart';
-import 'package:expense_tracker/app/widgets/widgets.dart';
+import 'package:expense_tracker/app/widgets/income_list_tile.dart';
+import 'package:expense_tracker/services/api/income_client.dart';
+import 'package:expense_tracker/services/cubits/income_sources/income_source_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddIncome extends StatefulWidget {
   const AddIncome({Key? key}) : super(key: key);
@@ -14,6 +16,8 @@ class _AddIncomeState extends State<AddIncome> {
   final TextEditingController _title = TextEditingController();
   final TextEditingController _value = TextEditingController();
   final TextEditingController _description = TextEditingController();
+  late IncomeSourceCubit _incomeSourceCubit;
+  bool _isLoading = false;
 
   final OutlinedBorder _bottomSheetBorder = const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(
@@ -28,12 +32,8 @@ class _AddIncomeState extends State<AddIncome> {
             child: const AddSource(),
           ));
 
-  void _getSources(BuildContext context) => showModalBottomSheet(
-      shape: _bottomSheetBorder,
-      context: context,
-      builder: (context) => const GetIncomeSources());
-
   void _addNewIncome(BuildContext context) async {
+    final IncomeClient _clt = IncomeClient();
     if (_title.text.isEmpty || _value.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Either one of title or amount is blank')));
@@ -41,13 +41,46 @@ class _AddIncomeState extends State<AddIncome> {
     }
     if (num.tryParse(_value.text) == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Amount is not a number ')));
+          const SnackBar(content: Text('Amount should alaways be a number.')));
+      return;
     }
+    if (_incomeSourceCubit.sources.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('add A source')));
+      return;
+    }
+    setState(() => _isLoading = !_isLoading);
+    bool? success = await _clt.addNewIncome(
+        title: _title.text,
+        amount: num.parse(_value.text),
+        desc: _description.text,
+        sources: _incomeSourceCubit.sources);
+    setState(() => _isLoading = !_isLoading);
+    if (success == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Income added succeessfully')));
+      _title.text = '';
+      _description.text = '';
+      _value.text = '';
+      _incomeSourceCubit.refreshSources();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Income failed to be added')));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _incomeSourceCubit = BlocProvider.of<IncomeSourceCubit>(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final double _screenX = MediaQuery.of(context).size.width;
+    final double _screenY = MediaQuery.of(context).size.height;
+    final IncomeSourceCubit _incomeSources =
+        BlocProvider.of<IncomeSourceCubit>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
@@ -96,53 +129,38 @@ class _AddIncomeState extends State<AddIncome> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Amount'),
               ),
-              const ListTile(
-                title: Text('Sources'),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 5),
+                trailing: IconButton(
+                    onPressed: () => _incomeSources.refreshSources(),
+                    icon: const Icon(Icons.refresh)),
+                title: const Text('Sources'),
+                subtitle: const Text('Select your income sources'),
               ),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 1,
-                  crossAxisSpacing: 1,
-                  childAspectRatio: 2,
-                  children: [
-                    OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
-                        ),
-                        onPressed: () => _getSources(context),
-                        child: const Icon(Icons.add)),
-                    IncomeChips(
-                      label: 'food',
-                      onDelete: () => {},
-                    ),
-                    Chip(
-                      label: Text('hellow'),
-                      onDeleted: () {},
-                    ),
-                    IncomeChips(
-                      label: 'hellow',
-                      onDelete: () {},
-                    ),
-                    Chip(
-                      label: Text('hellow'),
-                      onDeleted: () {},
-                    ),
-                    Chip(
-                      label: Text('hellow'),
-                      onDeleted: () {},
-                    ),
-                    Chip(
-                      label: Text('hellow'),
-                      onDeleted: () {},
-                    ),
-                    Chip(
-                      label: Text('hellow'),
-                      onDeleted: () {},
-                    ),
-                  ],
+              SizedBox(
+                height: _screenY * .2,
+                child: BlocBuilder<IncomeSourceCubit, IncomeSourceState>(
+                  builder: (context, state) {
+                    if (state is IncomeSourceLoad) {
+                      _incomeSources.loadData();
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is IncomeSourceLoaded) {
+                      return ListView.builder(
+                          itemCount: state.models.length,
+                          itemBuilder: (context, int item) =>
+                              IncomeSourceListTile(
+                                id: state.models[item]!.id,
+                                title: state.models[item]!.title,
+                                subtitle: state.models[item]!.desc ?? '',
+                              ));
+                    }
+                    if (state is IncomeSourceLoadFailed) {
+                      return const Icon(Icons.no_backpack);
+                    } else {
+                      return const SizedBox();
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: 10),
@@ -166,7 +184,7 @@ class _AddIncomeState extends State<AddIncome> {
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(20)))),
                   onPressed: () => _addNewIncome(context),
-                  child: Text('Add Income',
+                  child: Text(_isLoading ? 'Adding..' : 'Add Income',
                       style: Theme.of(context)
                           .textTheme
                           .subtitle2!

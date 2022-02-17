@@ -20,5 +20,5 @@ Map<String, dynamic> _$$_IncomeSourceModelToJson(
       'id': instance.id,
       'title': instance.title,
       'desc': instance.desc,
-      'isSecure': instance.isSecure,
+      'is_secure': instance.isSecure,
     };

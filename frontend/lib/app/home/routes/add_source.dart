@@ -1,5 +1,7 @@
 import 'package:expense_tracker/services/api/income_client.dart';
+import 'package:expense_tracker/services/cubits/income_sources/income_source_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddSource extends StatefulWidget {
   const AddSource({Key? key}) : super(key: key);
@@ -12,6 +14,8 @@ class _AddSourceState extends State<AddSource> {
   final IncomeClient _apiClient = IncomeClient();
   final TextEditingController _title = TextEditingController();
   final TextEditingController _desc = TextEditingController();
+  late IncomeSourceCubit _incomeSourceCubit;
+  bool _isLoading = false;
 
   bool? _isSecure = true;
 
@@ -31,13 +35,22 @@ class _AddSourceState extends State<AddSource> {
               ));
       return;
     }
+    setState(() => _isLoading = !_isLoading);
     bool? _isResponse = await _apiClient.addIncomeSource(_title.text,
         desc: _desc.text, isSecure: _isSecure);
+    setState(() => _isLoading = !_isLoading);
     if (_isResponse == true) {
+      _incomeSourceCubit.refreshSources();
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('New Source added  successfully')));
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _incomeSourceCubit = BlocProvider.of<IncomeSourceCubit>(context);
   }
 
   @override
@@ -82,7 +95,7 @@ class _AddSourceState extends State<AddSource> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20))),
                 onPressed: () async => {await _addSource(context)},
-                child: Text('Add Income Source',
+                child: Text(_isLoading ? 'Adding...' : 'Add Income Source',
                     style: Theme.of(context)
                         .textTheme
                         .subtitle2!

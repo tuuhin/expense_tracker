@@ -7,7 +7,28 @@ class IncomeClient extends Client {
     try {
       Response _resp = await Client.dio.post('/sources',
           data: {'title': title, 'desc': desc, 'is_secure': isSecure});
-      print(_resp);
+      print(_resp.data);
+      return true;
+    } on DioError catch (e) {
+      print(e.response);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<bool?> addNewIncome(
+      {required String title,
+      required num amount,
+      String? desc,
+      List<int>? sources}) async {
+    try {
+      Response _response = await Client.dio.post('/income', data: {
+        'title': title,
+        'desc': desc,
+        'amount': amount,
+        'source': sources
+      });
+      print(_response.requestOptions.baseUrl + _response.requestOptions.path);
       return true;
     } on DioError catch (e) {
       print(e.response);
