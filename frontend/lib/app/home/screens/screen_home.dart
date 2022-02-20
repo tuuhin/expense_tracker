@@ -1,21 +1,9 @@
+import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
-class MainTab extends StatefulWidget {
+class MainTab extends StatelessWidget {
   const MainTab({Key? key}) : super(key: key);
-
-  @override
-  State<MainTab> createState() => _MainTabState();
-}
-
-class _MainTabState extends State<MainTab> {
-  late PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(viewportFraction: 1);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +26,7 @@ class _MainTabState extends State<MainTab> {
               child: ListView(
                 padding: EdgeInsets.zero,
                 scrollDirection: Axis.horizontal,
-                children: [
+                children: const [
                   DataCards(title: 'Total Salary', amount: 2908.90),
                   DataCards(title: 'Total Expense', amount: 2908.90),
                   DataCards(title: 'purchase', amount: 2908.90),
@@ -52,11 +40,27 @@ class _MainTabState extends State<MainTab> {
               child: ListView(
                 padding: EdgeInsets.zero,
                 scrollDirection: Axis.horizontal,
-                children: const [
-                  ImportanceCard(icon: Icons.star, title: 'Savings'),
+                children: [
                   ImportanceCard(
-                      icon: Icons.notifications_active, title: 'Reminders'),
-                  ImportanceCard(icon: Icons.account_balance, title: 'Budget'),
+                    icon: Icons.star,
+                    title: 'Savings',
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const Savings()));
+                    },
+                  ),
+                  ImportanceCard(
+                    icon: Icons.notifications_active,
+                    title: 'Reminders',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const Reminders())),
+                  ),
+                  ImportanceCard(
+                    icon: Icons.account_balance,
+                    title: 'Budget',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const Budget())),
+                  ),
                 ],
               ),
             ),

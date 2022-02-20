@@ -1,8 +1,6 @@
 import 'package:expense_tracker/app.dart';
 import 'package:expense_tracker/domain/data/user_data.dart';
-import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
-import 'package:expense_tracker/services/cubits/income_sources/income_source_cubit.dart';
-import 'package:expense_tracker/services/cubits/theme/theme_cubit.dart';
+import 'package:expense_tracker/services/cubits/cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,6 +27,9 @@ class MyApp extends StatelessWidget {
           create: (context) => AuthenticationCubit()),
       BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
       BlocProvider<IncomeSourceCubit>(create: (context) => IncomeSourceCubit()),
+      BlocProvider<EntriesCubit>(
+        create: (context) => EntriesCubit(),
+      )
     ], child: const _App());
   }
 }

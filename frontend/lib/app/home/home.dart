@@ -13,7 +13,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<Widget> _screens = const [
     MainTab(),
-    StatisticsTab(),
     EntriesTab(),
     ProfileTab(),
   ];
@@ -21,7 +20,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -63,6 +62,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return GestureDetector(
       onTap: _closeMenu,
       child: Scaffold(
+        extendBody: true,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           leading: IconButton(
@@ -101,12 +101,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       icon: const Icon(Icons.home)),
                   IconButton(
                       onPressed: () => _animateTabs(1),
-                      icon: const Icon(Icons.stacked_bar_chart)),
-                  IconButton(
-                      onPressed: () => _animateTabs(2),
                       icon: const Icon(Icons.note)),
                   IconButton(
-                      onPressed: () => _animateTabs(3),
+                      onPressed: () => _animateTabs(2),
                       icon: const Icon(Icons.person)),
                   const SizedBox(width: 20),
                 ],
@@ -127,7 +124,7 @@ class BackGroundDesign extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint _paint = Paint()
       ..strokeWidth = 10
-      ..color = Color(0xffd5d5d5)
+      ..color = const Color(0xffd5d5d5)
       ..style = PaintingStyle.fill;
 
     Path _path = Path()
