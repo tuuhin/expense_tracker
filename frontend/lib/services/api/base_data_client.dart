@@ -14,4 +14,17 @@ class BaseDataClient extends Client {
       print(e.toString());
     }
   }
+
+  Future<Map?> getEntriesByUrl(String url) async {
+    try {
+      print('requesting $url');
+      Response _response = await Client.dio.get(url);
+      Map _data = _response.data as Map;
+      return _data;
+    } on DioError catch (error) {
+      print(error.response);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 }

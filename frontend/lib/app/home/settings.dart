@@ -1,4 +1,5 @@
 import 'package:expense_tracker/app/home/routes/add_income.dart';
+import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:expense_tracker/services/cubits/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +73,7 @@ class Settings extends StatelessWidget {
                   ),
                   ListTile(
                     dense: true,
-                    onTap: () {},
+                    onTap: () => Navigator.of(context).push(_addExpenses()),
                     title: const Text('Add Expense'),
                     leading: const Icon(Icons.add),
                   ),
@@ -125,6 +126,20 @@ Route _addIncomeRoute() => PageRouteBuilder(
     transitionDuration: const Duration(milliseconds: 700),
     reverseTransitionDuration: const Duration(milliseconds: 400),
     pageBuilder: (context, animation, secondaryAnimation) => const AddIncome(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final Animation<double> _rotation = Tween<double>(begin: 90, end: 0)
+          .animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut));
+
+      return Transform(
+          transform: Matrix4.identity()..rotateY(radians(-1 * _rotation.value)),
+          child: child);
+    });
+
+Route _addExpenses() => PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 700),
+    reverseTransitionDuration: const Duration(milliseconds: 400),
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        const AddExpenses(),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final Animation<double> _rotation = Tween<double>(begin: 90, end: 0)
           .animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut));

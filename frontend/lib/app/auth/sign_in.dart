@@ -26,6 +26,9 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> _signInUser(BuildContext context) async {
+    if (!_isLoading) {
+      setState(() => _isLoading = !_isLoading);
+    }
     if (_username.text.isEmpty || _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Some the fields are blank')));
@@ -37,8 +40,8 @@ class _SignInPageState extends State<SignInPage> {
       if (_respn!.statusCode != 200) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(_respn.data['detail'].toString())));
+        setState(() => _isLoading = !_isLoading);
       }
-      setState(() => _isLoading = !_isLoading);
     }
 
     // _authProvider.changeAuthState();
