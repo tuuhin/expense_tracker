@@ -1,8 +1,7 @@
-from rest_framework.serializers import ModelSerializer,Serializer,CharField,PrimaryKeyRelatedField
-from .models import Expenses,Source, Category, Income
+from rest_framework.serializers import (
+    ModelSerializer, Serializer, CharField, PrimaryKeyRelatedField,)
+from .models import Expenses, Source, Category, Income
 from django.contrib.auth.models import User
-
-# Income part 
 
 class SourceSerializer(ModelSerializer):
 
@@ -23,9 +22,10 @@ class CategorySerializer(ModelSerializer):
             'user': {'write_only': True}
         }
 
+
 class UpdateCategorySerializer(Serializer):
     source = CharField(max_length=50)
-    user = PrimaryKeyRelatedField(queryset = User.objects.all())
+    user = PrimaryKeyRelatedField(queryset=User.objects.all())
 
 
 class IncomeSerializer(ModelSerializer):
@@ -40,9 +40,10 @@ class IncomeSerializer(ModelSerializer):
 
 
 class ExpenseSerializer(ModelSerializer):
+    
     class Meta:
         model = Expenses
         fields = '__all__'
         extra_kwargs = {
-            'user':{'write_only':True}
+            'user': {'write_only': True}
         }

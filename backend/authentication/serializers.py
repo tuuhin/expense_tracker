@@ -12,6 +12,7 @@ def get_tokens_for_user(user):
 
 
 class UserSerializer(ModelSerializer):
+    
     class Meta:
         model = User
         fields = ('id', 'username', 'password',

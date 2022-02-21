@@ -21,11 +21,11 @@ def sources(request):
     if request.method == 'POST':
         data = request.data
         data['user'] = request.user.pk
-        income_serializer = SourceSerializer(data=data)
-        if income_serializer.is_valid():
-            income_serializer.save()
-            return Response(income_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(income_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        source_serializer = SourceSerializer(data=data)
+        if source_serializer.is_valid():
+            source_serializer.save()
+            return Response(source_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(source_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(http_method_names=['PUT', 'DELETE'])
@@ -50,16 +50,18 @@ def source_detail(request, pk):
         source_exists = Source.objects.filter(user=user, pk=pk)
         if source_exists:
             source_exists.delete()
-            return Response({'data': 'removed'}, status=status.HTTP_204_NO_CONTENT)
-        return Response({'data': 'error could not edit the source'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'data': 'the source has been deleted '}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'data': 'source dont\'t exists'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(http_method_names=['GET', 'POST'])
 def categories(request):
+
     if request.method == 'GET':
         categories = Category.objects.filter(user=request.user)
         serialized_categories = CategorySerializer(categories, many=True)
         return Response(serialized_categories.data, status=status.HTTP_200_OK)
+
     if request.method == 'POST':
         data = request.data
         data['user'] = request.user.pk
@@ -72,10 +74,12 @@ def categories(request):
 @api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def income(request):
+
     if request.method == 'GET':
         incomes = Income.objects.filter(user=request.user)
         serialized_incomes = IncomeSerializer(incomes, many=True)
         return Response(serialized_incomes.data, status=status.HTTP_200_OK)
+
     if request.method == 'POST':
         data = request.data
         data['user'] = request.user.pk
@@ -99,10 +103,12 @@ def income_details(request,pk):
 @api_view(http_method_names=['POST', 'GET'])
 @permission_classes([IsAuthenticated])
 def expenses(request):
+
     if request.method == 'GET':
         expenses = Expenses.objects.filter(user=request.user)
         expense_serializer = ExpenseSerializer(data=expenses, many=True)
         return Response(expense_serializer.data, status=status.HTTP_200_OK)
+        
     if request.method == 'POST':
         data = request.data
         data['user'] = request.user

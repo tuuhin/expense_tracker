@@ -5,14 +5,14 @@ from .serializers import ExpenseSerializer, IncomeSerializer
 from .models import Expenses, Income
 
 
-class Pagination(MultipleModelLimitOffsetPagination):
-    default_limit = 10
+class EntriesPagination(MultipleModelLimitOffsetPagination):
+    default_limit = 5
 
 
 class Entries(FlatMultipleModelAPIView):
 
     sorting_field = '-added_at'
-    pagination_class = Pagination
+    pagination_class = EntriesPagination
     permission_classes = [IsAuthenticated]
 
     def get_querylist(self):
