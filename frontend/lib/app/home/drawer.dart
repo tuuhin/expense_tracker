@@ -14,8 +14,7 @@ class _CustomDrawerState extends State<CustomDrawer>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
-  late Animation<double> _offsetX;
-  late Animation<double> _offsetY;
+  late Animation<Offset> _offset;
   late Animation<double> _rotation;
 
   @override
@@ -24,14 +23,14 @@ class _CustomDrawerState extends State<CustomDrawer>
 
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
-    _offsetX = Tween<double>(begin: 0, end: 200)
+    _offset = Tween<Offset>(
+            begin: const Offset(0, 0), end: const Offset(400, 400))
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-    _offsetY = Tween<double>(begin: 0, end: 200)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-    _scale = Tween<double>(begin: 1, end: 0.65)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-    _rotation = Tween<double>(begin: 0, end: 25).animate(
+
+    _scale = Tween<double>(begin: 1, end: 0.5).animate(
         CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
+    _rotation = Tween<double>(begin: 0, end: 12).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.decelerate));
   }
 
   @override
@@ -52,10 +51,9 @@ class _CustomDrawerState extends State<CustomDrawer>
               Transform(
                 transform: Matrix4.identity()
                   ..scale(_scale.value)
-                  ..translate(_offsetX.value, _offsetY.value)
-                  ..rotateZ(radians(-1 * _rotation.value)),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(_rotation.value),
+                  ..rotateZ(radians(_rotation.value * -1)),
+                child: Transform.translate(
+                    offset: _offset.value,
                     child: Home(controller: _controller)),
               ),
             ],

@@ -14,4 +14,37 @@ class ExpensesClient extends Client {
       print(e.toString());
     }
   }
+
+  Future<bool?> addExpense(String title,
+      {required List<int> categories,
+      required num amount,
+      String? desc}) async {
+    try {
+      print('adding');
+      Response _response = await Client.dio.post('/expenses', data: {
+        'title': title,
+        'desc': desc,
+        'amount': amount,
+        'source': categories
+      });
+      print(_response.data);
+      return true;
+    } on DioError catch (e) {
+      print(e.response);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<List?> getCategories() async {
+    try {
+      Response _response = await Client.dio.get('/categories');
+      return _response.data;
+    } on DioError catch (e) {
+      print(e.response);
+    } catch (e) {
+      print(e.toString());
+    }
+    return null;
+  }
 }

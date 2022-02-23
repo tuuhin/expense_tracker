@@ -4,6 +4,7 @@ import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:expense_tracker/services/cubits/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:vector_math/vector_math.dart' show radians;
 
 class Settings extends StatelessWidget {
@@ -43,8 +44,8 @@ class Settings extends StatelessWidget {
       height: _screenY,
       decoration: BoxDecoration(
           gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
               colors: [
             Theme.of(context).brightness == Brightness.light
                 ? Theme.of(context).colorScheme.primary
@@ -54,66 +55,58 @@ class Settings extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: _screenX * .7,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const ListTile(
-                    title: Text('Add'),
-                  ),
-                  ListTile(
-                    dense: true,
-                    onTap: () {
-                      Navigator.of(context).push(_addIncomeRoute());
+            width: _screenX * .65,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ListTile(
+                  title: Text('Welcome Back!!',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline5!
+                          .copyWith(fontWeight: FontWeight.bold)),
+                ),
+                const Divider(),
+                ListTile(
+                  onTap: () => Navigator.of(context).push(_addIncomeRoute()),
+                  title: const Text('Add Income'),
+                  leading:
+                      const FaIcon(FontAwesomeIcons.moneyBillWave, size: 20),
+                ),
+                ListTile(
+                  onTap: () => Navigator.of(context).push(_addExpenses()),
+                  title: const Text('Add Expense'),
+                  leading: const FaIcon(FontAwesomeIcons.moneyCheck, size: 20),
+                ),
+                const Divider(),
+                ListTile(
+                    onTap: () {},
+                    title: const Text('Add Source'),
+                    leading:
+                        const FaIcon(FontAwesomeIcons.productHunt, size: 20)),
+                ListTile(
+                    onTap: () {},
+                    title: const Text('Add Categories'),
+                    leading:
+                        const FaIcon(FontAwesomeIcons.buyNLarge, size: 20)),
+                const Divider(),
+                ListTile(
+                  trailing: Switch(
+                    value: _theme.isDark,
+                    onChanged: (bool newValue) {
+                      _theme.changeTheme();
                     },
-                    title: const Text('Add Income'),
-                    leading: const Icon(Icons.add),
                   ),
-                  ListTile(
-                    dense: true,
-                    onTap: () => Navigator.of(context).push(_addExpenses()),
-                    title: const Text('Add Expense'),
-                    leading: const Icon(Icons.add),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    dense: true,
-                    onTap: () {},
-                    title: const Text('Add Income Source'),
-                    leading: const Icon(Icons.add),
-                  ),
-                  ListTile(
-                    dense: true,
-                    onTap: () {},
-                    title: const Text('Add Expense categories'),
-                    leading: const Icon(Icons.add),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    dense: true,
-                    trailing: Switch(
-                      value: _theme.isDark,
-                      onChanged: (bool newValue) {
-                        _theme.changeTheme();
-                      },
-                    ),
-                    leading: Icon(
-                        Theme.of(context).brightness == Brightness.light
-                            ? Icons.dark_mode
-                            : Icons.light),
-                    title: const Text('Toggle Theme'),
-                  ),
-                  ListTile(
-                    iconColor: Colors.red,
-                    textColor: Colors.red,
-                    onTap: () => alertLogout(context),
-                    title: const Text('Logout'),
-                    leading: const Icon(Icons.logout),
-                  )
-                ],
-              ),
+                  title: const Text('Toggle Theme'),
+                ),
+                ListTile(
+                  iconColor: Colors.red,
+                  textColor: Colors.red,
+                  onTap: () => alertLogout(context),
+                  title: const Text('Logout'),
+                  leading: const Icon(Icons.logout),
+                ),
+              ],
             ),
           ),
         ],

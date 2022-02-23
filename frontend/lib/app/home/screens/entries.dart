@@ -56,24 +56,22 @@ class _EntriesTabState extends State<EntriesTab> {
         }
         if (state is EntriesLoadSuccess) {
           return Stack(alignment: Alignment.bottomCenter, children: [
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 60),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    trailing:
-                        Text('${state.highestCount}/${state.overallCount}'),
-                    title: Text('Entries',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline5!
-                            .copyWith(fontWeight: FontWeight.w700)),
-                  ),
-                  state.entries.isNotEmpty
-                      ? Expanded(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 60),
+                ListTile(
+                  trailing: Text('${state.highestCount}/${state.overallCount}'),
+                  title: Text('Entries',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline5!
+                          .copyWith(fontWeight: FontWeight.w700)),
+                ),
+                state.entries.isNotEmpty
+                    ? Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
                           child: AnimatedList(
                               physics: const BouncingScrollPhysics(),
                               controller: _scrollController,
@@ -88,25 +86,44 @@ class _EntriesTabState extends State<EntriesTab> {
 
                                 return SlideTransition(
                                   position: _offset,
-                                  child: ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    trailing: Icon(
-                                      Icons.badge,
-                                      color:
-                                          state.entries[index].type == 'income'
-                                              ? Colors.green
-                                              : Colors.red,
+                                  child: Card(
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          gradient: LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.centerRight,
+                                              colors: [
+                                                state.entries[index].type ==
+                                                        'income'
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                        .withOpacity(0.4)
+                                                    : Theme.of(context)
+                                                        .colorScheme
+                                                        .secondary
+                                                        .withOpacity(0.4),
+                                                Theme.of(context).cardColor
+                                              ])),
+                                      child: ListTile(
+                                        title: Text(state.entries[index].title),
+                                        subtitle: Text(
+                                            state.entries[index].desc ?? ''),
+                                      ),
                                     ),
-                                    title: Text(state.entries[index].title),
-                                    subtitle:
-                                        Text(state.entries[index].desc ?? ''),
                                   ),
                                 );
                               }),
-                        )
-                      : const Text('no entries')
-                ],
-              ),
+                        ),
+                      )
+                    : const Text('No entries')
+              ],
             ),
             Positioned(
               bottom: 60,

@@ -80,7 +80,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           children: [
             SizedBox.expand(
                 child: CustomPaint(
-              foregroundPainter: BackGroundDesign(),
+              foregroundPainter: BackGroundDesign(
+                  color: Theme.of(context).cardColor.withOpacity(0.7)),
             )),
             TabBarView(
                 controller: _tabController,
@@ -89,6 +90,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           ],
         ),
         bottomNavigationBar: BottomAppBar(
+            elevation: 0,
             shape: const CircularNotchedRectangle(),
             child: Container(
               color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
@@ -120,11 +122,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 }
 
 class BackGroundDesign extends CustomPainter {
+  final Color color;
+
+  BackGroundDesign({required this.color});
   @override
   void paint(Canvas canvas, Size size) {
     Paint _paint = Paint()
       ..strokeWidth = 10
-      ..color = const Color(0xffd5d5d5)
+      ..color = color
       ..style = PaintingStyle.fill;
 
     Path _path = Path()

@@ -25,11 +25,17 @@ class MyApp extends StatelessWidget {
       // hold all the providers here
       BlocProvider<AuthenticationCubit>(
           create: (context) => AuthenticationCubit()),
-      BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
-      BlocProvider<IncomeSourceCubit>(create: (context) => IncomeSourceCubit()),
+      BlocProvider<ThemeCubit>(
+        create: (context) => ThemeCubit(),
+      ),
+      BlocProvider<IncomeSourceCubit>(
+        create: (context) => IncomeSourceCubit(),
+      ),
       BlocProvider<EntriesCubit>(
         create: (context) => EntriesCubit(),
-      )
+      ),
+      BlocProvider<ExpenseCategoriesCubit>(
+          create: (context) => ExpenseCategoriesCubit())
     ], child: const _App());
   }
 }

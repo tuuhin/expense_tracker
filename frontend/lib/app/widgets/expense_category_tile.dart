@@ -1,12 +1,12 @@
-import 'package:expense_tracker/services/cubits/income_sources/income_source_cubit.dart';
+import 'package:expense_tracker/services/cubits/cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class IncomeSourceListTile extends StatefulWidget {
+class ExpenseCategoryListTile extends StatefulWidget {
   final int id;
   final String title;
   final String subtitle;
-  const IncomeSourceListTile({
+  const ExpenseCategoryListTile({
     Key? key,
     required this.title,
     required this.subtitle,
@@ -14,21 +14,22 @@ class IncomeSourceListTile extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _IncomeSourceListTileState createState() => _IncomeSourceListTileState();
+  _ExpenseCategoryListTileState createState() =>
+      _ExpenseCategoryListTileState();
 }
 
-class _IncomeSourceListTileState extends State<IncomeSourceListTile>
+class _ExpenseCategoryListTileState extends State<ExpenseCategoryListTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<TextStyle> _style;
   late Animation<double> _opacity;
-  late IncomeSourceCubit _cubit;
+  late ExpenseCategoriesCubit _cubit;
   bool _isChecked = false;
 
   @override
   void initState() {
     super.initState();
-    _cubit = BlocProvider.of<IncomeSourceCubit>(context);
+    _cubit = BlocProvider.of<ExpenseCategoriesCubit>(context);
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
     _opacity = Tween<double>(end: 1, begin: 0.5).animate(

@@ -147,6 +147,7 @@ class _AddIncomeState extends State<AddIncome> {
                     }
                     if (state is IncomeSourceLoaded) {
                       return ListView.builder(
+                          padding: EdgeInsets.zero,
                           itemCount: state.models.length,
                           itemBuilder: (context, int item) =>
                               IncomeSourceListTile(
