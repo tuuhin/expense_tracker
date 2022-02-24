@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:expense_tracker/app/auth/auth.dart';
 import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,13 +40,14 @@ class _SignUpPageState extends State<SignUpPage> {
           .showSnackBar(const SnackBar(content: Text('Email field is blank')));
     } else if (!RegExp(r'\b[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
         .hasMatch(_email.text)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Improper email ')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please give a propper email')));
     } else if (_password.text.length <= 5) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Password is too small')));
     } else {
       setState(() => _isLoading = !_isLoading);
+      FocusScope.of(context).requestFocus(FocusNode());
       Response? _response = await _auth.createUser(
           username: _username.text,
           password: _password.text,
@@ -54,34 +56,40 @@ class _SignUpPageState extends State<SignUpPage> {
       if (_response!.statusCode != 201) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(_response.toString())));
+        setState(() => _isLoading = !_isLoading);
       }
-      setState(() => _isLoading = !_isLoading);
+      return;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final double _screenWidth = MediaQuery.of(context).size.width;
+    final double _screenX = MediaQuery.of(context).size.width;
+    final OutlinedBorder _shape =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(10));
     return Scaffold(
       body: Stack(
         children: [
-          SizedBox.expand(child: CustomPaint(painter: PaintSplashSignUp())),
+          SizedBox.expand(
+            child: CustomPaint(painter: PaintSplashSignUp()),
+          ),
           AnimatedPositioned(
             duration: const Duration(milliseconds: 900),
             right: -20,
             top: 70,
-            child: AnimatedOpacity(
-                opacity: 1,
-                duration: const Duration(milliseconds: 900),
-                curve: Curves.easeInOut,
-                child: Image.asset(
-                  'assets/flaticons/app_flatline.png',
-                  scale: 1.5,
-                )),
+            child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 500),
+                child: Image.asset('assets/flaticons/app_flatline.png',
+                    scale: 1.5),
+                builder: (context, value, child) => AnimatedOpacity(
+                    duration: const Duration(milliseconds: 400),
+                    opacity: value,
+                    child: child)),
           ),
           Positioned(
               left: 20,
-              bottom: 350,
+              bottom: 360,
               child: Text(
                 'Get Started',
                 style: Theme.of(context)
@@ -92,7 +100,8 @@ class _SignUpPageState extends State<SignUpPage> {
           Positioned(
               left: 20,
               bottom: 330,
-              child: Text('Track your expenses in a modern manner... ',
+              child: Text(
+                  'Hey Dear user,\nAre you facing problem with your finance.',
                   style: Theme.of(context).textTheme.caption)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
@@ -134,23 +143,6 @@ class _SignUpPageState extends State<SignUpPage> {
                             : Icons.visibility)),
                   ),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 8,
-                      primary: Theme.of(context).colorScheme.secondary,
-                      fixedSize: Size(_screenWidth, 50),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)))),
-                  onPressed: () => registerUser(context),
-                  child: !_isLoading
-                      ? Text('Register',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6!
-                              .copyWith(color: Colors.white))
-                      : const CircularProgressIndicator(),
-                ),
-                const Divider(),
                 GestureDetector(
                     onTap: () =>
                         widget.controller.animateTo(1, curve: Curves.easeInOut),
@@ -165,11 +157,28 @@ class _SignUpPageState extends State<SignUpPage> {
                                 .textTheme
                                 .bodyText2!
                                 .copyWith(
+                                    fontWeight: FontWeight.w500,
                                     color: Theme.of(context)
                                         .colorScheme
                                         .secondary))
                       ],
                     )),
+                const Divider(),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      elevation: 8,
+                      primary: Theme.of(context).colorScheme.secondary,
+                      fixedSize: Size(_screenX, 50),
+                      shape: _shape),
+                  onPressed: () => registerUser(context),
+                  child: !_isLoading
+                      ? Text('Register',
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1!
+                              .copyWith(color: Colors.white))
+                      : const CircularProgressIndicator(),
+                ),
               ],
             ),
           ),
@@ -177,37 +186,4 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
     );
   }
-}
-
-class PaintSplashSignUp extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paintOne = Paint()
-      ..strokeWidth = 10
-      ..color = Colors.blueGrey
-      ..style = PaintingStyle.fill;
-
-    Path _pathOne = Path()
-      ..moveTo(size.width * 0.6, 0)
-      ..quadraticBezierTo(
-          size.width * 0.4, size.height * 0.15, 0, size.height * 0.2)
-      ..lineTo(0, 0);
-
-    canvas.drawPath(_pathOne, paintOne);
-
-    Paint paintTwo = Paint()
-      ..strokeWidth = 10
-      ..color = const Color(0xff7fc3dc)
-      ..style = PaintingStyle.fill;
-    Path _pathTwo = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, size.height * .75)
-      ..quadraticBezierTo(
-          size.width * 0.3, size.height * 0.9, size.width, size.height * 0.65)
-      ..lineTo(size.width, size.height);
-    canvas.drawPath(_pathTwo, paintTwo);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

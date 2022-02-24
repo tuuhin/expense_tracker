@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:expense_tracker/app/auth/auth.dart';
 import 'package:expense_tracker/services/cubits/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,21 +27,21 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> _signInUser(BuildContext context) async {
-    if (!_isLoading) {
-      setState(() => _isLoading = !_isLoading);
-    }
     if (_username.text.isEmpty || _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Some the fields are blank')));
+      return;
     } else {
       setState(() => _isLoading = !_isLoading);
+
+      FocusScope.of(context).requestFocus(FocusNode());
       Response? _respn = await _auth.logUserIn(
           username: _username.text, password: _password.text);
-
       if (_respn!.statusCode != 200) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(_respn.data['detail'].toString())));
         setState(() => _isLoading = !_isLoading);
+        return;
       }
     }
 
@@ -49,33 +50,43 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double _screenWidth = MediaQuery.of(context).size.width;
+    final double _screenX = MediaQuery.of(context).size.width;
+    final OutlinedBorder _shape =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(10));
     return Scaffold(
       body: Stack(
         children: [
-          SizedBox.expand(child: CustomPaint(painter: PaintSplashSignIn())),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 900),
+          SizedBox.expand(
+            child: CustomPaint(painter: PaintSplashSignIn()),
+          ),
+          Positioned(
             top: 110,
             right: -50,
-            child: AnimatedOpacity(
-                opacity: 1,
-                duration: const Duration(milliseconds: 900),
-                curve: Curves.easeInOut,
-                child: Image.asset(
-                  'assets/flaticons/flatline.png',
-                  scale: 1.5,
-                )),
+            child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 500),
+                child: Image.asset('assets/flaticons/flatline.png', scale: 1.5),
+                builder: (context, value, child) => AnimatedOpacity(
+                    duration: const Duration(milliseconds: 400),
+                    opacity: value,
+                    child: child)),
           ),
           Positioned(
               left: 20,
-              bottom: 280,
+              bottom: 300,
               child: Text(
                 'Welcome Back!',
                 style: Theme.of(context)
                     .textTheme
                     .headline6!
                     .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
+              )),
+          Positioned(
+              left: 20,
+              bottom: 270,
+              child: Text(
+                'Hey Dear user ,we think you are quite happy with \nour service,sign in to continue with your account',
+                style: Theme.of(context).textTheme.caption,
               )),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
@@ -85,6 +96,7 @@ class _SignInPageState extends State<SignInPage> {
                 TextField(
                   controller: _username,
                   keyboardType: TextInputType.text,
+                  cursorColor: Theme.of(context).colorScheme.secondary,
                   decoration: const InputDecoration(
                       hintText: 'Username', prefixIcon: Icon(Icons.person)),
                 ),
@@ -94,6 +106,7 @@ class _SignInPageState extends State<SignInPage> {
                   obscureText: !_isPasswordVisible,
                   obscuringCharacter: '*',
                   keyboardType: TextInputType.visiblePassword,
+                  cursorColor: Theme.of(context).colorScheme.secondary,
                   decoration: InputDecoration(
                     hintText: 'Password',
                     prefixIcon: const Icon(Icons.password),
@@ -106,22 +119,6 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      primary: Theme.of(context).colorScheme.secondary,
-                      fixedSize: Size(_screenWidth, 50),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)))),
-                  onPressed: () => _signInUser(context),
-                  child: !_isLoading
-                      ? Text('Sign In',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6!
-                              .copyWith(color: Colors.white))
-                      : const CircularProgressIndicator(),
-                ),
-                const Divider(),
                 GestureDetector(
                     onTap: () =>
                         widget.controller.animateTo(2, curve: Curves.easeInOut),
@@ -136,11 +133,27 @@ class _SignInPageState extends State<SignInPage> {
                                 .textTheme
                                 .subtitle2!
                                 .copyWith(
+                                    fontWeight: FontWeight.w500,
                                     color: Theme.of(context)
                                         .colorScheme
                                         .secondary))
                       ],
                     )),
+                const Divider(),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      primary: Theme.of(context).colorScheme.secondary,
+                      fixedSize: Size(_screenX, 50),
+                      shape: _shape),
+                  onPressed: () => _signInUser(context),
+                  child: !_isLoading
+                      ? Text('Sign In',
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1!
+                              .copyWith(color: Colors.white))
+                      : const CircularProgressIndicator(),
+                ),
               ],
             ),
           ),
@@ -148,38 +161,4 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
-}
-
-class PaintSplashSignIn extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paintOne = Paint()
-      ..strokeWidth = 10
-      ..color = Colors.blueGrey
-      ..style = PaintingStyle.fill;
-
-    Path _pathOne = Path()
-      ..moveTo(size.width, 0)
-      ..lineTo(size.width, size.height * 0.2)
-      ..cubicTo(size.width * 0.65, size.height * 0.2, size.width * 0.45,
-          size.height * 0.6, 0, size.height * 0.5)
-      ..lineTo(0, 0);
-
-    canvas.drawPath(_pathOne, paintOne);
-
-    Paint paintTwo = Paint()
-      ..strokeWidth = 10
-      ..color = const Color(0xff7fc3dc)
-      ..style = PaintingStyle.fill;
-    Path _pathTwo = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, size.height * 0.9)
-      ..cubicTo(size.width * 0.4, size.height * 0.9, size.width * .7,
-          size.height * 0.7, size.width, size.height * .75)
-      ..lineTo(size.width, size.height);
-    canvas.drawPath(_pathTwo, paintTwo);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

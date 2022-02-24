@@ -24,7 +24,8 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(providers: [
       // hold all the providers here
       BlocProvider<AuthenticationCubit>(
-          create: (context) => AuthenticationCubit()),
+        create: (context) => AuthenticationCubit(),
+      ),
       BlocProvider<ThemeCubit>(
         create: (context) => ThemeCubit(),
       ),
@@ -35,7 +36,8 @@ class MyApp extends StatelessWidget {
         create: (context) => EntriesCubit(),
       ),
       BlocProvider<ExpenseCategoriesCubit>(
-          create: (context) => ExpenseCategoriesCubit())
+        create: (context) => ExpenseCategoriesCubit(),
+      ),
     ], child: const _App());
   }
 }
@@ -48,11 +50,12 @@ class _App extends StatelessWidget {
     ThemeCubit _theme = BlocProvider.of<ThemeCubit>(context, listen: true);
     //entry point of the app
     return MaterialApp(
-        title: 'Expense Tracker',
-        debugShowCheckedModeBanner: false,
-        themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
-        theme: Palette.lightTheme,
-        darkTheme: Palette.darkTheme,
-        home: const App());
+      title: 'Expense Tracker',
+      debugShowCheckedModeBanner: false,
+      themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
+      theme: Palette.lightTheme,
+      darkTheme: Palette.darkTheme,
+      home: const App(),
+    );
   }
 }

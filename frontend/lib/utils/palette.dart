@@ -30,7 +30,7 @@ class Palette {
         primary: primary, secondary: secondary, error: Colors.redAccent),
     fontFamily: GoogleFonts.workSans().fontFamily,
     inputDecorationTheme: const InputDecorationTheme(
-      prefixIconColor: primary,
+      prefixIconColor: secondary,
       suffixIconColor: Colors.white70,
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: secondary, width: 1.75),
