@@ -100,19 +100,19 @@ def income_details(request,pk):
     return Response({'data': 'error could not edit the source'}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(http_method_names=['POST', 'GET'])
+@api_view(http_method_names=['GET','POST'])
 @permission_classes([IsAuthenticated])
 def expenses(request):
 
     if request.method == 'GET':
         expenses = Expenses.objects.filter(user=request.user)
-        expense_serializer = ExpenseSerializer(data=expenses, many=True)
+        expense_serializer = ExpenseSerializer(expenses, many=True)
         return Response(expense_serializer.data, status=status.HTTP_200_OK)
         
     if request.method == 'POST':
         data = request.data
         data['user'] = request.user
-        serialized_expense = ExpenseSerializer(data)
+        serialized_expense = ExpenseSerializer(data=data)
         if serialized_expense.is_valid():
             serialized_expense.save()
             return Response(serialized_expense.data, status=status.HTTP_201_CREATED)
