@@ -11,8 +11,7 @@ class MainTab extends StatelessWidget {
     return SizedBox.expand(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             const SizedBox(height: 80),
             Text('Overview',
@@ -68,7 +67,7 @@ class MainTab extends StatelessWidget {
               onTap: () {},
               trailing: const Icon(Icons.more_vert),
               title: const Text('Latest entries'),
-            )
+            ),
           ],
         ),
       ),

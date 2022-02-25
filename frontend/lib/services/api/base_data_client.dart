@@ -13,18 +13,25 @@ class BaseDataClient extends Client {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
-  Future<Map?> getEntriesByUrl(String url) async {
+  Future<Map?> getEntriesByUrl(String? url) async {
     try {
-      print('requesting $url');
-      Response _response = await Client.dio.get(url);
-      Map _data = _response.data as Map;
-      return _data;
+      if (url != null) {
+        print('requesting $url');
+        Uri _url = Uri.parse(url);
+        print(_url.queryParameters);
+        Response _response =
+            await Client.dio.get(url, queryParameters: _url.queryParameters);
+        Map _data = _response.data as Map;
+        return _data;
+      }
     } on DioError catch (error) {
       print(error.response);
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 }

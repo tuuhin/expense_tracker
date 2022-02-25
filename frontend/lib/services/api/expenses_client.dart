@@ -13,6 +13,7 @@ class ExpensesClient extends Client {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
   Future<bool?> addExpense(String title,
@@ -25,8 +26,9 @@ class ExpensesClient extends Client {
         'title': title,
         'desc': desc,
         'amount': amount,
-        'source': categories
+        'categories': categories
       });
+      print('done');
       print(_response.data);
       return true;
     } on DioError catch (e) {
@@ -34,6 +36,7 @@ class ExpensesClient extends Client {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
   Future<List?> getCategories() async {

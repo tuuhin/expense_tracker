@@ -23,14 +23,21 @@ class _CustomDrawerState extends State<CustomDrawer>
 
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
-    _offset = Tween<Offset>(
-            begin: const Offset(0, 0), end: const Offset(400, 400))
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _offset =
+        Tween<Offset>(begin: const Offset(0, 0), end: const Offset(400, 400))
+            .animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
 
-    _scale = Tween<double>(begin: 1, end: 0.5).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
-    _rotation = Tween<double>(begin: 0, end: 12).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.decelerate));
+    _scale = Tween<double>(begin: 1, end: 0.5).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.fastOutSlowIn,
+    ));
+    _rotation = Tween<double>(begin: 0, end: 12).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.decelerate,
+    ));
   }
 
   @override

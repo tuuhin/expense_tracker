@@ -11,11 +11,11 @@ class EntriesCubit extends Cubit<EntriesState> {
 
   void emitLoadState() => emit(EntriesLoad());
 
-  Future<void> loadEntriesByURL(String url) async {
+  Future<void> loadEntriesByURL(String? url) async {
+    emit(EntriesLoad());
     Map? _data = await _clt.getEntriesByUrl(url);
     if (_data != null) {
       final List results = _data['results'] as List;
-      print(_data);
       final int? highestCount = _data['highest_count'];
       final int? overallCount = _data['overall_total'];
       final String? nextURL = _data['next'];

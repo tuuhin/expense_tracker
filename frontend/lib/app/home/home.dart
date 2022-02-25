@@ -92,6 +92,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         bottomNavigationBar: BottomAppBar(
             elevation: 0,
             shape: const CircularNotchedRectangle(),
+            notchMargin: 5,
             child: Container(
               color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
               height: 60,
@@ -112,7 +113,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               ),
             )),
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        // floatingActionButtonAnimator:,
         floatingActionButton: FloatingActionButton(
+          foregroundColor: Colors.white,
           onPressed: _openMenu,
           child: const Icon(Icons.add),
         ),

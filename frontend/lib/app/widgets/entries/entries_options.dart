@@ -44,6 +44,7 @@ class _EntriesOptionsState extends State<EntriesOptions>
 
   @override
   Widget build(BuildContext context) {
+    final Size _size = MediaQuery.of(context).size;
     if (widget.isVisible) {
       _controller.forward();
     } else {
@@ -51,40 +52,43 @@ class _EntriesOptionsState extends State<EntriesOptions>
     }
     return AnimatedBuilder(
         animation: _controller,
-        builder: (context, _) => Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Transform.scale(
-                  scale: _scale.value,
-                  child: Transform.translate(
-                    offset: Offset(-_offset.value, 0),
-                    child: IconButton(
-                        iconSize: 30,
-                        onPressed: widget.onNext,
-                        icon: const Icon(Icons.skip_previous)),
-                  ),
-                ),
-                Transform.scale(
+        builder: (context, _) => SizedBox(
+              width: _size.width,
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Transform.scale(
                     scale: _scale.value,
                     child: Transform.translate(
-                      offset: Offset(_offset.value, 0),
+                      offset: Offset(-_offset.value, 0),
                       child: IconButton(
                           iconSize: 30,
-                          onPressed: widget.onNext,
-                          icon: const Icon(Icons.skip_next)),
-                    )),
-                Transform.scale(
-                  scale: _scale.value,
-                  child: FloatingActionButton(
-                      mini: true,
-                      heroTag: 'refresh',
-                      onPressed: widget.onRefresh,
-                      child: const Icon(
-                        Icons.refresh,
-                        color: Colors.white,
+                          onPressed: widget.onPrevious,
+                          icon: const Icon(Icons.skip_previous)),
+                    ),
+                  ),
+                  Transform.scale(
+                      scale: _scale.value,
+                      child: Transform.translate(
+                        offset: Offset(_offset.value, 0),
+                        child: IconButton(
+                            iconSize: 30,
+                            onPressed: widget.onNext,
+                            icon: const Icon(Icons.skip_next)),
                       )),
-                ),
-              ],
+                  Transform.scale(
+                    scale: _scale.value,
+                    child: FloatingActionButton(
+                        mini: true,
+                        heroTag: 'Refresh',
+                        onPressed: widget.onRefresh,
+                        child: const Icon(
+                          Icons.refresh,
+                          color: Colors.white,
+                        )),
+                  ),
+                ],
+              ),
             ));
   }
 }

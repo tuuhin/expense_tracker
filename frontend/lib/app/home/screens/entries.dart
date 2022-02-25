@@ -15,26 +15,28 @@ class _EntriesTabState extends State<EntriesTab> {
   late EntriesCubit _entries;
   bool _isOptions = false;
 
+  void _scrollListener() {
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent &&
+        !_scrollController.position.outOfRange &&
+        !_isOptions) {
+      setState(() {
+        _isOptions = !_isOptions;
+      });
+    } else if (_isOptions) {
+      setState(() {
+        _isOptions = !_isOptions;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _entries = BlocProvider.of<EntriesCubit>(context);
     _scrollController = ScrollController();
 
-    _scrollController.addListener(() {
-      if (_scrollController.offset >=
-              _scrollController.position.maxScrollExtent &&
-          !_scrollController.position.outOfRange &&
-          !_isOptions) {
-        setState(() {
-          _isOptions = !_isOptions;
-        });
-      } else if (_isOptions) {
-        setState(() {
-          _isOptions = !_isOptions;
-        });
-      }
-    });
+    _scrollController.addListener(_scrollListener);
   }
 
   @override
@@ -51,8 +53,16 @@ class _EntriesTabState extends State<EntriesTab> {
         if (state is EntriesLoad) {
           _entries.loadEntries();
           return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [CircularProgressIndicator(), Text('Loading')]);
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height:10),
+              Text(
+                'Loading',
+                style: Theme.of(context).textTheme.subtitle1,
+              ),
+            ],
+          );
         }
         if (state is EntriesLoadSuccess) {
           return Stack(alignment: Alignment.bottomCenter, children: [
@@ -61,68 +71,26 @@ class _EntriesTabState extends State<EntriesTab> {
               children: [
                 const SizedBox(height: 60),
                 ListTile(
-                  trailing: Text('${state.highestCount}/${state.overallCount}'),
+                  trailing: Text(
+                    '${state.highestCount}/${state.overallCount}',
+                  ),
                   title: Text('Entries',
                       style: Theme.of(context)
                           .textTheme
                           .headline5!
                           .copyWith(fontWeight: FontWeight.w700)),
                 ),
-                state.entries.isNotEmpty
-                    ? Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: AnimatedList(
-                              physics: const BouncingScrollPhysics(),
-                              controller: _scrollController,
-                              initialItemCount: state.entries.length,
-                              itemBuilder: (context, index, animation) {
-                                final Animation<Offset> _offset = Tween<Offset>(
-                                        begin: const Offset(-1, 0),
-                                        end: const Offset(0, 0))
-                                    .animate(CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.decelerate));
-
-                                return SlideTransition(
-                                  position: _offset,
-                                  child: Card(
-                                    elevation: 3,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          gradient: LinearGradient(
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.centerRight,
-                                              colors: [
-                                                state.entries[index].type ==
-                                                        'income'
-                                                    ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withOpacity(0.4)
-                                                    : Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary
-                                                        .withOpacity(0.4),
-                                                Theme.of(context).cardColor
-                                              ])),
-                                      child: ListTile(
-                                        title: Text(state.entries[index].title),
-                                        subtitle: Text(
-                                            state.entries[index].desc ?? ''),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                        ),
-                      )
-                    : const Text('No entries')
+                if (state.entries.isNotEmpty)
+                  Expanded(
+                    child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: EntriesList(
+                          entries: state.entries,
+                          controller: _scrollController,
+                        )),
+                  )
+                else
+                  const Text('No entries')
               ],
             ),
             Positioned(
@@ -132,17 +100,11 @@ class _EntriesTabState extends State<EntriesTab> {
                 child: EntriesOptions(
                   isVisible: _isOptions,
                   onRefresh: () => _entries.emitLoadState(),
-                  onNext: () {
-                    if (state.nextURL != null) {
-                      print(state.previousURL);
-                      _entries.loadEntriesByURL(state.nextURL ?? '');
-                    }
-                  },
+                  onNext: state.nextURL != null
+                      ? () => _entries.loadEntriesByURL(state.nextURL)
+                      : null,
                   onPrevious: state.previousURL != null
-                      ? () {
-                          print(state.previousURL);
-                          _entries.loadEntriesByURL(state.previousURL ?? '');
-                        }
+                      ? () => _entries.loadEntriesByURL(state.previousURL)
                       : null,
                 ),
               ),
