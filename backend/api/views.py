@@ -1,4 +1,4 @@
-from django import http
+from datetime import datetime
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -89,18 +89,19 @@ def income(request):
             return Response(serialized_income.data, status=status.HTTP_201_CREATED)
         return Response(serialized_income.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(http_method_names=['DELETE'])
 @permission_classes([IsAuthenticated])
-def income_details(request,pk):
+def income_details(request, pk):
     user = request.user.pk
-    income_existis = Income.objects.filter(user=user,pk=pk)
+    income_existis = Income.objects.filter(user=user, pk=pk)
     if income_existis:
         income_existis.delete()
         return Response({'data': 'removed'}, status=status.HTTP_204_NO_CONTENT)
     return Response({'data': 'error could not edit the source'}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(http_method_names=['GET','POST'])
+@api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def expenses(request):
 
@@ -108,12 +109,38 @@ def expenses(request):
         expenses = Expenses.objects.filter(user=request.user)
         expense_serializer = ExpenseSerializer(expenses, many=True)
         return Response(expense_serializer.data, status=status.HTTP_200_OK)
-        
+
     if request.method == 'POST':
         data = request.data
-        data['user'] = request.user
+        data['user'] = request.user.pk
         serialized_expense = ExpenseSerializer(data=data)
         if serialized_expense.is_valid():
             serialized_expense.save()
             return Response(serialized_expense.data, status=status.HTTP_201_CREATED)
         return Response(serialized_expense.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(http_method_names=['GET'])
+@permission_classes([IsAuthenticated])
+def base_information(request):
+    user = request.user
+    current_month = datetime.now().month
+    total_income, total_expense = 0, 0
+    monthly_income, monthly_expense = 0, 0
+
+    for income in Income.objects.filter(user=user):
+        total_income += income.amount
+        if income.added_at.month == current_month:
+            monthly_income += income.amount
+
+    for expense in Expenses.objects.filter(user=user):
+        total_expense += expense.amount
+        if expense.added_at.month == current_month:
+            monthly_expense += expense.amount
+
+    return Response({
+        'total_income': total_income,
+        'montly_income': monthly_income,
+        'total_expense': total_expense,
+        'monthly_expense': monthly_expense
+    }, status=status.HTTP_200_OK)
