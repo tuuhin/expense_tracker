@@ -1,16 +1,19 @@
-# Backend 
-This section contains the backend for this project.
-Beign comfortale with `python` i have used python as a web server ,and amoing the web support available for python `django` comes at the top tier .The choice of django as a web server is because of its batteries included feature .
+# Expense Tracker
+---
+## :bookmark_tabs: Back-End
+The backend section for the expense tracker.
+### :small_red_triangle: About
+The backend for the expense tracker app is made :building_construction: using:
+ - :1st_place_medal: `python` : The programming languge used
+ - :2nd_place_medal: `django` : The framework for develping the backend 
 
-### Usage
-Make sure python is installed in your system 
-To start the `django` server follow these steps:
+### :construction: Usage 
 
 Clone this repo 
 ```bash
     git clone https://github.com/tuuhin/expense_tracker.git
 ```
-This is the main repository containing the forntend and backend 
+This is the main repository contains both the frontend  and backend 
 ```bash
     cd backend 
 ```
