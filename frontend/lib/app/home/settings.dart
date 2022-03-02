@@ -1,4 +1,4 @@
-import 'package:expense_tracker/app/home/routes/add_source.dart';
+import 'package:expense_tracker/app/home/routes/bottomsheet/add_source.dart';
 import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/services/cubits/cubit.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +59,7 @@ class Settings extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ListTile(
-                  title: Text('Welcome Back',
+                  title: Text('Welcome',
                       style: Theme.of(context)
                           .textTheme
                           .headline6!

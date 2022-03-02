@@ -1,5 +1,5 @@
 # Expense Tracker
----
+
 ## :book: Front-End 
 This section contains the frontend part of the app.
 

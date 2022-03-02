@@ -14,6 +14,7 @@ class IncomeClient extends Client {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
   Future<bool?> addNewIncome(
@@ -35,6 +36,7 @@ class IncomeClient extends Client {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
   Future<List?> getIncomeSources() async {
@@ -46,5 +48,6 @@ class IncomeClient extends Client {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 }

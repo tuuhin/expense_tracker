@@ -25,8 +25,8 @@ class EntriesTitle extends StatelessWidget {
               colors: [
                 type == 'income'
                     ? Theme.of(context).colorScheme.primary.withOpacity(0.4)
-                    : Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-                Theme.of(context).cardColor
+                    : Theme.of(context).colorScheme.secondary.withOpacity(0.4), 
+                    Theme.of(context).cardColor,
               ]),
         ),
         child: ListTile(

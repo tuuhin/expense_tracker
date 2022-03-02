@@ -26,11 +26,6 @@ abstract class Client {
         }
         return handler.next(options);
       },
-      onResponse: (
-        Response response,
-        ResponseInterceptorHandler handler,
-      ) async =>
-          handler.next(response),
       onError: (DioError error, ErrorInterceptorHandler handler) async {
         if (error.response!.statusCode == 401) {
           String? _refreshToken = await _storage.getRefreshToken();
@@ -40,14 +35,15 @@ abstract class Client {
             String newAccessToken = _ref.data['access'];
             _storage.setAccessToken(newAccessToken);
             print('A new access token has been assigned ');
-            Response _response = await dio.request(error.requestOptions.path,
-                data: error.requestOptions.data);
+            Response _response = await dio.request(
+              error.requestOptions.path,
+              data: error.requestOptions.data,
+            );
             handler.resolve(_response);
           } on DioError catch (error) {
             print(error.response);
-            print('token invalid');
-          } catch (e) {
-            print(e.toString());
+            print('the token is dead ');
+            handler.reject(error);
           }
         }
         // return handler.next(error);

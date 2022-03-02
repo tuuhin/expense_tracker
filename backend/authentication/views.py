@@ -39,4 +39,4 @@ def change_password(request):
 @api_view(http_method_names=['GET'])
 @permission_classes([IsAuthenticated])
 def check_state(request):
-    return Response({'data':'yes you are authenticated'}, status=status.HTTP_200_OK)
+    return Response({'data': 'yes you are authenticated'}, status=status.HTTP_200_OK)

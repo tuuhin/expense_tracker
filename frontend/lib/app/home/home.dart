@@ -14,13 +14,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   final List<Widget> _screens = const [
     MainTab(),
     EntriesTab(),
-    ProfileTab(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -89,6 +88,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 children: _screens),
           ],
         ),
+
         bottomNavigationBar: BottomAppBar(
             elevation: 0,
             shape: const CircularNotchedRectangle(),
@@ -97,7 +97,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
               height: 60,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   IconButton(
                       onPressed: () => _animateTabs(0),
@@ -105,9 +105,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   IconButton(
                       onPressed: () => _animateTabs(1),
                       icon: const Icon(Icons.note)),
-                  IconButton(
-                      onPressed: () => _animateTabs(2),
-                      icon: const Icon(Icons.person)),
                   const SizedBox(width: 20),
                 ],
               ),

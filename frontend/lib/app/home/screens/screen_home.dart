@@ -37,7 +37,8 @@ class MainTab extends StatelessWidget {
             SizedBox(
               height: _screenY * .2,
               child: ListView(
-                padding: EdgeInsets.zero,
+                physics: const BouncingScrollPhysics(),
+                // padding: EdgeInsets.zero,
                 scrollDirection: Axis.horizontal,
                 children: [
                   ImportanceCard(

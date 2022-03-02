@@ -1,4 +1,4 @@
-import 'package:expense_tracker/app/home/routes/add_source.dart';
+import 'package:expense_tracker/app/home/routes/bottomsheet/add_source.dart';
 import 'package:expense_tracker/app/widgets/income_list_tile.dart';
 import 'package:expense_tracker/services/api/income_client.dart';
 import 'package:expense_tracker/services/cubits/income_sources/income_source_cubit.dart';
@@ -148,6 +148,7 @@ class _AddIncomeState extends State<AddIncome> {
                     if (state is IncomeSourceLoaded) {
                       return ListView.builder(
                           padding: EdgeInsets.zero,
+                          physics: const BouncingScrollPhysics(),
                           itemCount: state.models.length,
                           itemBuilder: (context, int item) =>
                               IncomeSourceListTile(

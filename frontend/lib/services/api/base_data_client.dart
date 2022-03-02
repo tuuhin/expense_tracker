@@ -2,6 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:expense_tracker/services/api/base_client.dart';
 
 class BaseDataClient extends Client {
+  Future<Map?> getOverview() async {
+    return null;
+  }
+
   Future<Map?> getEntries() async {
     try {
       print('requesting');
@@ -22,8 +26,10 @@ class BaseDataClient extends Client {
         print('requesting $url');
         Uri _url = Uri.parse(url);
         print(_url.queryParameters);
-        Response _response =
-            await Client.dio.get(url, queryParameters: _url.queryParameters);
+        Response _response = await Client.dio.get(
+          url,
+          queryParameters: _url.queryParameters,
+        );
         Map _data = _response.data as Map;
         return _data;
       }

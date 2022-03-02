@@ -1,4 +1,4 @@
-import 'package:expense_tracker/app/home/routes/add_categories.dart';
+import 'package:expense_tracker/app/home/routes/bottomsheet/add_categories.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/services/api/expenses_client.dart';
 import 'package:expense_tracker/services/cubits/cubit.dart';
@@ -142,6 +142,7 @@ class _AddExpensesState extends State<AddExpenses> {
                   if (state is ExpenseCategoriesLoadSuccess) {
                     return ListView.builder(
                         padding: EdgeInsets.zero,
+                        physics: const BouncingScrollPhysics(),
                         itemCount: state.models.length,
                         itemBuilder: (BuildContext context, int item) {
                           return ExpenseCategoryListTile(

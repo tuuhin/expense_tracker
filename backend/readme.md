@@ -1,5 +1,5 @@
 # Expense Tracker
----
+
 ## :bookmark_tabs: Back-End
 The backend section for the expense tracker.
 ### :small_red_triangle: About
