@@ -26,6 +26,17 @@ class _SignUpPageState extends State<SignUpPage> {
     _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
+  Widget _animatedHeading(BuildContext context, double value, Widget? child) {
+    return AnimatedPadding(
+      padding: EdgeInsets.only(left: value * 10, top: value * 5),
+      duration: const Duration(milliseconds: 500),
+      child: AnimatedOpacity(
+          opacity: value,
+          duration: const Duration(milliseconds: 500),
+          child: child),
+    );
+  }
+
   Future<void> registerUser(BuildContext context) async {
     if (_username.text.isEmpty ||
         _email.text.isEmpty ||
@@ -88,21 +99,30 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: child)),
           ),
           Positioned(
-              left: 20,
-              bottom: 360,
-              child: Text(
-                'Get Started',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6!
-                    .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
-              )),
+              left: 10,
+              bottom: 370,
+              child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 600),
+                  child: Text(
+                    'Get Started',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6!
+                        .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
+                  ),
+                  builder: _animatedHeading)),
           Positioned(
-              left: 20,
-              bottom: 330,
-              child: Text(
-                  'Hey Dear user,\nAre you facing problem with your finance.',
-                  style: Theme.of(context).textTheme.caption)),
+              left: 10,
+              bottom: 340,
+              child: TweenAnimationBuilder<double>(
+                builder: _animatedHeading,
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 600),
+                child: Text(
+                    'Let\'s begin our journey ,tracking your expenses really\nhelps in maintianing your financial life',
+                    style: Theme.of(context).textTheme.caption),
+              )),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
             child: Column(

@@ -15,10 +15,11 @@ class Palette {
       suffixIconColor: Colors.black87,
       prefixIconColor: secondary,
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: secondary, width: 1.75),
+        borderSide: BorderSide(color: secondary, width: 2),
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       border: OutlineInputBorder(
+        borderSide: BorderSide(width: 2),
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
     ),
@@ -33,10 +34,11 @@ class Palette {
       prefixIconColor: secondary,
       suffixIconColor: Colors.white70,
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: secondary, width: 1.75),
+        borderSide: BorderSide(color: secondary, width: 2),
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       border: OutlineInputBorder(
+        borderSide: BorderSide(width: 2),
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
     ),

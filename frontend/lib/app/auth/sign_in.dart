@@ -72,22 +72,49 @@ class _SignInPageState extends State<SignInPage> {
                     child: child)),
           ),
           Positioned(
-              left: 20,
-              bottom: 300,
-              child: Text(
-                'Welcome Back!',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6!
-                    .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
-              )),
+              left: 10,
+              bottom: 310,
+              child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 600),
+                  child: Text(
+                    'Welcome Back!',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6!
+                        .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
+                  ),
+                  builder: (context, value, child) {
+                    return AnimatedPadding(
+                      padding:
+                          EdgeInsets.only(left: value * 10, top: value * 5),
+                      duration: const Duration(milliseconds: 500),
+                      child: AnimatedOpacity(
+                          opacity: value,
+                          duration: const Duration(milliseconds: 500),
+                          child: child),
+                    );
+                  })),
           Positioned(
               left: 20,
               bottom: 270,
-              child: Text(
-                'Hey Dear user ,we think you are quite happy with \nour service,sign in to continue with your account',
-                style: Theme.of(context).textTheme.caption,
-              )),
+              child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 600),
+                  child: Text(
+                    'Hey Dear user ,we think you are quite happy with \nour service,sign in to continue with your account',
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  builder: (context, value, child) {
+                    return AnimatedPadding(
+                      padding: EdgeInsets.only(right: value * 10),
+                      duration: const Duration(milliseconds: 500),
+                      child: AnimatedOpacity(
+                          opacity: value,
+                          duration: const Duration(milliseconds: 500),
+                          child: child),
+                    );
+                  })),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
             child: Column(
