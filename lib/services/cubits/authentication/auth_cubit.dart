@@ -18,11 +18,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   void _logOut() => emit(AuthModeLoggedOut());
 
+  void _emitLoading() => emit(AuthStateLoading());
   Future<Response?> createUser({
     required String username,
     required String password,
     required String email,
   }) async {
+    _emitLoading();
     try {
       Response _resp = await _dio.post('/create',
           data: {'username': username, 'password': password, 'email': email});
@@ -36,12 +38,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
   Future<Response?> logUserIn({
     required String username,
     required String password,
   }) async {
+    _emitLoading();
     try {
       Response _resp = await _dio
           .post('/token', data: {'username': username, 'password': password});
@@ -59,6 +63,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } catch (e) {
       print(e.toString());
     }
+    return null;
   }
 
   void checkAuthState() async {

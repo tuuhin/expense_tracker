@@ -17,6 +17,7 @@ class App extends StatelessWidget {
           _authProvider.checkAuthState();
           return const AuthLoading();
         }
+        if (state is AuthStateLoading) return const AuthLoading();
         if (state is AuthModeLoggedOut) return const Authentication();
         if (state is AuthModeLoggedIn) return const CustomDrawer();
         return const SizedBox.expand();

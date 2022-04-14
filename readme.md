@@ -1,10 +1,11 @@
-# :money_with_wings: Expense Tracker
+# Expense Tracker
 
-![expense_tracker image](./frontend/assets/logo.png)
-An expense tracking app ,used to manage your expenses and income properly.
+## :book: Front-End 
+This section contains the frontend part of the app.
 
-### :red_circle: Structure
-This project is  differenciated into its front-end and backend part sepearately. Explore th project 
-- [front-end](https://github.com/tuuhin/expense_tracker/tree/main/frontend)
-- [back-end](https://github.com/tuuhin/expense_tracker/tree/main/backend)
+### :small_red_triangle: About 
+The frontend of the app is made up using 
+- :1st_place_medal:`flutter`
+for more information on head over to [flutter.dev](https://flutter.dev)
+
 
