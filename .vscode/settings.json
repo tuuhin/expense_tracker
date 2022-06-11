@@ -1,5 +1,7 @@
 {
   "editor.defaultFormatter": "Dart-Code.dart-code",
   "editor.formatOnSave": true,
-  "dart.previewFlutterUiGuides": true
+  "dart.previewFlutterUiGuides": true,
+  "editor.fontSize": 14,
+  
 }
