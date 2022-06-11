@@ -1,6 +1,6 @@
-import 'package:expense_tracker/app.dart';
-import 'package:expense_tracker/domain/data/user_data.dart';
-import 'package:expense_tracker/services/cubits/cubit.dart';
+import 'package:expense_tracker/app/app.dart';
+import 'package:expense_tracker/context/context.dart';
+import 'package:expense_tracker/data/local/user_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,10 +9,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+
   await dotenv.load(fileName: '.env');
   await UserData.init();
+
+  // SystemChrome.setSystemUIOverlayStyle(
+  //     const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+
   runApp(const MyApp());
 }
 
@@ -21,24 +24,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(providers: [
-      // hold all the providers here
-      BlocProvider<AuthenticationCubit>(
-        create: (context) => AuthenticationCubit(),
-      ),
-      BlocProvider<ThemeCubit>(
-        create: (context) => ThemeCubit(),
-      ),
-      BlocProvider<IncomeSourceCubit>(
-        create: (context) => IncomeSourceCubit(),
-      ),
-      BlocProvider<EntriesCubit>(
-        create: (context) => EntriesCubit(),
-      ),
-      BlocProvider<ExpenseCategoriesCubit>(
-        create: (context) => ExpenseCategoriesCubit(),
-      ),
-    ], child: const _App());
+    return MultiBlocProvider(
+      providers: [
+        // hold all the providers here
+        BlocProvider<AuthenticationCubit>(
+          create: (context) => AuthenticationCubit(),
+        ),
+        BlocProvider<ThemeCubit>(
+          create: (context) => ThemeCubit(),
+        ),
+        BlocProvider<IncomeSourceCubit>(
+          create: (context) => IncomeSourceCubit(),
+        ),
+        BlocProvider<EntriesCubit>(
+          create: (context) => EntriesCubit(),
+        ),
+        BlocProvider<ExpenseCategoriesCubit>(
+          create: (context) => ExpenseCategoriesCubit(),
+        ),
+      ],
+      child: const _App(),
+    );
   }
 }
 
@@ -47,7 +53,7 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ThemeCubit _theme = BlocProvider.of<ThemeCubit>(context, listen: true);
+    ThemeCubit _theme = BlocProvider.of<ThemeCubit>(context);
     //entry point of the app
     return MaterialApp(
       title: 'Expense Tracker',
