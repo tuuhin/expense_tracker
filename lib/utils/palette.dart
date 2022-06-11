@@ -1,4 +1,3 @@
-import 'package:expense_tracker/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -32,6 +31,9 @@ class Palette {
   static TextTheme secondaryFont = GoogleFonts.poppinsTextTheme();
 
   static ThemeData lightTheme = ThemeData(
+    snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
     bottomAppBarTheme:
         const BottomAppBarTheme(elevation: 0, color: Colors.transparent),
     colorScheme: const ColorScheme.light().copyWith(
