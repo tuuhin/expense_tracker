@@ -2,13 +2,17 @@ import 'package:dio/dio.dart' show Response;
 import 'package:expense_tracker/context/context.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/utils/app_images.dart';
+import 'package:expense_tracker/utils/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SignUpPage extends StatefulWidget {
   final TabController controller;
-  const SignUpPage({Key? key, required this.controller}) : super(key: key);
+  const SignUpPage({
+    Key? key,
+    required this.controller,
+  }) : super(key: key);
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -20,7 +24,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _password = TextEditingController();
   late AuthenticationCubit _auth;
   bool _isPasswordVisible = false;
-  bool _isLoading = false;
+
   final Duration _duration = const Duration(milliseconds: 300);
 
   @override
@@ -29,40 +33,29 @@ class _SignUpPageState extends State<SignUpPage> {
     _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
-  Future<void> registerUser() async {
-    if (_username.text.isEmpty ||
-        _email.text.isEmpty ||
+  void _validateData() {
+    if (_username.text.isEmpty &&
+        _email.text.isEmpty &&
         _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Some the fields are blank')));
-    } else if (_username.text.isEmpty) {
+        const SnackBar(content: Text('Some the fields are blank')),
+      );
+    } else if (validateEmail(_email.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Username field is blank')));
-    } else if (_email.text.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Email field is blank')));
-    } else if (!RegExp(r'\b[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
-        .hasMatch(_email.text)) {
+        const SnackBar(content: Text('Invalid Email')),
+      );
+    } else if (checkPassword(_password.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please give a propper email')));
-    } else if (_password.text.length <= 5) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Password is too small')));
-    } else {
-      setState(() => _isLoading = !_isLoading);
-      FocusScope.of(context).requestFocus(FocusNode());
-      Response? _response = await _auth.createUser(
-          username: _username.text,
-          password: _password.text,
-          email: _email.text);
-
-      if (_response!.statusCode != 201) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(_response.toString())));
-        setState(() => _isLoading = !_isLoading);
-      }
-      return;
+        const SnackBar(content: Text('Password is not strong enough')),
+      );
     }
+  }
+
+  Future _registerUser() async {
+    _validateData();
+
+    await _auth.createUser(
+        username: _username.text, password: _password.text, email: _email.text);
   }
 
   @override
@@ -71,6 +64,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
     return Scaffold(
       extendBody: true,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           SizedBox.expand(
@@ -228,14 +222,12 @@ class _SignUpPageState extends State<SignUpPage> {
                 primary: Theme.of(context).colorScheme.secondary,
                 fixedSize: Size(_size.width, 50),
               ),
-              onPressed: registerUser,
-              child: !_isLoading
-                  ? Text('Register',
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1!
-                          .copyWith(color: Colors.white))
-                  : const CircularProgressIndicator(),
+              onPressed: _registerUser,
+              child: Text('Register',
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1!
+                      .copyWith(color: Colors.white)),
             ),
           ],
         ),

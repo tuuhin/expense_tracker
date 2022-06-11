@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart' show Response;
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:expense_tracker/utils/app_images.dart';
@@ -20,7 +19,7 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _password = TextEditingController();
 
   late AuthenticationCubit _auth;
-  bool _isLoading = false;
+
   bool _isPasswordVisible = false;
 
   @override
@@ -29,27 +28,20 @@ class _SignInPageState extends State<SignInPage> {
     _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
-  Future<void> _signInUser(BuildContext context) async {
-    if (_username.text.isEmpty || _password.text.isEmpty) {
+  void _validateData() {
+    if (_username.text.isEmpty && _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Some the fields are blank')));
-      return;
-    } else {
-      setState(() => _isLoading = !_isLoading);
-
-      FocusScope.of(context).requestFocus(FocusNode());
-      Response? _respn = await _auth.logUserIn(
-          username: _username.text, password: _password.text);
-      if (_respn!.statusCode != 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_respn.data['detail'].toString())));
-        setState(() => _isLoading = !_isLoading);
-        return;
-      }
+        const SnackBar(content: Text('Some the fields are blank')),
+      );
     }
-
-    // _authProvider.changeAuthState();
   }
+
+  Future<void> _signInUser() async {
+    _validateData();
+    await _auth.logUserIn(username: _username.text, password: _password.text);
+  }
+
+  // _authProvider.changeAuthState();
 
   @override
   Widget build(BuildContext context) {
@@ -193,18 +185,15 @@ class _SignInPageState extends State<SignInPage> {
               ),
               const Divider(),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    fixedSize: Size(_size.width, 50),
-                    primary: Theme.of(context).colorScheme.secondary),
-                onPressed: () => _signInUser(context),
-                child: !_isLoading
-                    ? Text('Sign In',
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1!
-                            .copyWith(color: Colors.white))
-                    : const CircularProgressIndicator(),
-              ),
+                  style: ElevatedButton.styleFrom(
+                      fixedSize: Size(_size.width, 50),
+                      primary: Theme.of(context).colorScheme.secondary),
+                  onPressed: _signInUser,
+                  child: Text('Sign In',
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1!
+                          .copyWith(color: Colors.white))),
             ],
           ),
         ),

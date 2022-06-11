@@ -57,11 +57,10 @@ class _CustomDrawerState extends State<CustomDrawer>
               FadeTransition(opacity: _controller, child: const Settings()),
               Transform(
                 transform: Matrix4.identity()
+                  ..translate(_offset.value.dx)
                   ..scale(_scale.value)
-                  ..rotateZ(radians(_rotation.value * -1)),
-                child: Transform.translate(
-                    offset: _offset.value,
-                    child: Home(controller: _controller)),
+                  ..rotateY(radians(_rotation.value * -1)),
+                child: Home(controller: _controller),
               ),
             ],
           ),

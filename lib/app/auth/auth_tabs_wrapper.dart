@@ -16,9 +16,10 @@ class _AuthTabWrapperState extends State<AuthTabWrapper>
   void initState() {
     super.initState();
     _controller = TabController(
-        animationDuration: const Duration(milliseconds: 400),
-        length: 3,
-        vsync: this);
+      animationDuration: const Duration(milliseconds: 300),
+      length: 3,
+      vsync: this,
+    );
   }
 
   @override
