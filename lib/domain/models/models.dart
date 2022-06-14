@@ -1,2 +1,2 @@
-export 'entries/entries_model.dart';
-export 'income_sources/income_source_model.dart';
+export 'entries_model.dart';
+export 'income_source_model.dart';

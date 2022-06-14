@@ -37,7 +37,7 @@ dependencies:
   flutter_bloc: ^8.0.1
   flutter_secure_storage: ^5.0.2
   dio: ^4.0.4
-  freezed_annotation: ^1.1.0
+  
   google_fonts: ^2.2.0
   flutter_dotenv: ^5.0.2
   json_annotation: ^4.4.0
@@ -50,7 +50,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^1.0.0
-  freezed: ^1.1.1
+  
   build_runner: ^2.1.7
   json_serializable: ^6.1.4
   flutter_launcher_icons: ^0.9.2
