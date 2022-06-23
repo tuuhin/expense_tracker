@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.frontend">
+    package="com.eva.expense_tracker">
    <application
-        android:label="frontend"
+        android:label="expense_tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

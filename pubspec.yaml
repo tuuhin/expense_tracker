@@ -58,7 +58,7 @@ dev_dependencies:
 
 flutter_icons:
   android: true
-  ios: false 
+  ios: true 
   web: false
   image_path: 'assets/logo.png'
 
@@ -67,7 +67,7 @@ flutter_native_splash:
   color_dark: "#121328"
   image: 'assets/logo.png'
   android: true
-  ios: false 
+  ios: true
   web: false 
   fullscreen: true
 
