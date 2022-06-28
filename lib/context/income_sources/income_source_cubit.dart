@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/domain/models/income_sources/income_source_model.dart';
-import 'package:expense_tracker/services/api/income_client.dart';
+import 'package:expense_tracker/domain/models/income_source_model.dart';
+import 'package:expense_tracker/data/remote/income_client.dart';
 import 'package:meta/meta.dart';
 
 part 'income_source_state.dart';

@@ -5,11 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:meta/meta.dart';
 part 'auth_state.dart';
 
-Future delay() async => Future.delayed(const Duration(seconds: 2));
-
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   AuthenticationCubit() : super(AuthModeStale());
-
   static final String _endPoint = dotenv.get('AUTH_ENDPOINT');
   static final SecureStorage _storage = SecureStorage();
   static final Dio _dio = Dio()
@@ -17,50 +14,28 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       headers: {'Content-type': 'application/json'},
       baseUrl: _endPoint,
     );
-
   void _login() => emit(AuthModeLoggedIn());
 
   void _logOut() => emit(AuthModeLoggedOut());
 
-  void _loading() => emit(AuthStateLoading());
-
-  void _responseFailed({String? details, String? code}) =>
-      emit(AuthStateFailed(code: code, details: details));
-
+  void _emitLoading() => emit(AuthStateLoading());
   Future<Response?> createUser({
     required String username,
     required String password,
     required String email,
   }) async {
-    _loading();
-    await delay();
+    _emitLoading();
     try {
-      Response _resp = await _dio.post('/create', data: {
-        'username': username,
-        'password': password,
-        'email': email,
-      });
+      Response _resp = await _dio.post('/create',
+          data: {'username': username, 'password': password, 'email': email});
       Map _response = _resp.data as Map;
 
       await _storage.setAccessToken(_response['access']);
       await _storage.setRefreshToken(_response['refresh']);
       _login();
     } on DioError catch (e) {
-      if (e.response != null) {
-        Map _response = e.response!.data as Map;
-        print(e.response!.data);
-
-        _responseFailed(
-          details: _response['details'],
-          code: _response['code'],
-        );
-      }
-
-      return null;
+      return e.response;
     } catch (e) {
-      _responseFailed(
-        details: e.toString(),
-      );
       print(e.toString());
     }
     return null;
@@ -70,8 +45,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String username,
     required String password,
   }) async {
-    _loading();
-    await delay();
+    _emitLoading();
     try {
       Response _resp = await _dio
           .post('/token', data: {'username': username, 'password': password});
@@ -83,21 +57,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
       return _resp;
     } on DioError catch (e) {
-      if (e.response != null) {
-        Map _response = e.response!.data as Map;
-        print(e.response!.data);
-
-        _responseFailed(
-          details: _response['details'],
-          code: _response['code'],
-        );
-      }
-
-      return null;
+      print('error');
+      print(e.response!.statusCode);
+      return e.response;
     } catch (e) {
-      _responseFailed(
-        details: e.toString(),
-      );
       print(e.toString());
     }
     return null;

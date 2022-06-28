@@ -1,3 +1,4 @@
+import 'package:expense_tracker/app/widgets/splash/signin_painter.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:expense_tracker/utils/app_images.dart';

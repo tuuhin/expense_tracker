@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/domain/data/user_data.dart';
+import 'package:expense_tracker/data/local/user_data.dart';
 import 'package:meta/meta.dart';
 
 part 'theme_state.dart';

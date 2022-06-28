@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/domain/models/entries/entries_model.dart';
-import 'package:expense_tracker/services/api/base_data_client.dart';
-import 'package:meta/meta.dart';
+import 'package:expense_tracker/data/remote/base_data_client.dart';
+import 'package:expense_tracker/domain/models/entries_model.dart';
+import 'package:flutter/foundation.dart';
 
 part 'entries_state.dart';
 

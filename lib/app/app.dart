@@ -24,12 +24,7 @@ class App extends StatelessWidget {
         if (state is AuthModeLoggedIn) {
           return const CustomDrawer();
         }
-        if (state is AuthStateFailed) {
-          return AuthFailed(
-            details: state.details,
-            code: state.code,
-          );
-        }
+
         return const AuthTabWrapper();
       },
     );

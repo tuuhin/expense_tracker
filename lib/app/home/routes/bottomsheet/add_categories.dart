@@ -1,4 +1,4 @@
-import 'package:expense_tracker/services/api/expenses_client.dart';
+import 'package:expense_tracker/data/remote/expenses_client.dart';
 import 'package:flutter/material.dart';
 
 class AddCategories extends StatefulWidget {

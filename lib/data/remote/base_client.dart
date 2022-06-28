@@ -1,4 +1,4 @@
-import 'package:expense_tracker/domain/data/secure_storage.dart';
+import 'package:expense_tracker/data/local/secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 

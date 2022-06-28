@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/services/api/base_client.dart';
+import 'package:expense_tracker/data/remote/base_client.dart';
 
 class BaseDataClient extends Client {
   Future<Map?> getOverview() async {

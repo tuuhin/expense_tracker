@@ -1,5 +1,5 @@
 import 'package:expense_tracker/app/widgets/widgets.dart';
-import 'package:expense_tracker/domain/models/entries/entries_model.dart';
+import 'package:expense_tracker/domain/models/entries_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +24,7 @@ class _EntriesListState extends State<EntriesList> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       //This function will call  will occur after the build methid has run
       Future future = Future(() {});
       for (var entry in widget.entries) {

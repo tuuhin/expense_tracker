@@ -1,7 +1,8 @@
 import 'package:expense_tracker/app/home/routes/bottomsheet/add_source.dart';
 import 'package:expense_tracker/app/widgets/income_list_tile.dart';
-import 'package:expense_tracker/services/api/income_client.dart';
-import 'package:expense_tracker/services/cubits/income_sources/income_source_cubit.dart';
+import 'package:expense_tracker/context/income_sources/income_source_cubit.dart';
+import 'package:expense_tracker/data/remote/income_client.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/domain/models/expense_categories/expense_categories_model.dart';
-import 'package:expense_tracker/services/api/expenses_client.dart';
+import 'package:expense_tracker/data/remote/expenses_client.dart';
+import 'package:expense_tracker/domain/models/expense_categories_model.dart';
+
 import 'package:meta/meta.dart';
 
 part 'expense_categories_state.dart';

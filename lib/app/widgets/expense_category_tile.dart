@@ -1,4 +1,4 @@
-import 'package:expense_tracker/services/cubits/cubit.dart';
+import 'package:expense_tracker/context/expense_categories/expense_categories_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

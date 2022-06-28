@@ -1,5 +1,5 @@
 import 'package:expense_tracker/app/widgets/widgets.dart';
-import 'package:expense_tracker/services/cubits/cubit.dart';
+import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -56,7 +56,7 @@ class _EntriesTabState extends State<EntriesTab> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const CircularProgressIndicator(),
-              const SizedBox(height:10),
+              const SizedBox(height: 10),
               Text(
                 'Loading',
                 style: Theme.of(context).textTheme.subtitle1,

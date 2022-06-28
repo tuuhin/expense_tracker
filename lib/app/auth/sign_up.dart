@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart' show Response;
+import 'package:expense_tracker/app/widgets/splash/signup_painter.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/utils/app_images.dart';

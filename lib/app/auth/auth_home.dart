@@ -1,3 +1,4 @@
+import 'package:expense_tracker/app/widgets/splash/auth_wrapper_paintsplash.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/utils/app_images.dart';
 
