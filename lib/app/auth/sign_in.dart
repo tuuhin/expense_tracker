@@ -1,4 +1,4 @@
-import 'package:expense_tracker/app/widgets/splash/signin_painter.dart';
+import 'package:dio/dio.dart' show Response;
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:expense_tracker/utils/app_images.dart';
@@ -8,41 +8,68 @@ import 'package:google_fonts/google_fonts.dart';
 
 class SignInPage extends StatefulWidget {
   final TabController controller;
-  const SignInPage({Key? key, required this.controller}) : super(key: key);
+  const SignInPage({
+    Key? key,
+    required this.controller,
+  }) : super(key: key);
 
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
 
 class _SignInPageState extends State<SignInPage> {
-  final Duration _duration = const Duration(milliseconds: 500);
-  final TextEditingController _username = TextEditingController();
-  final TextEditingController _password = TextEditingController();
+  late TextEditingController _username;
+  late TextEditingController _password;
 
   late AuthenticationCubit _auth;
 
   bool _isPasswordVisible = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _auth = BlocProvider.of<AuthenticationCubit>(context);
-  }
-
-  void _validateData() {
+  Future<void> _signInUser() async {
     if (_username.text.isEmpty && _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Some the fields are blank')),
       );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Authenticating')),
+    );
+    Response? _resp = await _auth.logUserIn(
+        username: _username.text, password: _password.text);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    if (_resp != null) {
+      showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          title: Text('Authorization failed'),
+          content: Text('No active account found with this credentials'),
+        ),
+      );
     }
   }
 
-  Future<void> _signInUser() async {
-    _validateData();
-    await _auth.logUserIn(username: _username.text, password: _password.text);
+  @override
+  void initState() {
+    super.initState();
+    _username = TextEditingController();
+    _password = TextEditingController();
   }
 
-  // _authProvider.changeAuthState();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _auth = BlocProvider.of<AuthenticationCubit>(context);
+  }
+
+  @override
+  void dispose() {
+    _username.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  final Duration _duration = const Duration(milliseconds: 500);
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,11 @@
-import 'package:dio/dio.dart' show Response;
 import 'package:expense_tracker/app/widgets/splash/signup_painter.dart';
 import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/utils/app_images.dart';
 import 'package:expense_tracker/utils/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dio/dio.dart' show Response;
 
 class SignUpPage extends StatefulWidget {
   final TabController controller;
@@ -26,38 +25,66 @@ class _SignUpPageState extends State<SignUpPage> {
   late AuthenticationCubit _auth;
   bool _isPasswordVisible = false;
 
-  final Duration _duration = const Duration(milliseconds: 300);
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
-  void _validateData() {
+  Future _registerUser() async {
     if (_username.text.isEmpty &&
         _email.text.isEmpty &&
         _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Some the fields are blank')),
       );
+      return;
     } else if (validateEmail(_email.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid Email')),
       );
+      return;
     } else if (checkPassword(_password.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password is not strong enough')),
       );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Authenticating')),
+    );
+    Response? _resp = await _auth.createUser(
+      username: _username.text,
+      password: _password.text,
+      email: _email.text,
+    );
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    if (_resp != null) {
+      Map<String, dynamic> _data = _resp.data as Map<String, dynamic>;
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Authorization failed'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _data
+                .map<String, Widget>((String key, dynamic value) {
+                  if (value is List) {
+                    return MapEntry(key, Text('${value.first}'));
+                  }
+                  return MapEntry(key, Text('$value'));
+                })
+                .values
+                .toList(),
+          ),
+        ),
+      );
     }
   }
 
-  Future _registerUser() async {
-    _validateData();
-
-    await _auth.createUser(
-        username: _username.text, password: _password.text, email: _email.text);
-  }
+  final Duration _duration = const Duration(milliseconds: 300);
 
   @override
   Widget build(BuildContext context) {
