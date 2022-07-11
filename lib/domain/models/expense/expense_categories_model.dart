@@ -1,8 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'expense_categories_model.g.dart';
-
-@JsonSerializable()
 class ExpenseCategoriesModel {
   final int id;
   final String title;
@@ -14,7 +9,15 @@ class ExpenseCategoriesModel {
   });
 
   factory ExpenseCategoriesModel.fromJson(Map<String, dynamic> json) =>
-      _$ExpenseCategoriesModelFromJson(json);
+      ExpenseCategoriesModel(
+        id: json['id'],
+        title: json['title'],
+        desc: json['desc'],
+      );
 
-  Map<String, dynamic> toJson() => _$ExpenseCategoriesModelToJson(this);
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'title': title,
+        'desc': desc,
+      };
 }
