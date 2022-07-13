@@ -1,8 +1,8 @@
-export './add_income.dart';
+export 'income/create_income.dart';
 export './budget.dart';
 export './savings.dart';
 export './reminders.dart';
-export './bottomsheet/add_categories.dart';
+export 'expense/create_categories.dart';
 export './add_reminder.dart';
-export './bottomsheet/add_source.dart';
-export './add_expenses.dart';
+export 'income/create_source.dart';
+export 'expense/create_expenses.dart';

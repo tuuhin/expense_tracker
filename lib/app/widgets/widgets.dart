@@ -5,4 +5,7 @@ export 'importance_cards.dart';
 export './entries/entries_list.dart';
 export './entries/entries_options.dart';
 export './entries/entries_tile.dart';
-export 'expense_category_tile.dart';
+export './splash/auth_wrapper_paintsplash.dart';
+export './splash/signin_painter.dart';
+export './splash/signup_painter.dart';
+export './expense_category_tile.dart';

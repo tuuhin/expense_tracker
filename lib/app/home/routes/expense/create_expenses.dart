@@ -1,37 +1,33 @@
-import 'package:expense_tracker/app/home/routes/bottomsheet/add_categories.dart';
+import 'package:expense_tracker/app/home/routes/expense/create_categories.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/context/expense_categories/expense_categories_cubit.dart';
 import 'package:expense_tracker/data/remote/expenses_client.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddExpenses extends StatefulWidget {
-  const AddExpenses({Key? key}) : super(key: key);
+class CreateExpense extends StatefulWidget {
+  const CreateExpense({Key? key}) : super(key: key);
 
   @override
-  _AddExpensesState createState() => _AddExpensesState();
+  _CreateExpenseState createState() => _CreateExpenseState();
 }
 
-class _AddExpensesState extends State<AddExpenses> {
+class _CreateExpenseState extends State<CreateExpense> {
   late ExpenseCategoriesCubit _expenses;
   final TextEditingController _title = TextEditingController();
   final TextEditingController _desc = TextEditingController();
   final TextEditingController _amount = TextEditingController();
   final ExpensesClient _clt = ExpensesClient();
-  final OutlinedBorder _bottomSheetBorder = const RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20), topRight: Radius.circular(20)));
+
   bool _isAdding = false;
 
   void _addNewExpenseCategories(BuildContext context) async =>
       await showModalBottomSheet(
-          shape: _bottomSheetBorder,
           isScrollControlled: true,
           context: context,
           builder: (context) => Padding(
                 padding: MediaQuery.of(context).viewInsets,
-                child: const AddCategories(),
+                child: const CreateCategory(),
               ));
   void _addExpense(BuildContext context) async {
     if (_title.text.isEmpty) {
@@ -52,10 +48,9 @@ class _AddExpensesState extends State<AddExpenses> {
     setState(() {
       _isAdding = !_isAdding;
     });
-    bool? _isOk = await _clt.addExpense(_title.text,
-        categories: _expenses.sources,
-        amount: num.parse(_amount.text),
-        desc: _desc.text);
+    bool? _isOk = await _clt.createExpense(
+        _title.text, double.parse(_amount.text),
+        categories: [], desc: _desc.text);
     if (_isOk == true) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Add successfully')));

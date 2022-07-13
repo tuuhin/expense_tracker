@@ -3,14 +3,14 @@ import 'package:expense_tracker/data/remote/income_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddSource extends StatefulWidget {
-  const AddSource({Key? key}) : super(key: key);
+class CreateSource extends StatefulWidget {
+  const CreateSource({Key? key}) : super(key: key);
 
   @override
-  State<AddSource> createState() => _AddSourceState();
+  State<CreateSource> createState() => _CreateSourceState();
 }
 
-class _AddSourceState extends State<AddSource> {
+class _CreateSourceState extends State<CreateSource> {
   final IncomeClient _apiClient = IncomeClient();
   final TextEditingController _title = TextEditingController();
   final TextEditingController _desc = TextEditingController();

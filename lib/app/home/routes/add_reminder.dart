@@ -9,7 +9,7 @@ class AddReminder extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          children: [TextField(), TextField(), TextField()],
+          children: const [TextField(), TextField(), TextField()],
         ),
       ),
     );

@@ -1,14 +1,14 @@
 import 'package:expense_tracker/data/remote/expenses_client.dart';
 import 'package:flutter/material.dart';
 
-class AddCategories extends StatefulWidget {
-  const AddCategories({Key? key}) : super(key: key);
+class CreateCategory extends StatefulWidget {
+  const CreateCategory({Key? key}) : super(key: key);
 
   @override
-  State<AddCategories> createState() => _AddCategoriesState();
+  State<CreateCategory> createState() => _CreateCategoryState();
 }
 
-class _AddCategoriesState extends State<AddCategories> {
+class _CreateCategoryState extends State<CreateCategory> {
   final ExpensesClient _client = ExpensesClient();
   final TextEditingController _title = TextEditingController();
   final TextEditingController _desc = TextEditingController();
@@ -30,8 +30,7 @@ class _AddCategoriesState extends State<AddCategories> {
         _isLoading = !_isLoading;
       });
     }
-    bool? isOk =
-        await _client.addExpenseCategory(_title.text, desc: _desc.text);
+    bool? isOk = await _client.createCategory(_title.text, desc: _desc.text);
     if (isOk == true) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context)
