@@ -1,5 +1,7 @@
 import 'package:expense_tracker/domain/models/models.dart';
 
+import '../../entity/expense/expense_categories_entity.dart';
+
 class ExpenseCategoryDto {
   final int id;
   final String title;
@@ -17,8 +19,19 @@ class ExpenseCategoryDto {
         desc: json['desc'],
       );
 
+  ExpenseCategoriesEntity toEntity() =>
+      ExpenseCategoriesEntity(id: id, title: title, desc: desc);
+
   ExpenseCategoriesModel toExpenseCategoryModel() =>
       ExpenseCategoriesModel(id: id, title: title, desc: desc);
+
+  factory ExpenseCategoryDto.fromExpenseEntity(
+          ExpenseCategoriesEntity entity) =>
+      ExpenseCategoryDto(
+        id: entity.id,
+        title: entity.title,
+        desc: entity.desc,
+      );
 
   factory ExpenseCategoryDto.fromExpenseCategoryModel(
           ExpenseCategoriesModel categoriesModel) =>

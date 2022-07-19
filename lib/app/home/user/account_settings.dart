@@ -1,3 +1,4 @@
+import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/app/home/user/user.dart';
 import 'package:expense_tracker/context/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
@@ -11,29 +12,25 @@ class AccountSettings extends StatefulWidget {
 }
 
 class _AccountSettingsState extends State<AccountSettings> {
-  void _logout() async {
-    return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              context.read<AuthenticationCubit>().logOut();
-              Navigator.of(context)
-                ..pop()
-                ..pop();
-            },
-            child: Text(
-              'Logout',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          )
-        ],
-      ),
-    );
-  }
+  void _logout() async => await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to log out?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                context.read<AuthenticationCubit>().logOut();
+                Navigator.of(context)
+                  ..pop()
+                  ..pop();
+              },
+              child: Text('Logout',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            )
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +54,8 @@ class _AccountSettingsState extends State<AccountSettings> {
                 title: const Text('Change profile'),
               ),
               ListTile(
-                onTap: () {},
+                onTap: () => Navigator.of(context)
+                    .push(appRouteBuilder(const ChangePassword())),
                 leading: const Icon(Icons.visibility),
                 title: const Text('Change password'),
               ),

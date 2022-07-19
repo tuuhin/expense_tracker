@@ -1,3 +1,4 @@
+import 'package:expense_tracker/data/entity/income/income_source_entity.dart';
 import 'package:expense_tracker/domain/models/models.dart';
 
 class IncomeSourceDto {
@@ -26,6 +27,17 @@ class IncomeSourceDto {
         'desc': desc,
         'isSecure': isSecure,
       };
+
+  IncomeSourceEntity toEntity() =>
+      IncomeSourceEntity(id: id, title: title, desc: desc, isSecure: isSecure);
+
+  factory IncomeSourceDto.fromEntity(IncomeSourceEntity incomeSourceEntity) =>
+      IncomeSourceDto(
+        id: incomeSourceEntity.id,
+        title: incomeSourceEntity.title,
+        desc: incomeSourceEntity.desc,
+        isSecure: incomeSourceEntity.isSecure,
+      );
 
   IncomeSourceModel toIncomeSourceModel() =>
       IncomeSourceModel(id: id, title: title, desc: desc, isSecure: isSecure);

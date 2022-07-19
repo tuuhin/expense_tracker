@@ -47,16 +47,16 @@ class _ExpenseCategoryListTileState extends State<ExpenseCategoryListTile>
   }
 
   void _onTap() {
-    if (!_isChecked) {
-      _controller.forward();
-      _cubit.addToSelected(widget.id);
-    } else {
-      _controller.reverse();
-      _cubit.removeFromSelected(widget.id);
-    }
-    setState(() {
-      _isChecked = !_isChecked;
-    });
+    // if (!_isChecked) {
+    //   _controller.forward();
+    //   _cubit.addToSelected(widget.id);
+    // } else {
+    //   _controller.reverse();
+    //   _cubit.removeFromSelected(widget.id);
+    // }
+    // setState(() {
+    //   _isChecked = !_isChecked;
+    // });
   }
 
   @override

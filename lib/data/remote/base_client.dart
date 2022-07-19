@@ -1,8 +1,9 @@
 import 'package:expense_tracker/data/local/secure_storage.dart';
+import 'package:expense_tracker/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 
-abstract class Client {
+abstract class BaseClient {
   static final String _auth = dotenv.get('AUTH_ENDPOINT');
   static final String _api = dotenv.get('API_ENDPOINT');
 
@@ -14,36 +15,46 @@ abstract class Client {
       headers: {'Content-type': 'application/json'},
     );
 
-  static final Dio dio = Dio()
+  static final Dio _resolveHandler = Dio()
+    ..options = BaseOptions(
+      baseUrl: _api,
+      headers: {'Content-type': 'application/json'},
+    );
+
+  final Dio dio = Dio()
     ..interceptors.add(QueuedInterceptorsWrapper(
       onRequest: (
         RequestOptions options,
         RequestInterceptorHandler handler,
       ) async {
-        String? _accessToken = await _storage.getAccessToken();
-        if (_accessToken != null) {
-          options.headers.addAll({'Authorization': 'Bearer $_accessToken'});
+        String? accessToken = await _storage.getAccessToken();
+        if (accessToken != null) {
+          options.headers.addAll({'Authorization': 'Bearer $accessToken'});
         }
         return handler.next(options);
       },
       onError: (DioError error, ErrorInterceptorHandler handler) async {
         if (error.response!.statusCode == 401) {
-          String? _refreshToken = await _storage.getRefreshToken();
+          String? refreshToken = await _storage.getRefreshToken();
           try {
-            Response _ref = await _tokenBearer
-                .post('/refresh', data: {'refresh': _refreshToken});
-            String newAccessToken = _ref.data['access'];
-            _storage.setAccessToken(newAccessToken);
-            print('A new access token has been assigned ');
-            Response _response = await dio.request(
+            Response ref = await _tokenBearer
+                .post('/refresh', data: {'refresh': refreshToken});
+            String newAccessToken = ref.data['access'];
+            await _storage.setAccessToken(newAccessToken);
+            logger.finer('A new token has been assinged');
+            Response response = await _resolveHandler.request(
               error.requestOptions.path,
               data: error.requestOptions.data,
+              options: Options(
+                headers: {'Authorization': 'Bearer $newAccessToken'},
+                method: error.requestOptions.method,
+              ),
             );
-            handler.resolve(_response);
-          } on DioError catch (error) {
-            print(error.response);
-            print('the token is dead ');
-            handler.reject(error);
+            handler.resolve(response);
+          } on DioError catch (dio) {
+            logger.severe('DIO ERROR HAPPED!! ${dio.type}');
+          } catch (e) {
+            logger.severe(e.toString());
           }
         }
         // return handler.next(error);
@@ -52,5 +63,7 @@ abstract class Client {
     ..options = BaseOptions(
       headers: {'Content-type': 'application/json'},
       baseUrl: _api,
+      connectTimeout: 6000,
+      receiveTimeout: 10000,
     );
 }

@@ -12,7 +12,7 @@ Route appRouteBuilder(Widget child) => PageRouteBuilder(
           ),
         );
         final Animation<Offset> _offset =
-            Tween<Offset>(begin: const Offset(-1, 0), end: const Offset(0, 0))
+            Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0))
                 .animate(
           CurvedAnimation(
             parent: animation,

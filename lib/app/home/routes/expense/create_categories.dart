@@ -1,5 +1,9 @@
-import 'package:expense_tracker/data/remote/expenses_client.dart';
+import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../domain/models/models.dart';
+import '../../../../utils/resource.dart';
 
 class CreateCategory extends StatefulWidget {
   const CreateCategory({Key? key}) : super(key: key);
@@ -9,77 +13,108 @@ class CreateCategory extends StatefulWidget {
 }
 
 class _CreateCategoryState extends State<CreateCategory> {
-  final ExpensesClient _client = ExpensesClient();
-  final TextEditingController _title = TextEditingController();
-  final TextEditingController _desc = TextEditingController();
-  final ShapeBorder _shapeBorder = const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(20)));
-  bool _isLoading = false;
+  late TextEditingController _title;
+  late TextEditingController _desc;
+  late ExpenseCategoriesCubit _expenseCategoriesCubit;
 
-  void _addCategory(BuildContext context) async {
+  @override
+  void initState() {
+    super.initState();
+    _title = TextEditingController();
+    _desc = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _desc.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _expenseCategoriesCubit = BlocProvider.of<ExpenseCategoriesCubit>(context);
+  }
+
+  void _addCategory() async {
     if (_title.text.isEmpty) {
-      return await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                shape: _shapeBorder,
-                content: const Text('Blank title is not allowed'),
-              ));
-    }
-    if (!_isLoading) {
-      setState(() {
-        _isLoading = !_isLoading;
-      });
-    }
-    bool? isOk = await _client.createCategory(_title.text, desc: _desc.text);
-    if (isOk == true) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Added successfully')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Category Title can\'t be blank')));
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Adding categoty ${_title.text}')));
+
+    Resource<ExpenseCategoriesModel?> resource = await _expenseCategoriesCubit
+        .addExpenseCategory(_title.text, desc: _desc.text);
+    if (mounted) {
+      FocusScope.of(context).requestFocus(FocusNode());
+    }
+    if (resource is ResourceSucess) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(
+            'Succuessfully created category ${resource.data!.title}',
+          ),
+        ),
+      );
+    }
+    if (resource is ResourceFailed) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(resource.message.toString()),
+        ),
+      );
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      Navigator.of(context)
+        ..pop()
+        ..pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final Size _size = MediaQuery.of(context).size;
+    final Size size = MediaQuery.of(context).size;
 
-    return SizedBox(
-      height: _size.height * .45,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _title,
-              decoration: const InputDecoration(
-                hintText: 'Title',
-                helperText: 'Maximum 50 characters alowed',
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 10),
+          TextField(
+            controller: _title,
+            decoration: const InputDecoration(
+              hintText: 'Title',
+              helperText: 'Maximum 50 characters alowed',
             ),
-            const SizedBox(height: 10),
-            TextField(
-              maxLines: 3,
-              controller: _desc,
-              decoration: const InputDecoration(
-                hintText: 'Description',
-                helperText: 'Maximum 250 characters alowed',
-              ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            maxLines: 3,
+            controller: _desc,
+            decoration: const InputDecoration(
+              hintText: 'Description',
+              helperText: 'Maximum 250 characters alowed',
             ),
-            const Divider(),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).colorScheme.secondary,
-                    fixedSize: Size(_size.width, 50),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20))),
-                onPressed: () => _addCategory(context),
-                child: Text(_isLoading ? 'Adding...' : 'Add category',
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle2!
-                        .copyWith(color: Colors.white)))
-          ],
-        ),
+          ),
+          const Divider(),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondary,
+                fixedSize: Size(size.width, 50),
+              ),
+              onPressed: _addCategory,
+              child: const Text('Add category'))
+        ],
       ),
     );
   }
