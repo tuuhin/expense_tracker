@@ -18,14 +18,14 @@ class IncomeSourceDto {
         id: json['id'],
         title: json['title'],
         desc: json['desc'],
-        isSecure: json['isSecure'],
+        isSecure: json['is_secure'],
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'title': title,
         'desc': desc,
-        'isSecure': isSecure,
+        'is_secure': isSecure,
       };
 
   IncomeSourceEntity toEntity() =>

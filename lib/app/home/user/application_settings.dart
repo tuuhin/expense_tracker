@@ -1,14 +1,10 @@
+import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class ApplicationSettings extends StatefulWidget {
+class ApplicationSettings extends StatelessWidget {
   const ApplicationSettings({Key? key}) : super(key: key);
 
-  @override
-  State<ApplicationSettings> createState() => _ApplicationSettingsState();
-}
-
-class _ApplicationSettingsState extends State<ApplicationSettings> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -25,24 +21,32 @@ class _ApplicationSettingsState extends State<ApplicationSettings> {
                 color: Colors.grey,
               ),
               ListTile(
-                onTap: () {},
+                onTap: () => Navigator.of(context).push(
+                  appRouteBuilder(const ShowIncomes()),
+                ),
                 title: const Text('Income'),
                 leading: const FaIcon(FontAwesomeIcons.moneyBillWave),
               ),
               // const Divider(),
               ListTile(
-                onTap: () {},
+                onTap: () => Navigator.of(context).push(
+                  appRouteBuilder(const ShowExpenses()),
+                ),
                 title: const Text('Expense'),
                 leading: const FaIcon(FontAwesomeIcons.moneyCheck),
               ),
 
               ListTile(
-                  onTap: () => {},
+                  onTap: () => Navigator.of(context).push(
+                        appRouteBuilder(const ShowIncomeSources()),
+                      ),
                   title: const Text('Source'),
                   leading: const FaIcon(FontAwesomeIcons.productHunt)),
 
               ListTile(
-                  onTap: () => {},
+                  onTap: () => Navigator.of(context).push(
+                        appRouteBuilder(const ShowExpenseCategories()),
+                      ),
                   title: const Text('Categories'),
                   leading: const FaIcon(FontAwesomeIcons.buyNLarge)),
             ],

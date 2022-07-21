@@ -2,6 +2,7 @@ import 'package:expense_tracker/data/entity/entity.dart';
 import 'package:expense_tracker/data/entity/income/income_entity.dart';
 import 'package:expense_tracker/data/entity/income/income_source_entity.dart';
 import 'package:expense_tracker/data/local/income/income_source_storage.dart';
+import 'package:expense_tracker/data/local/income/income_storage.dart';
 
 import 'package:expense_tracker/data/local/storage.dart';
 import 'package:expense_tracker/domain/enums/enums.dart';
@@ -21,5 +22,6 @@ class LocalStorage {
     await UserThemePreferences.init();
     await ExpenseCategoriesStorage.init();
     await IncomeSourceStorage.init();
+    await IncomeStorage.init();
   }
 }
