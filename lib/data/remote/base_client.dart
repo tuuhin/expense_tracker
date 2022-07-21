@@ -35,6 +35,7 @@ abstract class BaseClient {
       },
       onError: (DioError error, ErrorInterceptorHandler handler) async {
         if (error.response!.statusCode == 401) {
+          logger.fine('UNAUTHORIZE ERROR');
           String? refreshToken = await _storage.getRefreshToken();
           try {
             Response ref = await _tokenBearer

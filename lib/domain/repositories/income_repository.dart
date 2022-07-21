@@ -1,16 +1,17 @@
 import 'package:expense_tracker/domain/models/models.dart';
 
 abstract class IncomeRepostiory {
-  Future<bool> createIncome(String title, double amount,
-      {String? desc, List<IncomeSourceModel>? source});
+  Future<IncomeModel?> createIncome(String title, double amount,
+      {String? desc, List<IncomeSourceModel>? sources});
 
-  Future<bool> createSource(String title, {String? desc, bool? isSecure});
+  Future<IncomeSourceModel?> createSource(String title,
+      {String? desc, bool? isSecure});
 
-  Future<bool> deleteSource(int id);
+  Future deleteSource(IncomeSourceModel incomeSourceModel);
+
+  Future deleteIncome(IncomeModel incomeModel);
 
   Future<List<IncomeSourceModel>?> getSources();
 
-  Future<IncomeModel?> getIcomes();
-
-  Future<bool> deleteIncome(int id);
+  Future<List<IncomeModel>?> getIcomes();
 }

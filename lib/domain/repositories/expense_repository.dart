@@ -2,16 +2,16 @@ import 'package:expense_tracker/domain/models/models.dart';
 import 'dart:io';
 
 abstract class ExpenseRepostiory {
-  Future<bool> createExpense(String title, double amount,
+  Future<ExpenseModel> createExpense(String title, double amount,
       {String? desc, List<ExpenseCategoriesModel>? categories, File? receipt});
 
-  Future<bool> createCategory(String title, {String? desc});
+  Future<ExpenseCategoriesModel> createCategory(String title, {String? desc});
 
-  Future<bool> deleteCategory(int id);
+  Future deleteCategory(ExpenseCategoriesModel expenseCategoriesModel);
 
-  Future<bool> deleteExpense(int id);
+  Future deleteExpense(ExpenseModel expenseModel);
 
-  Future<List<ExpenseCategoriesModel?>> getCategories();
+  Future<List<ExpenseCategoriesModel>?> getCategories();
 
-  Future<IncomeModel?> getExpenses();
+  Future<List<ExpenseModel>?> getExpenses();
 }

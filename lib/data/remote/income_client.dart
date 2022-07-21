@@ -1,53 +1,59 @@
 import 'package:dio/dio.dart';
+import 'package:expense_tracker/data/dto/dto.dart';
 import 'package:expense_tracker/data/remote/base_client.dart';
+import 'package:expense_tracker/domain/models/models.dart';
+import 'package:expense_tracker/domain/repositories/income_repository.dart';
 
-class IncomeClient extends Client {
-  Future<bool?> addIncomeSource(String title,
-      {String? desc, bool? isSecure}) async {
-    try {
-      Response _resp = await Client.dio.post('/sources',
-          data: {'title': title, 'desc': desc, 'is_secure': isSecure});
-      print(_resp.data);
-      return true;
-    } on DioError catch (e) {
-      print(e.response);
-    } catch (e) {
-      print(e.toString());
-    }
-    return null;
-  }
-
-  Future<bool?> addNewIncome(
-      {required String title,
-      required num amount,
-      String? desc,
-      List<int>? sources}) async {
-    try {
-      Response _response = await Client.dio.post('/income', data: {
+class IncomeClient extends BaseClient implements IncomeRepostiory {
+  @override
+  Future<IncomeModel?> createIncome(String title, double amount,
+      {String? desc, List<IncomeSourceModel>? sources}) async {
+    Response response = await dio.post(
+      '/income',
+      data: {
         'title': title,
         'desc': desc,
-        'amount': amount,
         'source': sources
-      });
-      print(_response.requestOptions.baseUrl + _response.requestOptions.path);
-      return true;
-    } on DioError catch (e) {
-      print(e.response);
-    } catch (e) {
-      print(e.toString());
-    }
-    return null;
+                ?.map((e) => IncomeSourceDto.fromIncomeSourceModel(e).toJson())
+                .toList() ??
+            [],
+        'amount': amount
+      },
+    );
+    return IncomeDto.fromJson(response.data).toIncomeModel();
   }
 
-  Future<List?> getIncomeSources() async {
-    try {
-      Response _resp = await Client.dio.get('/sources');
-      return _resp.data;
-    } on DioError catch (e) {
-      print(e.response);
-    } catch (e) {
-      print(e.toString());
-    }
-    return null;
+  @override
+  Future<IncomeSourceModel?> createSource(String title,
+      {String? desc, bool? isSecure}) async {
+    Response response = await dio.post('/sources',
+        data: {'title': title, 'desc': desc, 'isSecure': isSecure});
+    return IncomeSourceDto.fromJson(response.data).toIncomeSourceModel();
   }
+
+  @override
+  Future<List<IncomeModel>?> getIcomes() async {
+    Response response = await dio.get('/income');
+    List incomes = response.data as List;
+    return incomes
+        .map((json) => IncomeDto.fromJson(json).toIncomeModel())
+        .toList();
+  }
+
+  @override
+  Future<List<IncomeSourceModel>?> getSources() async {
+    Response response = await dio.get('/sources');
+    List sources = response.data as List;
+    return sources
+        .map((json) => IncomeSourceDto.fromJson(json).toIncomeSourceModel())
+        .toList();
+  }
+
+  @override
+  Future deleteIncome(IncomeModel incomeModel) async =>
+      await dio.delete('/income/${incomeModel.id}');
+
+  @override
+  Future deleteSource(IncomeSourceModel incomeSourceModel) async =>
+      await dio.delete('/sources/${incomeSourceModel.id}');
 }
