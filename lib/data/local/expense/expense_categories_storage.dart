@@ -1,5 +1,5 @@
 import 'package:expense_tracker/data/dto/dto.dart';
-import 'package:expense_tracker/domain/models/expense/expense_categories_model.dart';
+import 'package:expense_tracker/domain/models/models.dart';
 import 'package:hive/hive.dart';
 
 import '../../entity/expense/expense_categories_entity.dart';
@@ -30,17 +30,16 @@ class ExpenseCategoriesStorage {
 
   List<ExpenseCategoriesModel> getExpenseCategories() =>
       expenseCategories!.values
-          .map((e) =>
+          .map((ExpenseCategoriesEntity e) =>
               ExpenseCategoryDto.fromExpenseEntity(e).toExpenseCategoryModel())
           .toList();
 
-  int _getIndexOfEnitity(ExpenseCategoriesModel expenseCategoriesModel) =>
-      getExpenseCategories().indexOf(expenseCategoriesModel);
-
   Future<void> deleteExpenseCategory(
-          ExpenseCategoriesModel expenseCategoriesModel) async =>
-      await expenseCategories!
-          .deleteAt(_getIndexOfEnitity(expenseCategoriesModel));
+      ExpenseCategoriesModel expenseCategoriesModel) async {
+    int index = getExpenseCategories()
+        .indexWhere((element) => element.id == expenseCategoriesModel.id);
+    await expenseCategories!.deleteAt(index);
+  }
 
   Future<void> deleteExpenseCategories() async =>
       await expenseCategories!.clear();
