@@ -21,9 +21,12 @@ class ExpenseEntity extends HiveObject {
   final List<ExpenseCategoriesEntity>? categories;
 
   @HiveField(5)
-  final String? desc;
+  final BudgetEntity budget;
 
   @HiveField(6)
+  final String? desc;
+
+  @HiveField(7)
   final String? imageURL;
 
   ExpenseEntity({
@@ -32,6 +35,7 @@ class ExpenseEntity extends HiveObject {
     required this.amount,
     required this.addedAt,
     this.categories,
+    required this.budget,
     this.desc,
     this.imageURL,
   });

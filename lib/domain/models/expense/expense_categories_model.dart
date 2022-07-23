@@ -8,4 +8,7 @@ class ExpenseCategoriesModel {
     required this.title,
     this.desc,
   });
+
+  @override
+  String toString() => '$id. $title';
 }

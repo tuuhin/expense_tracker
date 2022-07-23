@@ -1,5 +1,6 @@
 import 'package:expense_tracker/data/dto/dto.dart';
-import 'package:expense_tracker/domain/models/income/income_models.dart';
+import 'package:expense_tracker/data/entity/entity.dart';
+import 'package:expense_tracker/domain/models/models.dart';
 
 class IncomeDto {
   final int id;
@@ -18,15 +19,16 @@ class IncomeDto {
   });
 
   factory IncomeDto.fromJson(Map<String, dynamic> json) {
-    List sources = json['sources'] as List;
+    List? sources = json['source'] as List?;
+
     return IncomeDto(
       id: json['id'],
       title: json['title'],
       desc: json['desc'],
       amount: json['amount'],
-      addedAt: DateTime.parse(json['addedAt']),
+      addedAt: DateTime.parse(json['added_at']),
       sources:
-          sources.map((source) => IncomeSourceDto.fromJson(source)).toList(),
+          sources?.map((source) => IncomeSourceDto.fromJson(source)).toList(),
     );
   }
 
@@ -34,11 +36,11 @@ class IncomeDto {
         'id': id,
         'title': title,
         'desc': desc,
-        'sources': sources!.map((e) => e.toJson()),
+        'sources': sources?.map((e) => e.toJson()),
         'amount': amount
       };
 
-  IncomeModel toIncomeSourceModel() => IncomeModel(
+  IncomeModel toIncomeModel() => IncomeModel(
       id: id,
       title: title,
       amount: amount,
@@ -46,14 +48,32 @@ class IncomeDto {
       sources: sources!.map((e) => e.toIncomeSourceModel()).toList(),
       desc: desc);
 
-  factory IncomeDto.fromIncomeSourceModel(IncomeModel incomeSourceModel) =>
-      IncomeDto(
-        id: incomeSourceModel.id,
-        title: incomeSourceModel.title,
-        desc: incomeSourceModel.desc,
-        amount: incomeSourceModel.amount,
-        addedAt: incomeSourceModel.addedAt,
-        sources: incomeSourceModel.sources!
+  IncomeEntity toEntity() => IncomeEntity(
+      id: id,
+      title: title,
+      amount: amount,
+      addedAt: addedAt,
+      sources: sources!.map((e) => e.toEntity()).toList(),
+      desc: desc);
+
+  factory IncomeDto.fromEntity(IncomeEntity incomeEntity) => IncomeDto(
+        id: incomeEntity.id,
+        title: incomeEntity.title,
+        desc: incomeEntity.desc,
+        amount: incomeEntity.amount,
+        addedAt: incomeEntity.addedAt,
+        sources: incomeEntity.sources!
+            .map((e) => IncomeSourceDto.fromEntity(e))
+            .toList(),
+      );
+
+  factory IncomeDto.fromIncomeModel(IncomeModel incomeModel) => IncomeDto(
+        id: incomeModel.id,
+        title: incomeModel.title,
+        desc: incomeModel.desc,
+        amount: incomeModel.amount,
+        addedAt: incomeModel.addedAt,
+        sources: incomeModel.sources!
             .map((e) => IncomeSourceDto.fromIncomeSourceModel(e!))
             .toList(),
       );

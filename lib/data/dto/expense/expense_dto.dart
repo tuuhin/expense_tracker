@@ -1,4 +1,5 @@
 import 'package:expense_tracker/data/dto/dto.dart';
+import 'package:expense_tracker/data/entity/entity.dart';
 import 'package:expense_tracker/domain/models/models.dart';
 
 class ExpenseDto {
@@ -7,6 +8,7 @@ class ExpenseDto {
   final double amount;
   final DateTime addedAt;
   final List<ExpenseCategoryDto>? categories;
+  final BudgetDto budget;
   final String? desc;
   final String? imageURL;
 
@@ -15,6 +17,7 @@ class ExpenseDto {
     required this.title,
     required this.amount,
     required this.addedAt,
+    required this.budget,
     this.categories,
     this.desc,
     this.imageURL,
@@ -25,6 +28,7 @@ class ExpenseDto {
     return ExpenseDto(
       id: json['id'],
       title: json['title'],
+      budget: BudgetDto.fromJson(json['budget']),
       amount: json['amount'],
       addedAt: DateTime.parse(json['addedAt']),
       categories: categories
@@ -40,17 +44,46 @@ class ExpenseDto {
         title: title,
         amount: amount,
         addedAt: addedAt,
+        budget: budget.toBudgetModel(),
         desc: desc,
         imageURL: imageURL,
         categories: categories?.map((e) => e.toExpenseCategoryModel()).toList(),
       );
 
-  factory ExpenseDto.fromExpenseModel(ExpenseModel expenseModel) => ExpenseDto(
-        id: expenseModel.id,
-        title: expenseModel.title,
-        amount: expenseModel.amount,
-        addedAt: expenseModel.addedAt,
+  ExpenseEntity toEntity() => ExpenseEntity(
+        id: id,
+        title: title,
+        amount: amount,
+        addedAt: addedAt,
+        desc: desc,
+        budget: budget.toEntity(),
+        imageURL: imageURL,
+        categories: categories?.map((e) => e.toEntity()).toList(),
       );
+
+  factory ExpenseDto.fromEntity(ExpenseEntity entity) => ExpenseDto(
+      id: entity.id,
+      title: entity.title,
+      amount: entity.amount,
+      addedAt: entity.addedAt,
+      budget: BudgetDto.fromEntity(entity.budget),
+      categories: entity.categories
+          ?.map((e) => ExpenseCategoryDto.fromExpenseEntity(e))
+          .toList(),
+      desc: entity.desc,
+      imageURL: entity.imageURL);
+
+  factory ExpenseDto.fromExpenseModel(ExpenseModel expenseModel) => ExpenseDto(
+      id: expenseModel.id,
+      title: expenseModel.title,
+      amount: expenseModel.amount,
+      addedAt: expenseModel.addedAt,
+      budget: BudgetDto.fromModel(expenseModel.budget),
+      categories: expenseModel.categories
+          ?.map((e) => ExpenseCategoryDto.fromExpenseCategoryModel(e))
+          .toList(),
+      desc: expenseModel.desc,
+      imageURL: expenseModel.imageURL);
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
