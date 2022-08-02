@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:expense_tracker/context/income/income_source_notifier.dart';
 import 'package:expense_tracker/data/local/income/income_storage.dart';
-import 'package:expense_tracker/data/remote/income_client.dart';
+import 'package:expense_tracker/data/remote/income_api.dart';
 import 'package:expense_tracker/domain/models/income/income_models.dart';
 import 'package:expense_tracker/domain/models/income/income_source_model.dart';
 import 'package:expense_tracker/main.dart';
@@ -16,7 +16,7 @@ class IncomeCubit extends Cubit<IncomeState> {
 
   final IncomeSourceNotifier _incomeSourceNotifier = IncomeSourceNotifier();
 
-  final IncomeClient _incomeClient = IncomeClient();
+  final IncomeApi _incomeClient = IncomeApi();
   static final IncomeStorage _storage = IncomeStorage();
 
   final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();

@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
+import '../../app/home/routes/route_builder.dart';
 import '../../app/widgets/widgets.dart';
 import '../../data/local/storage.dart';
 import '../../data/remote/remote.dart';
@@ -16,14 +17,11 @@ part 'expense_categories_state.dart';
 
 class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
   ExpenseCategoriesCubit() : super(ExpenseCategoryStateLoading());
-  final Tween<Offset> _offset =
-      Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero);
-  final Tween<double> _opacity = Tween<double>(begin: 0, end: 1);
-  final ExpensesClient _clt = ExpensesClient();
+
+  final ExpensesApi _expensesApi = ExpensesApi();
   static final ExpenseCategoriesStorage _expenseCategoriesStorage =
       ExpenseCategoriesStorage();
   final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();
-  bool isLoaded = false;
 
   GlobalKey<AnimatedListState> get expenseSourceListKey => _key;
 
@@ -35,14 +33,14 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
   Future<Resource> deleteExpenseCategory(
       ExpenseCategoriesModel expenseCategoriesModel) async {
     try {
-      await _clt.deleteCategory(expenseCategoriesModel);
+      await _expensesApi.deleteCategory(expenseCategoriesModel);
       if (_key.currentState != null) {
         _key.currentState!.removeItem(
           _models.indexOf(expenseCategoriesModel),
           (context, animation) => FadeTransition(
-            opacity: animation.drive<double>(_opacity),
+            opacity: animation.drive<double>(opacity),
             child: SlideTransition(
-              position: animation.drive<Offset>(_offset),
+              position: animation.drive<Offset>(offset),
               child: ExpenseCategoryCard(category: expenseCategoriesModel),
             ),
           ),
@@ -68,7 +66,7 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
   }) async {
     try {
       ExpenseCategoriesModel? model =
-          await _clt.createCategory(title, desc: desc);
+          await _expensesApi.createCategory(title, desc: desc);
       if (_key.currentState != null) {
         _expenseCategoriesStorage.addExpenseCategory(model);
         _models.add(model);
@@ -85,16 +83,14 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
 
   void getCategories() async {
     try {
-      if (!isLoaded) {
-        List<ExpenseCategoriesModel>? modelsFromServer =
-            await _clt.getCategories();
-        if (modelsFromServer != null) {
-          logger.info('Invalidating cache');
-          _expenseCategoriesStorage.deleteExpenseCategories().then((_) =>
-              _expenseCategoriesStorage.addExpenseCategories(modelsFromServer));
-        }
-        isLoaded = true;
+      List<ExpenseCategoriesModel>? modelsFromServer =
+          await _expensesApi.getCategories();
+      if (modelsFromServer != null) {
+        logger.info('Invalidating cache for expense_categories');
+        await _expenseCategoriesStorage.deleteExpenseCategories();
+        await _expenseCategoriesStorage.addExpenseCategories(modelsFromServer);
       }
+
       _models = _expenseCategoriesStorage.getExpenseCategories();
       emit(ExpenseCategoryStateSuccess(data: _models));
       Future future = Future(() {});

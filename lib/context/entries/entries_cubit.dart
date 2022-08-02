@@ -1,59 +1,65 @@
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/data/remote/base_data_client.dart';
+import 'package:expense_tracker/data/remote/entries_api.dart';
 import 'package:expense_tracker/domain/models/entries_model.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+import '../../main.dart';
 
 part 'entries_state.dart';
 
 class EntriesCubit extends Cubit<EntriesState> {
   EntriesCubit() : super(EntriesLoad());
-  final BaseDataClient _clt = BaseDataClient();
+  final EntriesApi _clt = EntriesApi();
 
-  void emitLoadState() => emit(EntriesLoad());
+  final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();
+  // List<EntriesModel> _models = [];
 
-  Future<void> loadEntriesByURL(String? url) async {
+  GlobalKey<AnimatedListState> get entriesKey => _key;
+  // List<EntriesModel> get entriesModel => _models;
+
+  Future<void> getEntires() async {
     emit(EntriesLoad());
-    Map? _data = await _clt.getEntriesByUrl(url);
-    if (_data != null) {
-      final List results = _data['results'] as List;
-      final int? highestCount = _data['highest_count'];
-      final int? overallCount = _data['overall_total'];
-      final String? nextURL = _data['next'];
-      final String? previousURL = _data['previous'];
-      List<EntriesModel> _entries =
-          results.map((json) => EntriesModel.fromJson(json)).toList();
+    try {
+      List<EntriesModel> entries = await _clt.getEntries();
 
-      emit(EntriesLoadSuccess(
-          entries: _entries,
-          nextURL: nextURL,
-          previousURL: previousURL,
-          highestCount: highestCount,
-          overallCount: overallCount));
-    } else {
-      emit(EntriesLoadFailed());
+      emit(EntriesLoadSuccess(data: entries));
+      Future future = Future(() {});
+      for (var element in entries) {
+        future = future.then(
+          (value) => Future.delayed(
+            const Duration(milliseconds: 50),
+            () {
+              if (_key.currentState != null) {
+                _key.currentState!.insertItem(entries.indexOf(element));
+              }
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      logger.info(e);
     }
   }
 
-  void loadEntries() async {
-    Map? _data = await _clt.getEntries();
-    if (_data != null) {
-      final List results = _data['results'] as List;
-      print(_data);
-      final int? highestCount = _data['highest_count'];
-      final int? overallCount = _data['overall_total'];
-      final String? nextURL = _data['next'];
-      final String? previousURL = _data['previous'];
-      List<EntriesModel> _entries =
-          results.map((json) => EntriesModel.fromJson(json)).toList();
-
-      emit(EntriesLoadSuccess(
-          entries: _entries,
-          nextURL: nextURL,
-          previousURL: previousURL,
-          highestCount: highestCount,
-          overallCount: overallCount));
-    } else {
-      emit(EntriesLoadFailed());
+  void loadMoreEntries(Map<String, dynamic> query) async {
+    try {
+      List<EntriesModel> entries = await _clt.getMoreEntries(query);
+      emit(EntriesLoadSuccess(data: entries));
+      Future future = Future(() {});
+      for (var element in entries) {
+        future = future.then(
+          (value) => Future.delayed(
+            const Duration(milliseconds: 50),
+            () {
+              if (_key.currentState != null) {
+                _key.currentState!.insertItem(entries.indexOf(element));
+              }
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      logger.info(e);
     }
   }
 }

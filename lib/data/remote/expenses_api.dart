@@ -5,13 +5,15 @@ import 'package:expense_tracker/domain/models/models.dart';
 import 'package:expense_tracker/domain/repositories/repositories.dart';
 import 'package:expense_tracker/data/dto/dto.dart';
 
-class ExpensesClient extends BaseClient implements ExpenseRepostiory {
+class ExpensesApi extends ResourceClient implements ExpenseRepostiory {
   @override
   Future<ExpenseCategoriesModel> createCategory(String title,
       {String? desc}) async {
-    Response _resp =
-        await dio.post('/categories', data: {'title': title, 'desc': desc});
-    return ExpenseCategoryDto.fromJson(_resp.data).toExpenseCategoryModel();
+    Response response = await dio.post(
+      '/categories',
+      data: {'title': title, 'desc': desc},
+    );
+    return ExpenseCategoryDto.fromJson(response.data).toExpenseCategoryModel();
   }
 
   @override
@@ -22,21 +24,25 @@ class ExpensesClient extends BaseClient implements ExpenseRepostiory {
     List<ExpenseCategoriesModel>? categories,
     File? receipt,
   }) async {
-    Response _resp = await dio.post(
+    Response response = await dio.post(
       '/expense',
-      data: FormData.fromMap({
-        'title': title,
-        'amount': amount,
-        'desc': desc,
-        'categories': categories!
-            .map((e) => ExpenseCategoryDto.fromExpenseCategoryModel(e).toJson())
-            .toList(),
-        'receipt': receipt != null
-            ? await MultipartFile.fromFile(receipt.path, filename: receipt.path)
-            : null,
-      }),
+      data: FormData.fromMap(
+        {
+          'title': title,
+          'amount': amount,
+          'desc': desc,
+          'categories': categories!
+              .map((e) =>
+                  ExpenseCategoryDto.fromExpenseCategoryModel(e).toJson())
+              .toList(),
+          'receipt': receipt != null
+              ? await MultipartFile.fromFile(receipt.path,
+                  filename: receipt.path)
+              : null,
+        },
+      ),
     );
-    return ExpenseDto.fromJson(_resp.data).toExpenseModel();
+    return ExpenseDto.fromJson(response.data).toExpenseModel();
   }
 
   @override
@@ -49,8 +55,8 @@ class ExpensesClient extends BaseClient implements ExpenseRepostiory {
 
   @override
   Future<List<ExpenseCategoriesModel>?> getCategories() async {
-    Response _response = await dio.get('/categories');
-    List categories = _response.data as List;
+    Response response = await dio.get('/categories');
+    List categories = response.data as List;
     return categories
         .map((json) =>
             ExpenseCategoryDto.fromJson(json).toExpenseCategoryModel())
@@ -59,8 +65,8 @@ class ExpensesClient extends BaseClient implements ExpenseRepostiory {
 
   @override
   Future<List<ExpenseModel>?> getExpenses() async {
-    Response _response = await dio.get('/expenses');
-    List expenses = _response.data as List;
+    Response response = await dio.get('/expenses');
+    List expenses = response.data as List;
     return expenses
         .map((json) => ExpenseDto.fromJson(json).toExpenseModel())
         .toList();

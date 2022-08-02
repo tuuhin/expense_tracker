@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/data/remote/base_client.dart';
 
-class BaseDataClient extends Client {
+import 'clients/resource_client.dart';
+
+class BaseDataClient extends ResourceClient {
   Future<Map?> getOverview() async {
     return null;
   }
@@ -9,7 +10,7 @@ class BaseDataClient extends Client {
   Future<Map?> getEntries() async {
     try {
       print('requesting');
-      Response _response = await Client.dio.get('/entries');
+      Response _response = await dio.get('/entries');
       Map _data = _response.data as Map;
       return _data;
     } on DioError catch (error) {
@@ -26,7 +27,7 @@ class BaseDataClient extends Client {
         print('requesting $url');
         Uri _url = Uri.parse(url);
         print(_url.queryParameters);
-        Response _response = await Client.dio.get(
+        Response _response = await dio.get(
           url,
           queryParameters: _url.queryParameters,
         );

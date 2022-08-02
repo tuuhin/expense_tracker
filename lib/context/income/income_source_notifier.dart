@@ -6,6 +6,7 @@ import '../../domain/models/models.dart';
 class IncomeSourceNotifier extends ChangeNotifier {
   final List<IncomeSourceModel> _selectedSources = [];
   List<IncomeSourceModel> get sources => _selectedSources;
+
   void checkSource(IncomeSourceModel incomeSourceModel) {
     if (!sourceInList(incomeSourceModel)) {
       _selectedSources.add(incomeSourceModel);

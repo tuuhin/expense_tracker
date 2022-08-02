@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:expense_tracker/data/dto/dto.dart';
-import 'package:expense_tracker/data/remote/base_client.dart';
+import 'package:expense_tracker/data/remote/remote.dart';
 import 'package:expense_tracker/domain/models/models.dart';
 import 'package:expense_tracker/domain/repositories/income_repository.dart';
 
-class IncomeClient extends BaseClient implements IncomeRepostiory {
+class IncomeApi extends ResourceClient implements IncomeRepostiory {
   @override
   Future<IncomeModel?> createIncome(String title, double amount,
       {String? desc, List<IncomeSourceModel>? sources}) async {
