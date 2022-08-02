@@ -21,7 +21,7 @@ class _ThemeSettingsState extends State<ThemeSettings> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
