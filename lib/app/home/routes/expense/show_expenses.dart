@@ -1,7 +1,13 @@
 import 'package:expense_tracker/app/home/routes/expense/create_expenses.dart';
 import 'package:expense_tracker/app/home/routes/route_builder.dart';
+import 'package:expense_tracker/app/widgets/expense/expense_card.dart';
+import 'package:expense_tracker/context/context.dart';
+import 'package:expense_tracker/utils/app_images.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../widgets/empty_list.dart';
 
 class ShowExpenses extends StatefulWidget {
   const ShowExpenses({Key? key}) : super(key: key);
@@ -11,42 +17,69 @@ class ShowExpenses extends StatefulWidget {
 }
 
 class _ShowExpensesState extends State<ShowExpenses> {
+  late ExpenseCubit _expenseCubit;
   void _addExpense() =>
       Navigator.of(context).push(appRouteBuilder(const CreateExpense()));
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _expenseCubit = BlocProvider.of<ExpenseCubit>(context);
+    _expenseCubit.getExpenses();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Size _size = MediaQuery.of(context).size;
+    final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Expenses'),
+        bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
+            child: Divider()),
       ),
-      body: Column(
-        children: [
-          const Divider(height: 1),
-          // BlocBuilder<ExpenseCategoriesCubit, ExpenseCategoryState>(
-          //   builder: (context, state) {
-          //     print(state);
-          //     if (state is ExpenseCategoryStateLoading) {
-          //       return const CircularProgressIndicator();
-          //     }
+      body: BlocBuilder<ExpenseCubit, ExpenseState>(
+        builder: (context, state) {
+          if (state is ExpenseLoadSuccess) {
+            if (state.data!.isEmpty) {
+              return Center(
+                  child: EmptyList(
+                title: 'Haven\'t you added your expense',
+                subtitle: 'Did you forgot to add your data.',
+                image: noMoneyImage,
+              ));
+            }
+            return AnimatedList(
+              key: _expenseCubit.key,
+              itemBuilder: (context, index, animation) => SlideTransition(
+                position: animation.drive(offset),
+                child: ExpenseCard(
+                  expense: state.data![index],
+                ),
+              ),
+            );
+          }
 
-          //     return Container();
-          //   },
-          // ),
-          Expanded(
-            child: AnimatedList(
-              itemBuilder: (context, index, animation) => const SizedBox(),
-            ),
-          )
-        ],
+          if (state is ExpenseLoadFailed) {
+            return Container(
+              color: Colors.red,
+              child: Text(state.message ?? ''),
+            );
+          }
+          return Center(child: CircularProgressIndicator());
+        },
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-              fixedSize: Size(_size.width, 50),
+              fixedSize: Size(size.width, 50),
               primary: Theme.of(context).colorScheme.secondary),
           onPressed: _addExpense,
           child: const Text('Add Expense'),

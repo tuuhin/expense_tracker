@@ -4,6 +4,8 @@ import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../utils/utils.dart';
+
 class ShowExpenseCategories extends StatefulWidget {
   const ShowExpenseCategories({Key? key}) : super(key: key);
 
@@ -13,10 +15,6 @@ class ShowExpenseCategories extends StatefulWidget {
 
 class _ShowExpenseCategoriesState extends State<ShowExpenseCategories> {
   late ExpenseCategoriesCubit _expenseCategoriesCubit;
-
-  final Tween<Offset> _offset =
-      Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero);
-  final Tween<double> _opacity = Tween<double>(begin: 0, end: 1);
 
   void _addCategory() => showModalBottomSheet(
         isScrollControlled: true,
@@ -42,18 +40,30 @@ class _ShowExpenseCategoriesState extends State<ShowExpenseCategories> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Expense Categories'),
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
+            child: Divider(),
+          ),
         ),
         body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: BlocBuilder<ExpenseCategoriesCubit, ExpenseCategoryState>(
               builder: (context, state) {
                 if (state is ExpenseCategoryStateSuccess) {
+                  if (state.data!.isEmpty) {
+                    return Center(
+                        child: EmptyList(
+                      title: 'No Expense Categories',
+                      subtitle: 'You haven\'t add any expense categories',
+                      image: sadnessImage,
+                    ));
+                  }
                   return AnimatedList(
                     key: _expenseCategoriesCubit.expenseSourceListKey,
                     itemBuilder: (context, index, animation) => SlideTransition(
-                      position: animation.drive<Offset>(_offset),
+                      position: animation.drive<Offset>(offset),
                       child: FadeTransition(
-                        opacity: animation.drive<double>(_opacity),
+                        opacity: animation.drive<double>(opacity),
                         child: ExpenseCategoryCard(
                           category: state.data![index],
                         ),

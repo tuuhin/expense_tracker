@@ -1,8 +1,11 @@
 import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/app/widgets/income/income_source_card.dart';
 import 'package:expense_tracker/context/context.dart';
+import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../widgets/empty_list.dart';
 
 class ShowIncomeSources extends StatefulWidget {
   const ShowIncomeSources({Key? key}) : super(key: key);
@@ -35,24 +38,36 @@ class _ShowIncomeSourcesState extends State<ShowIncomeSources> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Income Sources'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
+          child: Divider(),
+        ),
       ),
       body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: BlocBuilder<IncomeSourceCubit, IncomeSourceState>(
             builder: (context, state) {
               if (state is IncomeStateSuccess) {
-                return AnimatedList(
-                  key: _incomeSourceCubit.incomeListKey,
-                  itemBuilder: (context, index, animation) => SlideTransition(
-                    position: animation.drive<Offset>(offset),
-                    child: FadeTransition(
-                      opacity: animation.drive<double>(opacity),
-                      child: IncomeSourceCard(
-                        source: state.data![index],
+                if (state.data!.isNotEmpty) {
+                  return AnimatedList(
+                    key: _incomeSourceCubit.incomeListKey,
+                    itemBuilder: (context, index, animation) => SlideTransition(
+                      position: animation.drive<Offset>(offset),
+                      child: FadeTransition(
+                        opacity: animation.drive<double>(opacity),
+                        child: IncomeSourceCard(
+                          source: state.data![index],
+                        ),
                       ),
                     ),
-                  ),
-                );
+                  );
+                }
+                return Center(
+                    child: EmptyList(
+                  title: 'No income sources',
+                  subtitle: 'You haven\'t add any income sources',
+                  image: sadnessImage,
+                ));
               }
               if (state is ExpenseCategoryStateFailed) {
                 return Container(height: 200, color: Colors.red);
