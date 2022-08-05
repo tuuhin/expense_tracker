@@ -2,6 +2,7 @@
   "editor.defaultFormatter": "Dart-Code.dart-code",
   "editor.formatOnSave": true,
   "dart.previewFlutterUiGuides": true,
-  "editor.fontSize": 14,
+  "editor.fontSize": 13,
+  "editor.tabSize": 2
   
 }
