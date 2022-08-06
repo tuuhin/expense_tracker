@@ -1,5 +1,12 @@
-import 'package:expense_tracker/app/home/screens/screens.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:expense_tracker/app/home/tabs/tabs.dart';
+import 'package:expense_tracker/app/home/user/user_profile.dart';
+import 'package:expense_tracker/app/widgets/home/home_background.dart';
+import 'package:expense_tracker/app/widgets/tab_info.dart';
+import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Home extends StatefulWidget {
   final AnimationController controller;
@@ -11,34 +18,27 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<Widget> _screens = const [
-    MainTab(),
-    EntriesTab(),
+
+  int _currentTab = 0;
+
+  final List<TabInfo> _tabInfo = [
+    TabInfo(
+      icon: const Icon(Icons.home_outlined),
+      tab: const MainTab(),
+      label: 'Home',
+    ),
+    TabInfo(
+      icon: const Icon(Icons.folder_copy),
+      tab: const EntriesTab(),
+      label: 'Entries',
+    )
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   void _openMenu() {
     if (widget.controller.status == AnimationStatus.completed) {
       widget.controller.reverse();
     } else {
       widget.controller.forward();
-    }
-  }
-
-  void _closeMenu() {
-    if (widget.controller.status == AnimationStatus.completed) {
-      widget.controller.reverse();
     }
   }
 
@@ -57,91 +57,132 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _closeMenu,
-      child: Scaffold(
-        extendBody: true,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: _openMenu,
-            icon: Icon(Icons.menu,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white),
-          ),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabInfo.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _openProfile() => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const UserProfile(),
         ),
-        body: Stack(
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: _openMenu,
+          icon: const FaIcon(FontAwesomeIcons.alignLeft),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _openProfile,
+            icon: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Hero(
+                tag: 'profile_image',
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: CachedNetworkImage(
+                    imageUrl:
+                        'https://media.gettyimages.com/photos/joe-root-of-england-celebrates-his-century-during-day-four-of-the-picture-id1030463034?s=2048x2048',
+                    fadeInCurve: Curves.easeInBack,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider<EntriesCubit>(
+            create: (context) => EntriesCubit(),
+          ),
+        ],
+        child: Stack(
           children: [
             SizedBox.expand(
-                child: CustomPaint(
-              foregroundPainter: BackGroundDesign(
-                  color: Theme.of(context).cardColor.withOpacity(0.7)),
-            )),
+              child: CustomPaint(
+                foregroundPainter: BackGroundDesign(context),
+              ),
+            ),
             TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
                 controller: _tabController,
-                physics: _getScrollMode(),
-                children: _screens),
+                // physics: _getScrollMode(),
+                children: _tabInfo.map((e) => e.tab).toList()),
           ],
         ),
+      ),
 
-        bottomNavigationBar: BottomAppBar(
-            elevation: 0,
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 5,
-            child: Container(
-              color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-              height: 60,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  IconButton(
-                      onPressed: () => _animateTabs(0),
-                      icon: const Icon(Icons.home)),
-                  IconButton(
-                      onPressed: () => _animateTabs(1),
-                      icon: const Icon(Icons.note)),
-                  const SizedBox(width: 20),
-                ],
+      // bottomNavigationBar: BottomAppBar(
+      //     color: Colors.white,
+      //     shape: const CircularNotchedRectangle(),
+      //     notchMargin: 5,
+      //     child: SizedBox(
+      //       height: 60,
+      //       child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //         children: [
+      //           IconButton(
+      //               onPressed: () => _animateTabs(0),
+      //               icon: const Icon(Icons.home)),
+      //           IconButton(
+      //               onPressed: () => _animateTabs(1),
+      //               icon: const Icon(Icons.note)),
+      //           const SizedBox(width: 20),
+      //         ],
+      //       ),
+      //     )),
+
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: (index) {
+          _animateTabs(index);
+          setState(() => _currentTab = index);
+        },
+        selectedFontSize: Theme.of(context).textTheme.bodyText1!.fontSize ?? 20,
+        currentIndex: _currentTab,
+        unselectedFontSize:
+            Theme.of(context).textTheme.bodyText2!.fontSize ?? 16,
+        selectedIconTheme: const IconThemeData(size: 26),
+        unselectedIconTheme: const IconThemeData(size: 22),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        selectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+        unselectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.w400, fontSize: 11),
+        showUnselectedLabels: true,
+        items: _tabInfo
+            .asMap()
+            .map(
+              (key, tab) => MapEntry(
+                key,
+                BottomNavigationBarItem(
+                  icon: tab.icon,
+                  label: tab.label,
+                ),
               ),
-            )),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-        // floatingActionButtonAnimator:,
-        floatingActionButton: FloatingActionButton(
-          foregroundColor: Colors.white,
-          onPressed: _openMenu,
-          child: const Icon(Icons.add),
-        ),
+            )
+            .values
+            .toList(),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // floatingActionButtonAnimator:,
+      floatingActionButton: FloatingActionButton(
+        foregroundColor: Colors.white,
+        onPressed: _openMenu,
+        child: const Icon(Icons.add),
       ),
     );
   }
-}
-
-class BackGroundDesign extends CustomPainter {
-  final Color color;
-
-  BackGroundDesign({required this.color});
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint _paint = Paint()
-      ..strokeWidth = 10
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    Path _path = Path()
-      ..moveTo(size.width, 0)
-      ..lineTo(size.width, size.height * 0.2)
-      ..cubicTo(size.width * 0.65, size.height * 0.2, size.width * 0.45,
-          size.height * 0.6, 0, size.height * 0.5)
-      ..lineTo(0, 0);
-
-    canvas.drawPath(_path, _paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

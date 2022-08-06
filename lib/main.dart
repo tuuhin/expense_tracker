@@ -1,4 +1,5 @@
 import 'package:expense_tracker/app/app.dart';
+import 'package:expense_tracker/context/budget/budget_cubit.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:expense_tracker/context/user_info/user_info_cubit.dart';
 import 'package:expense_tracker/data/local/local_storage.dart';
@@ -48,9 +49,6 @@ class ProvidersWrapper extends StatelessWidget {
         BlocProvider<IncomeCubit>(
           create: (context) => IncomeCubit(),
         ),
-        BlocProvider<EntriesCubit>(
-          create: (context) => EntriesCubit(),
-        ),
         BlocProvider<ExpenseCubit>(
           create: (context) => ExpenseCubit(),
         ),
@@ -59,6 +57,9 @@ class ProvidersWrapper extends StatelessWidget {
         ),
         BlocProvider<UserInfoCubit>(
           create: (context) => UserInfoCubit(),
+        ),
+        BlocProvider<BudgetCubit>(
+          create: (context) => BudgetCubit(),
         )
       ],
       child: const MyApp(),

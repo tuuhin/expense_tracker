@@ -22,13 +22,9 @@ class EntriesDto {
       desc: json['desc'],
       isSecure: json['isSecure']);
 
-  EntriesModel toModel() => EntriesModel(id: id, title: title, type: type);
+  factory EntriesDto.fromModel(EntriesModel entry) =>
+      EntriesDto(id: entry.id, title: entry.title, type: entry.type);
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'desc': desc,
-        'type': type,
-        'isSecure': isSecure
-      };
+  EntriesModel toModel() =>
+      EntriesModel(id: id, title: title, type: type, desc: desc);
 }

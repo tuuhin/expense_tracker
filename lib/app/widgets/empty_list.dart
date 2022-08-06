@@ -1,3 +1,4 @@
+import 'package:expense_tracker/main.dart';
 import 'package:flutter/material.dart';
 
 class EmptyList extends StatefulWidget {
@@ -28,8 +29,16 @@ class _EmptyListState extends State<EmptyList>
       duration: const Duration(milliseconds: 500),
     );
     opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.bounceIn));
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.bounceIn,
+      ),
+    );
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _animationController.forward();
   }
 
@@ -41,27 +50,31 @@ class _EmptyListState extends State<EmptyList>
 
   @override
   Widget build(BuildContext context) {
+    logger.fine('re created ');
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: FadeTransition(
-        opacity: opacity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            widget.image,
-            const SizedBox(height: 10),
-            Text(widget.title, style: Theme.of(context).textTheme.titleSmall),
-            ...[
-              if (widget.subtitle != null)
-                Text(
-                  widget.subtitle!,
-                  style: Theme.of(context).textTheme.caption,
-                )
-            ]
-          ],
-        ),
-      ),
+      child: AnimatedBuilder(
+          animation: _animationController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              widget.image,
+              const SizedBox(height: 10),
+              Text(widget.title, style: Theme.of(context).textTheme.titleSmall),
+              ...[
+                if (widget.subtitle != null)
+                  Text(
+                    widget.subtitle!,
+                    style: Theme.of(context).textTheme.caption,
+                  )
+              ]
+            ],
+          ),
+          builder: (context, child) => AnimatedOpacity(
+              duration: _animationController.duration!,
+              opacity: opacity.value,
+              child: child)),
     );
   }
 }

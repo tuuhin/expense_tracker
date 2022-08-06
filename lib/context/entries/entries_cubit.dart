@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:expense_tracker/data/remote/entries_api.dart';
+import 'package:expense_tracker/domain/models/entries_information_model.dart';
 import 'package:expense_tracker/domain/models/entries_model.dart';
 import 'package:flutter/material.dart';
 
@@ -12,48 +13,65 @@ class EntriesCubit extends Cubit<EntriesState> {
   final EntriesApi _clt = EntriesApi();
 
   final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();
-  // List<EntriesModel> _models = [];
+  String? _nextURL;
 
   GlobalKey<AnimatedListState> get entriesKey => _key;
-  // List<EntriesModel> get entriesModel => _models;
 
-  Future<void> getEntires() async {
-    emit(EntriesLoad());
+  String? get nextURL => _nextURL;
+
+  final List<EntriesModel> _models = [];
+
+  Future<void> getMoreEntries(String nextURL) async {
+    logger.fine('get more ');
     try {
-      List<EntriesModel> entries = await _clt.getEntries();
+      Map<String, String> queryParams = Uri.parse(nextURL).queryParameters;
 
-      emit(EntriesLoadSuccess(data: entries));
+      EntriesInfomationModel entriesInfomationModel =
+          await _clt.getMoreEntries(queryParams);
+
+      _nextURL = entriesInfomationModel.nextURL;
+
+      List<EntriesModel> newModels = entriesInfomationModel.entries;
+
+      _models.addAll(newModels);
+
+      emit(EntriesLoadSuccess(data: _models));
+
       Future future = Future(() {});
-      for (var element in entries) {
+      for (var element in newModels) {
         future = future.then(
           (value) => Future.delayed(
             const Duration(milliseconds: 50),
             () {
-              if (_key.currentState != null) {
-                _key.currentState!.insertItem(entries.indexOf(element));
-              }
+              if (_key.currentState == null) return;
+              _key.currentState!.insertItem(_models.indexOf(element));
             },
           ),
         );
       }
     } catch (e) {
-      logger.info(e);
+      logger.shout(e);
     }
   }
 
-  void loadMoreEntries(Map<String, dynamic> query) async {
+  Future<void> getEntires() async {
+    // emit(EntriesLoad());
     try {
-      List<EntriesModel> entries = await _clt.getMoreEntries(query);
-      emit(EntriesLoadSuccess(data: entries));
+      if (_models.isNotEmpty) {
+        _models.clear();
+      }
+      EntriesInfomationModel entriesInfomationModel = await _clt.getEntries();
+      _nextURL = entriesInfomationModel.nextURL;
+      _models.addAll(entriesInfomationModel.entries);
+      emit(EntriesLoadSuccess(data: _models));
       Future future = Future(() {});
-      for (var element in entries) {
+      for (var element in _models) {
         future = future.then(
           (value) => Future.delayed(
             const Duration(milliseconds: 50),
             () {
-              if (_key.currentState != null) {
-                _key.currentState!.insertItem(entries.indexOf(element));
-              }
+              if (_key.currentState == null) return;
+              _key.currentState!.insertItem(_models.indexOf(element));
             },
           ),
         );

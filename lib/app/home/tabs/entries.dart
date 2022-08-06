@@ -1,5 +1,8 @@
+import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/context/context.dart';
+import 'package:expense_tracker/main.dart';
+import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,106 +16,99 @@ class EntriesTab extends StatefulWidget {
 class _EntriesTabState extends State<EntriesTab> {
   late ScrollController _scrollController;
   late EntriesCubit _entries;
-  bool _isOptions = false;
+  bool loadMore = false;
 
-  void _scrollListener() {
-    if (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !_scrollController.position.outOfRange &&
-        !_isOptions) {
-      setState(() {
-        _isOptions = !_isOptions;
-      });
-    } else if (_isOptions) {
-      setState(() {
-        _isOptions = !_isOptions;
-      });
+  void _scrollListener() async {
+    if (_scrollController.offset >
+            _scrollController.position.maxScrollExtent * 0.9 &&
+        !loadMore) {
+      if (_entries.nextURL == null) return;
+      loadMore = !loadMore;
+      await _entries.getMoreEntries(_entries.nextURL!);
+      if (_entries.nextURL == null) return;
+      loadMore = !loadMore;
     }
   }
 
   @override
   void initState() {
     super.initState();
+
     _entries = BlocProvider.of<EntriesCubit>(context);
     _scrollController = ScrollController();
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _entries.getEntires();
     _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(() {});
     _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: BlocBuilder<EntriesCubit, EntriesState>(builder: (context, state) {
-        if (state is EntriesLoad) {
-          _entries.loadEntries();
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 10),
-              Text(
-                'Loading',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ],
-          );
-        }
-        if (state is EntriesLoadSuccess) {
-          return Stack(alignment: Alignment.bottomCenter, children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 60),
-                ListTile(
-                  trailing: Text(
-                    '${state.highestCount}/${state.overallCount}',
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: Text(
+          'Your Entries',
+          style: Theme.of(context)
+              .textTheme
+              .headline6
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: BlocBuilder<EntriesCubit, EntriesState>(
+          builder: (context, state) {
+            if (state is EntriesLoad) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 10),
+                  Text('Loading', style: Theme.of(context).textTheme.subtitle1),
+                ],
+              );
+            }
+            if (state is EntriesLoadSuccess) {
+              if (state.data.isEmpty) {
+                return Center(
+                  child: EmptyList(
+                    title: 'Haven\'t you add any expense or income',
+                    image: categoriesImage,
                   ),
-                  title: Text('Entries',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline5!
-                          .copyWith(fontWeight: FontWeight.w700)),
-                ),
-                if (state.entries.isNotEmpty)
-                  Expanded(
-                    child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: EntriesList(
-                          entries: state.entries,
-                          controller: _scrollController,
-                        )),
-                  )
-                else
-                  const Text('No entries')
-              ],
-            ),
-            Positioned(
-              bottom: 60,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: EntriesOptions(
-                  isVisible: _isOptions,
-                  onRefresh: () => _entries.emitLoadState(),
-                  onNext: state.nextURL != null
-                      ? () => _entries.loadEntriesByURL(state.nextURL)
-                      : null,
-                  onPrevious: state.previousURL != null
-                      ? () => _entries.loadEntriesByURL(state.previousURL)
-                      : null,
-                ),
-              ),
-            )
-          ]);
-        }
-        return const SizedBox();
-      }),
+                );
+              }
+              return AnimatedList(
+                controller: _scrollController,
+                key: _entries.entriesKey,
+                itemBuilder: (context, index, animation) {
+                  return FadeTransition(
+                    opacity: animation.drive(opacity),
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      child: EntriesCard(model: state.data[index]),
+                    ),
+                  );
+                },
+              );
+            }
+            if (state is EntriesLoadFailed) {
+              logger.shout(state.message);
+            }
+            return const SizedBox();
+          },
+        ),
+      ),
     );
   }
 }
