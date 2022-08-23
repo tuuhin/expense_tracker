@@ -3,6 +3,7 @@ class UserProfileModel {
   String? firstName;
   String? lastName;
   String? photoURL;
+  String? email;
   String? createdAt;
   String? updatedAt;
 
@@ -10,6 +11,7 @@ class UserProfileModel {
     this.phoneNumber,
     this.firstName,
     this.lastName,
+    this.email,
     this.photoURL,
     this.createdAt,
     this.updatedAt,

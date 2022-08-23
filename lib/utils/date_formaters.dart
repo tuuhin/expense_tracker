@@ -1,4 +1,3 @@
-import 'package:date_time_format/date_time_format.dart';
+import 'package:intl/intl.dart';
 
-String toDate(DateTime dateTime) =>
-    DateTimeFormat.format(dateTime, format: DateTimeFormats.americanAbbr);
+String toDate(DateTime dateTime) => DateFormat("yMMMMEEEEd").format(dateTime);
