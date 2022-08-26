@@ -25,11 +25,11 @@ class BudgetStorage {
       .map((BudgetEntity e) => BudgetDto.fromEntity(e).toBudgetModel())
       .toList();
 
-  Future<void> deleteExpenseCategory(BudgetModel budgetModel) async {
+  Future<void> deleteBudget(BudgetModel budgetModel) async {
     int index =
         getBudget().indexWhere((element) => element.id == budgetModel.id);
     await budget!.deleteAt(index);
   }
 
-  Future<void> deleteExpenseCategories() async => await budget!.clear();
+  Future<void> deleteAllBudget() async => await budget!.clear();
 }

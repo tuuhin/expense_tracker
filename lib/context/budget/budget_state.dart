@@ -11,7 +11,7 @@ class BudgetLoadSuccess extends BudgetState {
   BudgetLoadSuccess({required this.data, this.message});
 }
 
-class BudgetLoadFailed {
+class BudgetLoadFailed extends BudgetState {
   final String? message;
   BudgetLoadFailed({this.message});
 }

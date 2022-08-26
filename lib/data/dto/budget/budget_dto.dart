@@ -28,11 +28,11 @@ class BudgetDto {
         id: json['id'],
         title: json['title'],
         desc: json['desc'],
-        statedFrom: DateTime.parse(json['from']),
+        statedFrom: DateTime.parse(json['_from']),
         tillDate: DateTime.parse(json['to']),
-        amount: json['amount'],
-        amountUsed: json['amount'],
-        issedAt: DateTime.parse(json['issed_ at']),
+        amount: json['total_amount'],
+        amountUsed: json['amount_used'],
+        issedAt: DateTime.parse(json['issued_at']),
         hasExpired: json['has_expired'],
       );
 
@@ -87,10 +87,10 @@ class BudgetDto {
         'id': id,
         'title': title,
         'desc': desc,
-        'from': statedFrom.toIso8601String(),
+        '_from': statedFrom.toIso8601String(),
         'to': tillDate.toIso8601String(),
-        'amount': amount,
-        'amountUsed': amountUsed,
+        'total_amount': amount,
+        'amount_used': amountUsed,
         'issued_at': issedAt.toIso8601String(),
         'has_expired': hasExpired
       };

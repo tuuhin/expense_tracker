@@ -1,5 +1,8 @@
+import 'package:expense_tracker/context/budget/budget_cubit.dart';
 import 'package:expense_tracker/utils/date_formaters.dart';
+import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateBudget extends StatefulWidget {
   const CreateBudget({Key? key}) : super(key: key);
@@ -9,26 +12,28 @@ class CreateBudget extends StatefulWidget {
 }
 
 class _CreateBudgetState extends State<CreateBudget> {
+  late BudgetCubit _budgetCubit;
   late TextEditingController _title;
   late TextEditingController _desc;
   late TextEditingController _amount;
-  late String _from;
-  late String _to;
+  late DateTime _from;
+  late DateTime _to;
 
-  String budget =
+  final String budget =
       'A budget helps create financial stability. By tracking expenses and following a plan,a budget puts a person on stronger financial footing for both the day-to-day and the long term.';
 
-  String budgetWarning =
+  final String budgetWarning =
       'A budget cant have a single day minimum lifetime of a budget is 10 days';
 
   @override
   void initState() {
     super.initState();
+    _budgetCubit = BlocProvider.of<BudgetCubit>(context);
     _title = TextEditingController();
     _desc = TextEditingController();
     _amount = TextEditingController();
-    _from = toDate(DateTime.now());
-    _to = toDate(DateTime.now().add(const Duration(days: 10)));
+    _from = DateTime.now();
+    _to = DateTime.now().add(const Duration(days: 10));
   }
 
   @override
@@ -39,7 +44,7 @@ class _CreateBudgetState extends State<CreateBudget> {
     super.dispose();
   }
 
-  void _createBudget() {
+  void _createBudget() async {
     if (_title.text.isEmpty || _amount.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Some fields are empty')),
@@ -53,6 +58,14 @@ class _CreateBudgetState extends State<CreateBudget> {
       );
       return;
     }
+    Resource newBudget = await _budgetCubit.createBudget(
+        _title.text, double.parse(_amount.text),
+        from: _from, to: _to, desc: _desc.text.isEmpty ? null : _desc.text);
+    if (newBudget is ResourceSucess && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("New Budget Created ${_title.text}")));
+      Navigator.of(context).pop();
+    }
   }
 
   void _pickFromDate() async {
@@ -62,9 +75,7 @@ class _CreateBudgetState extends State<CreateBudget> {
         firstDate: DateTime.now(),
         lastDate: DateTime.now().add(const Duration(days: 100)));
     if (fromDateTime == null) return;
-    setState(() {
-      _from = toDate(fromDateTime);
-    });
+    setState(() => _from = fromDateTime);
   }
 
   void _pickToDate() async {
@@ -82,7 +93,7 @@ class _CreateBudgetState extends State<CreateBudget> {
       }
       return;
     }
-    setState(() => _to = toDate(toDateTime));
+    setState(() => _to = toDateTime);
   }
 
   @override
@@ -119,6 +130,7 @@ class _CreateBudgetState extends State<CreateBudget> {
             ),
             ListTile(
               onTap: _pickToDate,
+              trailing: const Icon(Icons.date_range),
               leading: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
@@ -129,9 +141,10 @@ class _CreateBudgetState extends State<CreateBudget> {
                   child: Text('To', style: TextStyle(color: Colors.white)),
                 ),
               ),
-              title: Text(_to),
+              title: Text(toSimpleDate(_to)),
             ),
             ListTile(
+              trailing: Icon(Icons.date_range),
               onTap: _pickFromDate,
               leading: Container(
                 decoration: BoxDecoration(
@@ -143,7 +156,7 @@ class _CreateBudgetState extends State<CreateBudget> {
                   child: Text('From', style: TextStyle(color: Colors.white)),
                 ),
               ),
-              title: Text(_from),
+              title: Text(toSimpleDate(_from)),
             ),
             TextField(
               controller: _amount,
