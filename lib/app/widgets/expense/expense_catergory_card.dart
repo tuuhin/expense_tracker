@@ -3,8 +3,6 @@ import 'package:expense_tracker/domain/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../utils/resource.dart';
-
 class ExpenseCategoryCard extends StatefulWidget {
   final ExpenseCategoriesModel? category;
   const ExpenseCategoryCard({
@@ -17,18 +15,9 @@ class ExpenseCategoryCard extends StatefulWidget {
 }
 
 class _ExpenseCategoryCardState extends State<ExpenseCategoryCard> {
-  void _removeCategory() async {
-    Resource request = await context
-        .read<ExpenseCategoriesCubit>()
-        .deleteExpenseCategory(widget.category!);
-    if (mounted && request.message != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(request.message!),
-        ),
-      );
-    }
-  }
+  void _removeCategory() => context
+      .read<ExpenseCategoriesCubit>()
+      .deleteExpenseCategory(widget.category!);
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +35,13 @@ class _ExpenseCategoryCardState extends State<ExpenseCategoryCard> {
             )),
         subtitle:
             widget.category!.desc != null && widget.category!.desc!.isNotEmpty
-                ? Text(widget.category!.desc ?? '',
+                ? Text(
+                    widget.category!.desc ?? '',
                     style: const TextStyle(
                       color: Colors.white60,
                       fontWeight: FontWeight.w400,
-                    ))
+                    ),
+                  )
                 : null,
       ),
     );

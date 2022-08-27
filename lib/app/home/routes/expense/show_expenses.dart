@@ -72,7 +72,7 @@ class _ShowExpensesState extends State<ShowExpenses> {
               child: Text(state.message ?? ''),
             );
           }
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         },
       ),
       bottomNavigationBar: Padding(
