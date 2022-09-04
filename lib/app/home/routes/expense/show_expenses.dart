@@ -24,11 +24,6 @@ class _ShowExpensesState extends State<ShowExpenses> {
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
     _expenseCubit = BlocProvider.of<ExpenseCubit>(context);
     _expenseCubit.getExpenses();
   }
@@ -57,10 +52,13 @@ class _ShowExpensesState extends State<ShowExpenses> {
             }
             return AnimatedList(
               key: _expenseCubit.key,
-              itemBuilder: (context, index, animation) => SlideTransition(
-                position: animation.drive(offset),
-                child: ExpenseCard(
-                  expense: state.data![index],
+              itemBuilder: (context, index, animation) => FadeTransition(
+                opacity: animation.drive(opacity),
+                child: SlideTransition(
+                  position: animation.drive(offset),
+                  child: ExpenseCard(
+                    expense: state.data![index],
+                  ),
                 ),
               ),
             );
@@ -80,7 +78,7 @@ class _ShowExpensesState extends State<ShowExpenses> {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
               fixedSize: Size(size.width, 50),
-              primary: Theme.of(context).colorScheme.secondary),
+              backgroundColor: Theme.of(context).colorScheme.secondary),
           onPressed: _addExpense,
           child: const Text('Add Expense'),
         ),

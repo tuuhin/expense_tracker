@@ -9,6 +9,7 @@ class ViewExpenseReceipt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -28,15 +29,17 @@ class ViewExpenseReceipt extends StatelessWidget {
               tag: imageURL,
               child: InteractiveViewer.builder(
                 builder: (context, viewport) => CachedNetworkImage(
-                    placeholder: (context, url) => Container(
-                          decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).brightness == Brightness.light
-                                    ? const Color.fromARGB(255, 220, 220, 220)
-                                    : const Color.fromARGB(255, 118, 118, 118),
-                          ),
-                        ),
-                    imageUrl: imageURL),
+                  placeholder: (context, url) => Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color.fromARGB(255, 220, 220, 220)
+                          : const Color.fromARGB(255, 118, 118, 118),
+                    ),
+                  ),
+                  imageUrl: imageURL,
+                  height: size.height,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
