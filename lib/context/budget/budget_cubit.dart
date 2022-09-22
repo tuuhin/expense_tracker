@@ -20,6 +20,8 @@ class BudgetCubit extends Cubit<BudgetState> {
 
   List<BudgetModel> _budgets = _storage.getBudget();
 
+  List<BudgetModel> get budgets => _budgets;
+
   GlobalKey<AnimatedListState> get key => _listState;
 
   Future<Resource<BudgetModel?>> createBudget(String title, double amount,

@@ -7,6 +7,7 @@ import 'package:expense_tracker/domain/models/models.dart';
 import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
 
+import '../../app/home/routes/route_builder.dart';
 import '../../main.dart';
 
 part 'income_source_state.dart';
@@ -14,11 +15,7 @@ part 'income_source_state.dart';
 class IncomeSourceCubit extends Cubit<IncomeSourceState> {
   IncomeSourceCubit() : super(IncomeStateLoading());
 
-  final IncomeClient _clt = IncomeClient();
-
-  final Tween<Offset> _offset =
-      Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero);
-  final Tween<double> _opacity = Tween<double>(begin: 0, end: 1);
+  final IncomeApi _clt = IncomeApi();
 
   static final IncomeSourceStorage _storage = IncomeSourceStorage();
 
@@ -38,9 +35,9 @@ class IncomeSourceCubit extends Cubit<IncomeSourceState> {
         _key.currentState!.removeItem(
           _sources.indexOf(incomeSourceModel),
           (context, animation) => FadeTransition(
-            opacity: animation.drive<double>(_opacity),
+            opacity: animation.drive<double>(opacity),
             child: SlideTransition(
-              position: animation.drive<Offset>(_offset),
+              position: animation.drive<Offset>(offset),
               child: IncomeSourceCard(source: incomeSourceModel),
             ),
           ),
