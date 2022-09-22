@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/widgets/expense/view_expense_receipt.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/domain/models/models.dart';
 import 'package:expense_tracker/utils/date_formaters.dart';
@@ -69,7 +68,7 @@ class _ExpenseCardState extends State<ExpenseCard> {
                         GestureDetector(
                           onTap: _interActiveMode,
                           child: Hero(
-                            tag: widget.expense.imageURL!,
+                            tag: UniqueKey(),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: CachedNetworkImage(
@@ -131,7 +130,9 @@ class _ExpenseCardState extends State<ExpenseCard> {
                                   : const Color.fromARGB(255, 118, 118, 118),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(4.0),
+                              padding: widget.expense.imageURL == null
+                                  ? const EdgeInsets.all(10.0)
+                                  : const EdgeInsets.all(5.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [

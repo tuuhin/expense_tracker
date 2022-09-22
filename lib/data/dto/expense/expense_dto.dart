@@ -25,17 +25,18 @@ class ExpenseDto {
 
   factory ExpenseDto.fromJson(Map<String, dynamic> json) {
     List categories = json['categories'] as List;
+
     return ExpenseDto(
       id: json['id'],
       title: json['title'],
       budget: BudgetDto.fromJson(json['budget']),
       amount: json['amount'],
-      addedAt: DateTime.parse(json['addedAt']),
+      addedAt: DateTime.parse(json['added_at']),
       categories: categories
           .map((category) => ExpenseCategoryDto.fromJson(category))
           .toList(),
       desc: json['desc'],
-      imageURL: json['recepit'],
+      imageURL: json['receipt'],
     );
   }
 
@@ -44,7 +45,7 @@ class ExpenseDto {
         title: title,
         amount: amount,
         addedAt: addedAt,
-        budget: budget.toBudgetModel(),
+        budget: budget.toModel(),
         desc: desc,
         imageURL: imageURL,
         categories: categories?.map((e) => e.toExpenseCategoryModel()).toList(),
@@ -90,7 +91,8 @@ class ExpenseDto {
         'title': title,
         'desc': desc,
         'amount': amount,
+        'budget': budget,
         'categories': categories!.map((e) => e.toJson()),
-        'imageURL': imageURL
+        'imageURL': imageURL,
       };
 }

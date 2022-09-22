@@ -1,13 +1,10 @@
-import 'package:expense_tracker/app/home/routes/expense/create_expenses.dart';
-import 'package:expense_tracker/app/home/routes/route_builder.dart';
-import 'package:expense_tracker/app/widgets/expense/expense_card.dart';
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/utils/app_images.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../widgets/empty_list.dart';
+import '../../../widgets/widgets.dart';
+import 'package:expense_tracker/app/home/routes/routes.dart';
+import 'package:expense_tracker/context/context.dart';
+import 'package:expense_tracker/utils/app_images.dart';
 
 class ShowExpenses extends StatefulWidget {
   const ShowExpenses({Key? key}) : super(key: key);
@@ -18,6 +15,7 @@ class ShowExpenses extends StatefulWidget {
 
 class _ShowExpensesState extends State<ShowExpenses> {
   late ExpenseCubit _expenseCubit;
+
   void _addExpense() =>
       Navigator.of(context).push(appRouteBuilder(const CreateExpense()));
 
@@ -36,8 +34,9 @@ class _ShowExpensesState extends State<ShowExpenses> {
       appBar: AppBar(
         title: const Text('Expenses'),
         bottom: const PreferredSize(
-            preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
-            child: Divider()),
+          preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
+          child: Divider(),
+        ),
       ),
       body: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
