@@ -20,7 +20,7 @@ class AuthInterceptors extends QueuedInterceptor {
 
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) async {
-    if (err.response!.statusCode == 401) {
+    if (err.response?.statusCode == 401) {
       logger.fine('UNAUTHORIZE ERROR');
       String? refreshToken = await _storage.getRefreshToken();
       try {

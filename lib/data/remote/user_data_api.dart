@@ -55,4 +55,7 @@ class UserProfileRepositoryImpl extends AuthClient
     //     .updateUserProfile(UserProfileDto.fromModel(model).toEntity());
     return UserProfileModel();
   }
+
+  @override
+  Future changePassword(String oldPword, String newPword) async {}
 }

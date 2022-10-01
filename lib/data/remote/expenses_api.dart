@@ -1,15 +1,16 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/data/remote/remote.dart';
-import 'package:expense_tracker/domain/models/models.dart';
-import 'package:expense_tracker/domain/repositories/repositories.dart';
-import 'package:expense_tracker/data/dto/dto.dart';
+
+import './remote.dart';
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
+import '../dto/dto.dart';
 
 class ExpensesApi extends ResourceClient implements ExpenseRepostiory {
   @override
   Future<ExpenseCategoriesModel> createCategory(String title,
       {String? desc}) async {
-    Response response = await dio.post(
+    final Response response = await dio.post(
       '/categories',
       data: {'title': title, 'desc': desc},
     );
@@ -20,25 +21,27 @@ class ExpensesApi extends ResourceClient implements ExpenseRepostiory {
   Future<ExpenseModel> createExpense(
     String title,
     double amount, {
+    required BudgetModel budget,
     String? desc,
-    List<ExpenseCategoriesModel>? categories,
+    required List<ExpenseCategoriesModel> categories,
     File? receipt,
   }) async {
     Response response = await dio.post(
-      '/expense',
+      '/expenses',
       data: FormData.fromMap(
         {
           'title': title,
           'amount': amount,
           'desc': desc,
-          'categories': categories!
-              .map((e) =>
-                  ExpenseCategoryDto.fromExpenseCategoryModel(e).toJson())
+          'budget': BudgetDto.fromModel(budget).id,
+          'categories': categories
+              .map<int>((ExpenseCategoriesModel e) =>
+                  ExpenseCategoryDto.fromExpenseCategoryModel(e).id)
               .toList(),
           'receipt': receipt != null
               ? await MultipartFile.fromFile(receipt.path,
                   filename: receipt.path)
-              : null,
+              : null
         },
       ),
     );

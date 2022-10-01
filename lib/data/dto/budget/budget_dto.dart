@@ -59,7 +59,7 @@ class BudgetDto {
         hasExpired: budgetEntity.hasExpired,
       );
 
-  BudgetModel toBudgetModel() => BudgetModel(
+  BudgetModel toModel() => BudgetModel(
         id: id,
         title: title,
         desc: desc,

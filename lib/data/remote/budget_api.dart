@@ -16,13 +16,13 @@ class BudgetApi extends PlansClient implements BudgetRepository {
       'total_amount': amount
     });
 
-    return BudgetDto.fromJson(response.data).toBudgetModel();
+    return BudgetDto.fromJson(response.data).toModel();
   }
 
   @override
   Future<List<BudgetModel>> getBudget() async {
     Response response = await dio.get('/budget');
     List models = response.data as List;
-    return models.map((e) => BudgetDto.fromJson(e).toBudgetModel()).toList();
+    return models.map((e) => BudgetDto.fromJson(e).toModel()).toList();
   }
 }

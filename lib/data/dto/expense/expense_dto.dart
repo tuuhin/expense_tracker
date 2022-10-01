@@ -25,7 +25,6 @@ class ExpenseDto {
 
   factory ExpenseDto.fromJson(Map<String, dynamic> json) {
     List categories = json['categories'] as List;
-
     return ExpenseDto(
       id: json['id'],
       title: json['title'],
