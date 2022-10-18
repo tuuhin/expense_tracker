@@ -12,6 +12,8 @@ class IncomeLoadSuccess extends IncomeState {
 }
 
 class IncomeLoadFailed extends IncomeState {
-  final String? message;
-  IncomeLoadFailed({this.message});
+  final String errMessage;
+  final List<IncomeModel>? data;
+  final StackTrace? stk;
+  IncomeLoadFailed({required this.errMessage, this.data, this.stk});
 }

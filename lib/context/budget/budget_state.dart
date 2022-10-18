@@ -12,6 +12,12 @@ class BudgetLoadSuccess extends BudgetState {
 }
 
 class BudgetLoadFailed extends BudgetState {
-  final String? message;
-  BudgetLoadFailed({this.message});
+  final String errMessage;
+  final StackTrace? stackTrace;
+  final List<BudgetModel>? data;
+  BudgetLoadFailed({
+    required this.errMessage,
+    this.stackTrace,
+    this.data,
+  });
 }

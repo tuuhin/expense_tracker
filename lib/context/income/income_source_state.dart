@@ -3,15 +3,18 @@ part of 'income_source_cubit.dart';
 @immutable
 abstract class IncomeSourceState {}
 
-class IncomeStateSuccess<T> extends IncomeSourceState {
+class IncomeStateSuccess extends IncomeSourceState {
   final List<IncomeSourceModel>? data;
   final String? message;
   IncomeStateSuccess({this.data, this.message});
 }
 
-class IncomeStateFailed<T> extends IncomeSourceState {
-  final String? message;
-  IncomeStateFailed({this.message});
+class IncomeStateFailed extends IncomeSourceState {
+  final String errMessage;
+  final List<IncomeSourceModel>? data;
+  final StackTrace? stk;
+
+  IncomeStateFailed({required this.errMessage, this.data, this.stk});
 }
 
-class IncomeStateLoading<T> extends IncomeSourceState {}
+class IncomeStateLoading extends IncomeSourceState {}

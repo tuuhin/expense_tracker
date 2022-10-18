@@ -10,19 +10,14 @@ class ExpenseCategoryNotifier extends ChangeNotifier {
   void checkCategory(ExpenseCategoriesModel categoriesModel) {
     if (!categoryInList(categoriesModel)) {
       _selectedCategories.add(categoriesModel);
-      logger.info('adding category');
     } else {
-      _selectedCategories
-          .removeWhere((element) => element.id == categoriesModel.id);
-      logger.info('removing category ');
+      _selectedCategories.remove(categoriesModel);
     }
     notifyListeners();
   }
 
   bool categoryInList(ExpenseCategoriesModel categoriesModel) =>
-      _selectedCategories
-          .where((element) => element.id == categoriesModel.id)
-          .isNotEmpty;
+      _selectedCategories.contains(categoriesModel);
 
   void clear() {
     _selectedCategories.clear();

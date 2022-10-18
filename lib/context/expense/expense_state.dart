@@ -12,6 +12,8 @@ class ExpenseLoadSuccess extends ExpenseState {
 }
 
 class ExpenseLoadFailed extends ExpenseState {
-  final String? message;
-  ExpenseLoadFailed({this.message});
+  final List<ExpenseModel>? data;
+  final String errMessage;
+  final StackTrace? stackTrace;
+  ExpenseLoadFailed({this.data, this.stackTrace, required this.errMessage});
 }

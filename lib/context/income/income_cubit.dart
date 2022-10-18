@@ -41,10 +41,13 @@ class IncomeCubit extends Cubit<IncomeState> {
       IncomeModel? model = await _incomeClient.createIncome(title, amount,
           desc: desc, sources: sources);
 
-      return ResourceSucess(data: model);
-    } on DioError catch (error) {
-      logger.shout(error);
-      return ResourceFailed(message: 'DIO ERROR');
+      return Resource.data(data: model);
+    } on DioError catch (dio) {
+      return Resource.error(
+          err: dio,
+          errorMessage: dio.response?.statusMessage ?? "DIO ERROR OCCURED");
+    } catch (e) {
+      return Resource.error(err: e, errorMessage: "UNKNOWN ERROR OCCURED");
     }
   }
 
@@ -60,23 +63,19 @@ class IncomeCubit extends Cubit<IncomeState> {
       }
       _incomes = _storage.getIncomes();
       emit(IncomeLoadSuccess(data: _incomes));
-      Future future = Future(() {});
       for (var element in _incomes) {
-        future = future.then(
-          (value) => Future.delayed(
-            const Duration(milliseconds: 50),
-            () {
-              if (_key.currentState != null) {
-                _key.currentState!.insertItem(_incomes.indexOf(element));
-              }
-            },
-          ),
+        await Future.delayed(
+          const Duration(milliseconds: 50),
+          () => _key.currentState?.insertItem(_incomes.indexOf(element)),
         );
       }
     } on DioError catch (dio) {
-      emit(IncomeLoadFailed(message: dio.message));
+      emit(IncomeLoadFailed(
+          errMessage: dio.response?.statusMessage ?? "Dio realted error",
+          data: _incomes));
     } catch (e) {
-      emit(IncomeLoadFailed(message: e.toString()));
+      emit(IncomeLoadFailed(
+          errMessage: "Unknown errorr occured", data: _incomes));
     }
   }
 }

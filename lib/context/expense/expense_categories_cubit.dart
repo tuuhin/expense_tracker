@@ -1,9 +1,7 @@
 import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 
 import '../../app/widgets/widgets.dart';
 import '../../data/local/storage.dart';
@@ -18,11 +16,11 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
   ExpenseCategoriesCubit() : super(ExpenseCategoryStateLoading());
 
   final ExpensesApi _expensesApi = ExpensesApi();
-  final ExpenseCategoriesStorage _expenseCategoriesStorage =
-      ExpenseCategoriesStorage();
+  final ExpenseCategoriesStorage _categoryStore = ExpenseCategoriesStorage();
 
   List<ExpenseCategoriesModel> _models =
       ExpenseCategoriesStorage.getExpenseCategories();
+
   List<ExpenseCategoriesModel> get models => _models;
 
   GlobalKey<AnimatedListState> get expenseSourceListKey => _key;
@@ -31,26 +29,29 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
   Future<Resource> deleteExpenseCategory(ExpenseCategoriesModel model) async {
     try {
       await _expensesApi.deleteCategory(model);
-      int index = _models.indexOf(model);
-      if (_key.currentState != null) {
-        _key.currentState!.removeItem(
-          index,
-          (context, animation) => SlideAndFadeTransition(
-            animation: animation,
-            child: ExpenseCategoryCard(category: model),
-          ),
-        );
-        await _expenseCategoriesStorage.deleteExpenseCategory(model);
-        _models.remove(model);
-      }
-      return ResourceSucess(
-          message: 'Successfully removed category ${model.title}');
+
+      _key.currentState?.removeItem(
+        _models.indexOf(model),
+        (context, animation) => SlideAndFadeTransition(
+          animation: animation,
+          child: ExpenseCategoryCard(category: model),
+        ),
+      );
+      await _categoryStore.deleteExpenseCategory(model);
+      _models = ExpenseCategoriesStorage.getExpenseCategories();
+
+      return Resource.data(
+          data: [], message: 'Successfully removed category ${model.title}');
     } on DioError catch (dio) {
-      return ResourceFailed(message: dio.message);
+      return Resource.error(
+          err: dio.response?.statusMessage ??
+              "Something related to dio occured ");
     } on SocketException {
-      return ResourceFailed(message: 'NO INTERNET');
-    } catch (e) {
-      return ResourceFailed(message: e.toString());
+      return Resource.error(
+          err: "Something related to internet occured  occured ");
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: "Unknown error");
     }
   }
 
@@ -59,18 +60,20 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
     String? desc,
   }) async {
     try {
-      ExpenseCategoriesModel? newCategory =
+      ExpenseCategoriesModel newCategory =
           await _expensesApi.createCategory(title, desc: desc);
-      if (_key.currentState != null) {
-        _expenseCategoriesStorage.addExpenseCategory(newCategory);
-        _models.add(newCategory);
-        _key.currentState!.insertItem(_models.length - 1);
-      }
-      return ResourceSucess<ExpenseCategoriesModel>(data: newCategory);
+      _categoryStore.addExpenseCategory(newCategory);
+      _models.add(newCategory);
+      _key.currentState?.insertItem(0);
+
+      return Resource.data(data: newCategory, message: "NEW CATEGORY ADDED");
     } on DioError catch (dio) {
-      return ResourceFailed(message: dio.message);
+      return Resource.error(
+          err: dio.response?.statusMessage ??
+              "Something related to dio occured  occured ");
     } catch (e) {
-      return ResourceFailed(message: e.toString());
+      return Resource.error(
+          err: "Something related to internet occured  occured ");
     }
   }
 
@@ -80,36 +83,29 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
           await _expensesApi.getCategories();
       if (updatedCategories != null) {
         logger.info('Invalidating cache for expense_categories');
-        await _expenseCategoriesStorage.deleteExpenseCategories();
-        await _expenseCategoriesStorage.addExpenseCategories(updatedCategories);
+        await _categoryStore.deleteExpenseCategories();
+        await _categoryStore.addExpenseCategories(updatedCategories);
       }
       _models = ExpenseCategoriesStorage.getExpenseCategories();
       emit(ExpenseCategoryStateSuccess(data: _models));
-      Future future = Future(() {});
       for (var element in _models) {
-        int index = models.indexOf(element);
-        future = future.then(
-          (value) => Future.delayed(
-            const Duration(milliseconds: 50),
-            () {
-              if (_key.currentState == null) return;
-              _key.currentState!.insertItem(index);
-            },
-          ),
-        );
+        await Future.delayed(const Duration(milliseconds: 50),
+            () => _key.currentState?.insertItem(models.indexOf(element)));
       }
     } on DioError catch (dio) {
-      return emit(ExpenseCategoryStateFailed(
-          message: dio.error.runtimeType.toString()));
+      return emit(
+        ExpenseCategoryStateFailed(
+            errMessage:
+                dio.response?.statusMessage ?? "Something related to dio ",
+            data: _models),
+      );
     } on SocketException {
-      _models = ExpenseCategoriesStorage.getExpenseCategories();
       emit(ExpenseCategoryStateSuccess(
           data: _models, message: 'NO INTERNET lOADING ITEMS FROM CACHE'));
-    } on HiveError catch (hiveError) {
-      logger.shout(hiveError);
-    } catch (e) {
-      logger.shout(e);
-      return emit(ExpenseCategoryStateFailed(message: e.toString()));
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      emit(ExpenseCategoryStateSuccess(
+          data: _models, message: 'UNUSUAL ERROR OCCURED '));
     }
   }
 }

@@ -1,14 +1,14 @@
-abstract class Resource<T> {
-  final T? data;
-  final String? message;
-  Resource({this.data, this.message});
-}
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ResourceSucess<T> extends Resource<T?> {
-  ResourceSucess({T? data, String? message})
-      : super(data: data, message: message);
-}
+part 'resource.freezed.dart';
 
-class ResourceFailed<T> extends Resource<T> {
-  ResourceFailed({String? message}) : super(data: null, message: message);
+@freezed
+class Resource<T> with _$Resource<T> {
+  factory Resource.loading() = Loading;
+  factory Resource.data({required T data, String? message}) = Data;
+  factory Resource.error({
+    required Object err,
+    String? errorMessage,
+    T? data,
+  }) = ErrorDetails;
 }

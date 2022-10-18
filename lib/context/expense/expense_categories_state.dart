@@ -11,8 +11,13 @@ class ExpenseCategoryStateSuccess extends ExpenseCategoryState {
 
 class ExpenseCategoryStateFailed extends ExpenseCategoryState {
   final List<ExpenseCategoriesModel?>? data;
-  final String? message;
-  ExpenseCategoryStateFailed({this.data, this.message});
+  final String errMessage;
+  final StackTrace? stackTrace;
+  ExpenseCategoryStateFailed({
+    required this.errMessage,
+    this.data,
+    this.stackTrace,
+  });
 }
 
 class ExpenseCategoryStateLoading extends ExpenseCategoryState {}

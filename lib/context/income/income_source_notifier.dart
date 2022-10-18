@@ -10,18 +10,14 @@ class IncomeSourceNotifier extends ChangeNotifier {
   void checkSource(IncomeSourceModel incomeSourceModel) {
     if (!sourceInList(incomeSourceModel)) {
       _selectedSources.add(incomeSourceModel);
-      logger.info('adding');
     } else {
-      _selectedSources
-          .removeWhere((element) => element.id == incomeSourceModel.id);
-      logger.info('removing');
+      _selectedSources.remove(incomeSourceModel);
     }
     notifyListeners();
   }
 
-  bool sourceInList(IncomeSourceModel incomeSourceModel) => _selectedSources
-      .where((element) => element.id == incomeSourceModel.id)
-      .isNotEmpty;
+  bool sourceInList(IncomeSourceModel incomeSourceModel) =>
+      _selectedSources.contains(incomeSourceModel);
 
   void clear() {
     _selectedSources.clear();

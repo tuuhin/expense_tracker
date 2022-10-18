@@ -12,13 +12,13 @@ part 'budget_state.dart';
 class BudgetCubit extends Cubit<BudgetState> {
   BudgetCubit() : super(BudgetLoad());
 
-  static final BudgetStorage _storage = BudgetStorage();
+  final BudgetStorage _storage = BudgetStorage();
 
   final BudgetApi _api = BudgetApi();
   final GlobalKey<AnimatedListState> _listState =
       GlobalKey<AnimatedListState>();
 
-  List<BudgetModel> _budgets = _storage.getBudget();
+  List<BudgetModel> _budgets = BudgetStorage.getBudget();
 
   List<BudgetModel> get budgets => _budgets;
 
@@ -31,15 +31,16 @@ class BudgetCubit extends Cubit<BudgetState> {
           from: from, to: to, desc: desc);
       _storage.addBudget(newBudget);
 
-      // _listState.currentState?.insertItem(0);
+      _listState.currentState?.insertItem(0);
 
-      return ResourceSucess(data: newBudget);
+      return Resource.data(data: newBudget);
     } on DioError catch (dio) {
-      logger.shout(dio.response?.data);
-      return ResourceFailed(message: dio.message);
-    } catch (e) {
-      logger.shout(e.toString());
-      return ResourceFailed(message: e.toString());
+      return Resource.error(
+          err: dio.response?.statusMessage ??
+              "Something related to dio occured ");
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: "Something unusal occured ");
     }
   }
 
@@ -51,23 +52,30 @@ class BudgetCubit extends Cubit<BudgetState> {
       await _storage.deleteAllBudget();
       await _storage.addBudgets(refreshedBudget);
 
-      _budgets = _storage.getBudget();
+      _budgets = BudgetStorage.getBudget();
       emit(BudgetLoadSuccess(data: _budgets));
-      Future future = Future(() {});
+
       for (var element in _budgets) {
-        future = future.then(
-          (value) => Future.delayed(
-            const Duration(milliseconds: 100),
-            () {
-              if (_listState.currentState == null) return;
-              _listState.currentState!.insertItem(_budgets.indexOf(element));
-            },
-          ),
+        await Future.delayed(
+          const Duration(milliseconds: 100),
+          () => _listState.currentState?.insertItem(_budgets.indexOf(element)),
         );
       }
-    } catch (e) {
-      emit(BudgetLoadFailed(message: ''));
-      logger.shout(e.toString());
+    } on DioError catch (err) {
+      logger.shout("dio error occured");
+
+      emit(
+        BudgetLoadFailed(
+            errMessage: err.response?.statusMessage ??
+                "Something related to dio occered ",
+            data: _budgets),
+      );
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+
+      emit(BudgetLoadFailed(
+          errMessage: "Something unusual occured loading from cache ",
+          data: _budgets));
     }
   }
 }

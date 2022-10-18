@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/local/expense/expense_storage.dart';
@@ -30,7 +31,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
   GlobalKey<AnimatedListState> get key => _key;
 
-  Future<void> addExpense(
+  Future<Resource<ExpenseModel>> addExpense(
     String title,
     double amount, {
     required BudgetModel budget,
@@ -39,29 +40,28 @@ class ExpenseCubit extends Cubit<ExpenseState> {
     File? receipt,
   }) async {
     try {
-      ExpenseModel newExpense = await _expensesApi.createExpense(
-        title,
-        amount,
-        desc: desc,
-        receipt: receipt,
-        budget: budget,
-        categories: categories ?? [],
-      );
+      ExpenseModel newExpense = await _expensesApi.createExpense(title, amount,
+          desc: desc,
+          receipt: receipt,
+          budget: budget,
+          categories: categories ?? []);
 
       _expenseStorage.addExpense(newExpense);
       _expenses.add(newExpense);
-      _key.currentState?.insertItem(_expenses.length - 1);
-
-      logger.fine(newExpense);
-    } catch (e) {
-      logger.shout(e.toString());
+      _key.currentState?.insertItem(0);
+      return Resource.data(data: newExpense, message: "New Expense Added");
+    } on Dio catch (dio) {
+      return Resource.error(err: dio, errorMessage: "DIO ERROR OCCURED");
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: "UNKNOWN ERROR OCCURED");
     }
   }
 
   Future<void> getExpenses() async {
     try {
       List<ExpenseModel>? updatedExpenses = await _expensesApi.getExpenses();
-      logger.config('Hellow from here');
+      logger.config('got updated expense ');
       if (updatedExpenses != null) {
         logger.info('Invalidating cache for expenses');
         await _expenseStorage.deleteExpense();
@@ -69,23 +69,23 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       }
       _expenses = ExpenseStorage.getExpense();
       emit(ExpenseLoadSuccess(data: _expenses));
-      Future future = Future(() {});
-      for (var element in _expenses) {
-        future = future.then(
-          (value) => Future.delayed(
-            const Duration(milliseconds: 50),
-            () {
-              if (_key.currentState != null) {
-                _key.currentState!.insertItem(_expenses.indexOf(element));
-              }
-            },
-          ),
+
+      for (final ExpenseModel exp in _expenses) {
+        await Future.delayed(
+          const Duration(milliseconds: 50),
+          () => _key.currentState?.insertItem(_expenses.indexOf(exp)),
         );
       }
     } on DioError catch (dio) {
-      emit(ExpenseLoadFailed(message: dio.message));
+      emit(
+        ExpenseLoadFailed(
+            data: _expenses,
+            errMessage: dio.response?.statusMessage ?? "DIO RELATED ERROR"),
+      );
     } catch (e) {
-      emit(ExpenseLoadFailed(message: e.toString()));
+      emit(
+        ExpenseLoadFailed(data: _expenses, errMessage: "UNKNOWN ERROR"),
+      );
     }
   }
 }
