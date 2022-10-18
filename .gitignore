@@ -39,7 +39,7 @@ app.*.symbols
 
 # generated adapters
 *.g.dart
-
+*.freezed.dart
 # Obfuscation related
 app.*.map.json
 

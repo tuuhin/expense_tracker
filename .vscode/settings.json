@@ -1,7 +1,14 @@
 {
-  "editor.defaultFormatter": "Dart-Code.dart-code",
-  "editor.formatOnSave": true,
-  "dart.previewFlutterUiGuides": true,
-  "editor.fontSize": 13,
-  "editor.tabSize": 2,
+	"[dart]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true,
+		"editor.detectIndentation": false,
+		"editor.suggest.insertMode": "replace",
+		"editor.defaultFormatter": "Dart-Code.dart-code",
+		"editor.inlayHints.enabled": "offUnlessPressed",
+		"editor.formatOnSave": true,
+	},
+	"dart.previewFlutterUiGuides": true,
+	"editor.fontSize": 13,
+	"editor.tabSize": 2
 }
