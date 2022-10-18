@@ -1,18 +1,16 @@
 import 'package:expense_tracker/domain/models/models.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class IncomeModel {
-  final int id;
-  final String title;
-  final double amount;
-  final DateTime addedAt;
-  final List<IncomeSourceModel?>? sources;
-  final String? desc;
-  IncomeModel({
-    required this.id,
-    required this.title,
-    required this.amount,
-    required this.addedAt,
-    this.sources,
-    this.desc,
-  });
+part 'income_models.freezed.dart';
+
+@freezed
+class IncomeModel with _$IncomeModel {
+  factory IncomeModel({
+    required int id,
+    required String title,
+    required double amount,
+    required DateTime addedAt,
+    List<IncomeSourceModel?>? sources,
+    String? desc,
+  }) = _IncomeModel;
 }

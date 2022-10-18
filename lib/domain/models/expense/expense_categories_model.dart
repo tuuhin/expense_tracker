@@ -1,14 +1,17 @@
-class ExpenseCategoriesModel {
-  final int id;
-  final String title;
-  final String? desc;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  ExpenseCategoriesModel({
-    required this.id,
-    required this.title,
-    this.desc,
-  });
+part 'expense_categories_model.freezed.dart';
+
+@freezed
+class ExpenseCategoriesModel with _$ExpenseCategoriesModel {
+  const factory ExpenseCategoriesModel({
+    required int id,
+    required String title,
+    String? desc,
+  }) = _ExpenseCategoriesModel;
 
   @override
-  String toString() => '$id. $title';
+  String toString() {
+    return "$id: $title";
+  }
 }

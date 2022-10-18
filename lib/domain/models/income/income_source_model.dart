@@ -1,13 +1,13 @@
-import 'package:flutter/cupertino.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class IncomeSourceModel {
-  final int id;
-  final String title;
-  final String? desc;
-  final bool? isSecure;
-  IncomeSourceModel(
-      {required this.id, required this.title, this.desc, this.isSecure});
+part 'income_source_model.freezed.dart';
 
-  @override
-  String toString() => '$id. $title';
+@freezed
+class IncomeSourceModel with _$IncomeSourceModel {
+  factory IncomeSourceModel({
+    required int id,
+    required String title,
+    String? desc,
+    required bool? isSecure,
+  }) = _IncomeSourceModel;
 }

@@ -1,24 +1,18 @@
-import 'package:expense_tracker/domain/models/budget/budget_model.dart';
 import 'package:expense_tracker/domain/models/models.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ExpenseModel {
-  final int id;
-  final String title;
-  final double amount;
-  final DateTime addedAt;
-  final List<ExpenseCategoriesModel>? categories;
-  final BudgetModel budget;
-  final String? desc;
-  final String? imageURL;
+part 'expense_model.freezed.dart';
 
-  ExpenseModel({
-    required this.id,
-    required this.title,
-    required this.amount,
-    required this.addedAt,
-    required this.budget,
-    this.categories,
-    this.desc,
-    this.imageURL,
-  });
+@freezed
+class ExpenseModel with _$ExpenseModel {
+  const factory ExpenseModel({
+    required int id,
+    required String title,
+    required double amount,
+    required DateTime addedAt,
+    List<ExpenseCategoriesModel>? categories,
+    required BudgetModel budget,
+    String? desc,
+    String? imageURL,
+  }) = _ExpenseModel;
 }
