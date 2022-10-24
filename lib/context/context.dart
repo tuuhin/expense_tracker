@@ -12,3 +12,7 @@ export './income/income_source_cubit.dart';
 export './income/income_cubit.dart';
 
 export './budget/budget_cubit.dart';
+
+export './user_info/user_info_cubit.dart';
+
+export './user_info/base_information_cubit.dart';
