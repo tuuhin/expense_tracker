@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../context/user_info/base_information_cubit.dart';
 import '../loading/base_information_shimmer.dart';
+import '../widgets.dart';
 
 class ClientBaseInfomation extends StatefulWidget {
   const ClientBaseInfomation({Key? key}) : super(key: key);
@@ -12,22 +13,16 @@ class ClientBaseInfomation extends StatefulWidget {
 }
 
 class _ClientBaseInfomationState extends State<ClientBaseInfomation> {
+  final List<String> _title = [
+    'Total Expense',
+    'Total Income',
+    'Montly Expense',
+    'Monthly Income'
+  ];
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     context.read<BaseInformationCubit>().getBaseOverView();
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //   if (context.read<BaseInformationCubit>().state
-    //       is BaseInformationLoadSucess) {
-    //     for (var i = 0; i < 4; i++) {
-    //       context
-    //           .read<BaseInformationCubit>()
-    //           .listKey
-    //           .currentState
-    //           ?.insertItem(0);
-    //     }
-    //   }
-    // });
   }
 
   @override
@@ -38,12 +33,21 @@ class _ClientBaseInfomationState extends State<ClientBaseInfomation> {
           return const BaseInforamtionShimmer();
         }
         if (state is BaseInformationLoadSucess) {
-          return AnimatedList(
-            key: context.read<BaseInformationCubit>().listKey,
-            itemBuilder: (context, index, animation) => Text(index.toString()),
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 4,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: index == 0 ? 0 : 10),
+              child: BaseInformationCards(
+                amount: state.data.toList[index],
+                title: _title[index],
+                backGroundColor:
+                    index % 2 == 0 ? null : Theme.of(context).primaryColor,
+              ),
+            ),
           );
         } else {
-          return Text('none');
+          return const Text('none');
         }
       },
     );

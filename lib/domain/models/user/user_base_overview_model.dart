@@ -6,10 +6,13 @@ part 'user_base_overview_model.freezed.dart';
 
 @freezed
 class UserBaseOverViewModel with _$UserBaseOverViewModel {
-  factory UserBaseOverViewModel({
+  const UserBaseOverViewModel._();
+  const factory UserBaseOverViewModel({
     required double totalIncome,
     required double monthlyIncome,
     required double totalExpense,
     required double monthlyExpense,
   }) = _UserBaseOverViewModel;
+
+  List get toList => [totalIncome, totalExpense, monthlyIncome, monthlyExpense];
 }

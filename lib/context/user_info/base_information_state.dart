@@ -1,17 +1,18 @@
 part of 'base_information_cubit.dart';
 
 @immutable
-abstract class BaseInformationState<T> {}
+abstract class BaseInformationState {}
 
-class BaseInformationLoading<T> extends BaseInformationState<T> {}
+class BaseInformationLoading extends BaseInformationState {}
 
-class BaseInformationLoadSucess<T> extends BaseInformationState<T> {
-  final T data;
-  BaseInformationLoadSucess(this.data);
+class BaseInformationLoadSucess extends BaseInformationState {
+  final UserBaseOverViewModel data;
+  final String? message;
+  BaseInformationLoadSucess({required this.data, this.message});
 }
 
-class BaseInforamtionLoadFailed<T> extends BaseInformationState<T> {
-  final T data;
-  final String? message;
-  BaseInforamtionLoadFailed(this.data, this.message);
+class BaseInforamtionLoadFailed extends BaseInformationState {
+  final UserBaseOverViewModel? data;
+  final String message;
+  BaseInforamtionLoadFailed({this.data, required this.message});
 }
