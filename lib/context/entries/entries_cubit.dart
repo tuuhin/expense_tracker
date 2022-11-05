@@ -1,83 +1,94 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/data/remote/entries_api.dart';
-import 'package:expense_tracker/domain/models/entries_information_model.dart';
-import 'package:expense_tracker/domain/models/entries_model.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../data/remote/entries_api.dart';
+import '../../domain/models/entries_information_model.dart';
+import '../../domain/models/models.dart';
 import '../../main.dart';
 
 part 'entries_state.dart';
 
 class EntriesCubit extends Cubit<EntriesState> {
   EntriesCubit() : super(EntriesLoad());
+
   final EntriesApi _clt = EntriesApi();
 
-  final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();
+  final GlobalKey<SliverAnimatedListState> _key =
+      GlobalKey<SliverAnimatedListState>();
+
   String? _nextURL;
 
-  GlobalKey<AnimatedListState> get entriesKey => _key;
-
-  String? get nextURL => _nextURL;
+  GlobalKey<SliverAnimatedListState> get entriesKey => _key;
 
   final List<EntriesModel> _models = [];
 
-  Future<void> getMoreEntries(String nextURL) async {
+  Timer _timer = Timer(const Duration(milliseconds: 2000), () {});
+
+  void loadMore() => _getMoreEntries();
+
+  Future<void> _getMoreEntries() async {
+    if (_nextURL == null) {
+      emit(EntriesLoadedAll(data: _models, message: "No more Entries to load"));
+      return;
+    }
+    if (_timer.isActive) return;
+    _timer = Timer(const Duration(milliseconds: 2000), () {});
     logger.fine('get more ');
     try {
-      Map<String, String> queryParams = Uri.parse(nextURL).queryParameters;
+      emit(EntriesLoadMore(data: _models));
+      Map<String, String> queryParams = Uri.parse(_nextURL!).queryParameters;
 
-      EntriesInfomationModel entriesInfomationModel =
-          await _clt.getMoreEntries(queryParams);
+      EntriesInfomationModel entries = await _clt.getMoreEntries(queryParams);
 
-      _nextURL = entriesInfomationModel.nextURL;
+      _nextURL = entries.nextURL;
 
-      List<EntriesModel> newModels = entriesInfomationModel.entries;
+      List<EntriesModel> newModels = entries.entries;
 
       _models.addAll(newModels);
 
       emit(EntriesLoadSuccess(data: _models));
 
-      Future future = Future(() {});
-      for (var element in newModels) {
-        future = future.then(
-          (value) => Future.delayed(
-            const Duration(milliseconds: 50),
-            () {
-              if (_key.currentState == null) return;
-              _key.currentState!.insertItem(_models.indexOf(element));
-            },
-          ),
+      for (final EntriesModel etry in newModels) {
+        await Future.delayed(
+          const Duration(milliseconds: 50),
+          () => _key.currentState?.insertItem(_models.indexOf(etry)),
         );
       }
+    } on DioError catch (err) {
+      emit(EntriesLoadMoreFailed(data: _models, errMessage: err.message));
     } catch (e) {
       logger.shout(e);
+      emit(EntriesLoadMoreFailed(data: _models, errMessage: "error occured"));
     }
   }
 
   Future<void> getEntires() async {
-    // emit(EntriesLoad());
+    emit(EntriesLoad());
     try {
-      if (_models.isNotEmpty) {
-        _models.clear();
-      }
-      EntriesInfomationModel entriesInfomationModel = await _clt.getEntries();
-      _nextURL = entriesInfomationModel.nextURL;
-      _models.addAll(entriesInfomationModel.entries);
+      if (_models.isNotEmpty) _models.clear();
+
+      EntriesInfomationModel entries = await _clt.getEntries();
+      _nextURL = entries.nextURL;
+      _models.addAll(entries.entries);
       emit(EntriesLoadSuccess(data: _models));
-      Future future = Future(() {});
-      for (var element in _models) {
-        future = future.then(
-          (value) => Future.delayed(
-            const Duration(milliseconds: 50),
-            () {
-              if (_key.currentState == null) return;
-              _key.currentState!.insertItem(_models.indexOf(element));
-            },
+
+      for (final EntriesModel etry in _models) {
+        await Future.delayed(
+          const Duration(milliseconds: 50),
+          () => _key.currentState?.insertItem(
+            _models.indexOf(etry),
           ),
         );
       }
-    } catch (e) {
+    } on DioError catch (err) {
+      emit(EntriesLoadFailed(errMessage: err.message));
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       logger.info(e);
+      emit(EntriesLoadFailed(errMessage: e.runtimeType.toString()));
     }
   }
 }

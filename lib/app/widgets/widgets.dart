@@ -1,5 +1,6 @@
 export './entries/entries_options.dart';
 export './entries/entries_card.dart';
+export './entries/entries_list.dart';
 
 export './splash/auth_wrapper_paintsplash.dart';
 export './splash/signin_painter.dart';

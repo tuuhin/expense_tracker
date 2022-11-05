@@ -1,11 +1,21 @@
-import 'package:expense_tracker/data/dto/dto.dart';
-import 'package:expense_tracker/domain/models/entries_information_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+import '../../../domain/models/entries_information_model.dart';
+import '../dto.dart';
+
+part 'entries_information.g.dart';
+
+@JsonSerializable()
 class EntriesInformationDto {
+  @JsonKey(name: "previous")
   String? previousURL;
+  @JsonKey(name: "next")
   String? nextURL;
+  @JsonKey(name: "highest_count")
   int highestCount;
+  @JsonKey(name: "overall_total")
   int overAllCount;
+  @JsonKey(name: "results")
   List<EntriesDto> entries;
 
   EntriesInformationDto({
@@ -24,14 +34,8 @@ class EntriesInformationDto {
         entries: entries.map((e) => e.toModel()).toList(),
       );
 
-  factory EntriesInformationDto.fromJson(Map<String, dynamic> json) {
-    List results = json['results'] as List;
-    return EntriesInformationDto(
-      entries: results.map((e) => EntriesDto.fromJson(e)).toList(),
-      highestCount: json['highest_count'],
-      overAllCount: json['overall_total'],
-      previousURL: json['previous'],
-      nextURL: json['next'],
-    );
-  }
+  factory EntriesInformationDto.fromJson(Map<String, dynamic> json) =>
+      _$EntriesInformationDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EntriesInformationDtoToJson(this);
 }

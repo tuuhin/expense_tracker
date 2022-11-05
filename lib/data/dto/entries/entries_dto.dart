@@ -1,10 +1,15 @@
 import 'package:expense_tracker/domain/models/entries_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'entries_dto.g.dart';
+
+@JsonSerializable()
 class EntriesDto {
   final int id;
   final String title;
   final String type;
   final String? desc;
+  @JsonKey(name: "is_secure")
   final bool? isSecure;
 
   EntriesDto({
@@ -15,12 +20,10 @@ class EntriesDto {
     this.isSecure,
   });
 
-  factory EntriesDto.fromJson(Map<String, dynamic> json) => EntriesDto(
-      id: json['id'],
-      title: json['title'],
-      type: json['type'],
-      desc: json['desc'],
-      isSecure: json['isSecure']);
+  factory EntriesDto.fromJson(Map<String, dynamic> json) =>
+      _$EntriesDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EntriesDtoToJson(this);
 
   factory EntriesDto.fromModel(EntriesModel entry) =>
       EntriesDto(id: entry.id, title: entry.title, type: entry.type);
