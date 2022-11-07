@@ -1,32 +1,29 @@
-import 'package:expense_tracker/data/entity/income/income_source_entity.dart';
-import 'package:expense_tracker/domain/models/models.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+import '../../../domain/models/models.dart';
+import '../../entity/income/income_source_entity.dart';
+
+part 'income_source_dto.g.dart';
+
+@JsonSerializable()
 class IncomeSourceDto {
   final int id;
   final String title;
   final String? desc;
-  final bool? isSecure;
+  @JsonKey(name: 'is_secure')
+  final bool isSecure;
+
   IncomeSourceDto({
     required this.id,
     required this.title,
     this.desc,
-    this.isSecure,
+    required this.isSecure,
   });
 
   factory IncomeSourceDto.fromJson(Map<String, dynamic> json) =>
-      IncomeSourceDto(
-        id: json['id'],
-        title: json['title'],
-        desc: json['desc'],
-        isSecure: json['is_secure'],
-      );
+      _$IncomeSourceDtoFromJson(json);
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'desc': desc,
-        'is_secure': isSecure,
-      };
+  Map<String, dynamic> toJson() => _$IncomeSourceDtoToJson(this);
 
   IncomeSourceEntity toEntity() =>
       IncomeSourceEntity(id: id, title: title, desc: desc, isSecure: isSecure);
@@ -36,7 +33,7 @@ class IncomeSourceDto {
         id: incomeSourceEntity.id,
         title: incomeSourceEntity.title,
         desc: incomeSourceEntity.desc,
-        isSecure: incomeSourceEntity.isSecure,
+        isSecure: incomeSourceEntity.isSecure ?? false,
       );
 
   IncomeSourceModel toIncomeSourceModel() =>
@@ -48,6 +45,6 @@ class IncomeSourceDto {
         id: incomeSourceModel.id,
         title: incomeSourceModel.title,
         desc: incomeSourceModel.desc,
-        isSecure: incomeSourceModel.isSecure,
+        isSecure: incomeSourceModel.isSecure ?? false,
       );
 }

@@ -1,13 +1,12 @@
-import 'dart:math';
-
-import 'package:expense_tracker/app/home/routes/income/income_source_picker.dart';
-import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/widgets/income/income_source_grid.dart';
-import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../context/context.dart';
+import '../../../../domain/models/income/income_models.dart';
+import '../../../../utils/resource.dart';
+import '../../../widgets/income/income_source_grid.dart';
+import '../routes.dart';
+import 'income_source_picker.dart';
 
 class CreateIncome extends StatefulWidget {
   const CreateIncome({Key? key}) : super(key: key);
@@ -20,7 +19,6 @@ class _CreateIncomeState extends State<CreateIncome> {
   late TextEditingController _title;
   late TextEditingController _value;
   late TextEditingController _description;
-  late IncomeCubit _incomeCubit;
 
   void _selectSources() => showModalBottomSheet(
       context: context, builder: (context) => const IncomeSourcePicker());
@@ -50,23 +48,30 @@ class _CreateIncomeState extends State<CreateIncome> {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Adding Income')));
 
-    Resource resource = await _incomeCubit.addIncome(
-        _title.text, double.parse(_value.text),
-        desc: _description.text, sources: _incomeCubit.notifier.sources);
+    Resource<IncomeModel> resource = await context
+        .read<IncomeCubit>()
+        .addIncome(_title.text, double.parse(_value.text),
+            desc: _description.text,
+            sources: context.read<IncomeCubit>().notifier.sources);
 
-    if (resource is ResourceSucess) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Income created')));
-    }
-    if (resource is ResourceFailed) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context)
-        ..clearSnackBars()
-        ..showSnackBar(
-            const SnackBar(content: Text('Income Failed to be created ')));
-    }
+    resource.when(
+        loading: () {},
+        data: (data, message) {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(const SnackBar(content: Text("Income created ")));
+        },
+        error: (err, errorMessage, data) {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(SnackBar(content: Text(errorMessage)));
+        });
   }
 
   @override
@@ -75,13 +80,6 @@ class _CreateIncomeState extends State<CreateIncome> {
     _title = TextEditingController();
     _value = TextEditingController();
     _description = TextEditingController();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    _incomeCubit = BlocProvider.of<IncomeCubit>(context);
   }
 
   @override
@@ -147,16 +145,15 @@ class _CreateIncomeState extends State<CreateIncome> {
             mainAxisSize: MainAxisSize.min,
             children: [
               OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                      primary: Theme.of(context).colorScheme.secondary,
-                      fixedSize: Size(size.width, 50)),
+                  style:
+                      OutlinedButton.styleFrom(fixedSize: Size(size.width, 50)),
                   onPressed: _showBottomSheet,
                   child: const Text('Add new  Sources',
                       style: TextStyle(fontWeight: FontWeight.w600))),
               const Divider(),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).colorScheme.secondary,
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
                     fixedSize: Size(size.width, 50),
                   ),
                   onPressed: _addNewIncome,

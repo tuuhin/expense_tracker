@@ -8,16 +8,13 @@ class IncomeSourceNotifier extends ChangeNotifier {
   List<IncomeSourceModel> get sources => _selectedSources;
 
   void checkSource(IncomeSourceModel incomeSourceModel) {
-    if (!sourceInList(incomeSourceModel)) {
-      _selectedSources.add(incomeSourceModel);
-    } else {
+    if (_selectedSources.contains(incomeSourceModel)) {
       _selectedSources.remove(incomeSourceModel);
+    } else {
+      _selectedSources.add(incomeSourceModel);
     }
     notifyListeners();
   }
-
-  bool sourceInList(IncomeSourceModel incomeSourceModel) =>
-      _selectedSources.contains(incomeSourceModel);
 
   void clear() {
     _selectedSources.clear();

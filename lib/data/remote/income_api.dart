@@ -6,17 +6,16 @@ import 'package:expense_tracker/domain/repositories/income_repository.dart';
 
 class IncomeApi extends ResourceClient implements IncomeRepostiory {
   @override
-  Future<IncomeModel?> createIncome(String title, double amount,
-      {String? desc, List<IncomeSourceModel>? sources}) async {
+  Future<IncomeModel> createIncome(String title, double amount,
+      {String? desc, required List<IncomeSourceModel> sources}) async {
     Response response = await dio.post(
       '/income',
       data: {
         'title': title,
         'desc': desc,
         'source': sources
-                ?.map((e) => IncomeSourceDto.fromIncomeSourceModel(e).toJson())
-                .toList() ??
-            [],
+            .map((e) => IncomeSourceDto.fromIncomeSourceModel(e).id)
+            .toList(),
         'amount': amount
       },
     );
@@ -24,7 +23,7 @@ class IncomeApi extends ResourceClient implements IncomeRepostiory {
   }
 
   @override
-  Future<IncomeSourceModel?> createSource(String title,
+  Future<IncomeSourceModel> createSource(String title,
       {String? desc, bool? isSecure}) async {
     Response response = await dio.post('/sources',
         data: {'title': title, 'desc': desc, 'isSecure': isSecure});

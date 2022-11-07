@@ -1,11 +1,12 @@
-import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/widgets/income/income_source_card.dart';
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../context/income/income_source_cubit.dart';
+import '../../../../utils/app_images.dart';
 import '../../../widgets/empty_list.dart';
+import '../../../widgets/loading/list_loading_shimmer.dart';
+import '../routes.dart';
+import 'sources.dart';
 
 class ShowIncomeSources extends StatefulWidget {
   const ShowIncomeSources({Key? key}) : super(key: key);
@@ -32,73 +33,95 @@ class _ShowIncomeSourcesState extends State<ShowIncomeSources> {
     _incomeSourceCubit.getIncomeSources();
   }
 
+  Future<void> _refreshData() async => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Refresh'),
+          content: const Text('Refresh your income Sources'),
+          actions: [
+            TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () => context
+                  .read<IncomeSourceCubit>()
+                  .getIncomeSources()
+                  .then(Navigator.of(context).pop),
+              child: const Text('Refresh'),
+            )
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Income Sources'),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
-          child: Divider(),
-        ),
-      ),
-      body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: BlocBuilder<IncomeSourceCubit, IncomeSourceState>(
-            builder: (context, state) {
-              if (state is IncomeStateSuccess) {
-                if (state.data!.isNotEmpty) {
-                  return AnimatedList(
-                    key: _incomeSourceCubit.incomeListKey,
-                    itemBuilder: (context, index, animation) => SlideTransition(
-                      position: animation.drive<Offset>(offset),
-                      child: FadeTransition(
-                        opacity: animation.drive<double>(opacity),
-                        child: IncomeSourceCard(
-                          source: state.data![index],
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: CustomScrollView(
+          slivers: [
+            const SliverAppBar(
+              title: Text('Income Sources'),
+            ),
+            SliverToBoxAdapter(
+              child: Center(
+                child: Text(
+                  'Incomes source helps to structure your incomes',
+                  style: Theme.of(context).textTheme.caption,
+                ),
+              ),
+            ),
+            //  Sliverto
+            SliverPadding(
+              padding: const EdgeInsets.all(8.0),
+              sliver: BlocConsumer<IncomeSourceCubit, IncomeSourceState>(
+                listenWhen: (previous, current) =>
+                    current is IncomeSourcesLoadFailed,
+                buildWhen: (previous, current) => previous != current,
+                listener: (context, state) {
+                  if (state is IncomeSourcesLoadFailed && state.data != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.errMessage)),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is IncomeSourcesLoadSuccess) {
+                    if (state.data.isNotEmpty) {
+                      return Sources(models: state.data);
+                    }
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: EmptyList(
+                          title: 'No income sources',
+                          subtitle: 'You haven\'t add any income sources',
+                          image: sadnessImage,
                         ),
                       ),
-                    ),
-                  );
-                }
-                return Center(
-                    child: EmptyList(
-                  title: 'No income sources',
-                  subtitle: 'You haven\'t add any income sources',
-                  image: sadnessImage,
-                ));
-              }
-              if (state is ExpenseCategoryStateFailed) {
-                return Container(height: 200, color: Colors.red);
-              }
-              return Column(
-                children: [
-                  const Divider(height: 1),
-                  const Spacer(),
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 15),
-                  Text('Fetching results',
-                      style: Theme.of(context).textTheme.caption),
-                  const Spacer(),
-                ],
-              );
-            },
-          )
-          // categoriesImage,
-          // Expanded(
-          //   child: AnimatedList(
-          //       itemBuilder: (context, index, animation) => SizedBox()),
-          // ),
-
-          ),
+                    );
+                  }
+                  if (state is IncomeSourcesLoadFailed) {
+                    if (state.data != null) {
+                      return Sources(models: state.data!);
+                    }
+                    return SliverFillRemaining(
+                        child: Container(height: 200, color: Colors.red));
+                  } else {
+                    return const ListLoadingShimmer();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            fixedSize: Size(size.width, 50),
-            primary: Theme.of(context).colorScheme.secondary,
-          ),
+              fixedSize: Size(size.width, 50),
+              backgroundColor: Theme.of(context).colorScheme.secondary),
           onPressed: _addSource,
           child: const Text('Add Source'),
         ),

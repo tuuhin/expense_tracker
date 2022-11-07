@@ -6,9 +6,10 @@ abstract class IncomeState {}
 class IncomeLoading extends IncomeState {}
 
 class IncomeLoadSuccess extends IncomeState {
-  final List<IncomeModel>? data;
+  final List<IncomeModel> data;
+
   final String? message;
-  IncomeLoadSuccess({this.data, this.message});
+  IncomeLoadSuccess({required this.data, this.message});
 }
 
 class IncomeLoadFailed extends IncomeState {

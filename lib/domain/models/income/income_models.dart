@@ -10,7 +10,7 @@ class IncomeModel with _$IncomeModel {
     required String title,
     required double amount,
     required DateTime addedAt,
-    List<IncomeSourceModel?>? sources,
+    required List<IncomeSourceModel> sources,
     String? desc,
   }) = _IncomeModel;
 }

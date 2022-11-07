@@ -15,7 +15,7 @@ class CreateSource extends StatefulWidget {
 class _CreateSourceState extends State<CreateSource> {
   late TextEditingController _title;
   late TextEditingController _desc;
-  late IncomeSourceCubit _incomeSourceCubit;
+
   bool _isSecure = true;
 
   @override
@@ -45,41 +45,29 @@ class _CreateSourceState extends State<CreateSource> {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('Adding source ${_title.text}')));
 
-    Resource<IncomeSourceModel?> resource = await _incomeSourceCubit
+    Resource<IncomeSourceModel> resource = await context
+        .read<IncomeSourceCubit>()
         .addIncomeSource(_title.text, desc: _desc.text, isSecure: _isSecure);
+
     if (mounted) {
       FocusScope.of(context).requestFocus(FocusNode());
-    }
-    if (resource is ResourceSucess) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(
-            'Succuessfully created category ${resource.data!.title}',
-          ),
-        ),
-      );
-    }
-    if (resource is ResourceFailed) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(resource.message.toString()),
-        ),
-      );
-    }
-    if (mounted) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      Navigator.of(context)
-        ..pop()
-        ..pop();
-    }
-  }
+      Navigator.of(context).pop();
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _incomeSourceCubit = BlocProvider.of<IncomeSourceCubit>(context);
+      resource.when(
+          loading: () {},
+          data: (data, message) {
+            ScaffoldMessenger.of(context)
+              ..clearSnackBars()
+              ..showSnackBar(
+                SnackBar(content: Text('${data.title} created ')),
+              );
+          },
+          error: (err, errorMessage, data) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(errorMessage)),
+            );
+          });
+    }
   }
 
   @override
@@ -111,15 +99,14 @@ class _CreateSourceState extends State<CreateSource> {
                   value: _isSecure,
                   onChanged: (bool? value) =>
                       setState(() => _isSecure = value ?? false)),
-              const Text('Weather this is a healthy source')
+              const Text('Is this a healthy source ')
             ],
           ),
           const Divider(),
           ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).colorScheme.secondary,
-                fixedSize: Size(size.width, 50),
-              ),
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  fixedSize: Size(size.width, 50)),
               onPressed: _addSource,
               child: const Text('Add Income Source'))
         ],

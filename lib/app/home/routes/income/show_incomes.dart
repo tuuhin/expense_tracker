@@ -1,11 +1,12 @@
-import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/widgets/income/income_card.dart';
-import 'package:expense_tracker/app/widgets/widgets.dart';
-import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../context/context.dart';
+import '../../../../utils/utils.dart';
+import '../../../widgets/empty_list.dart';
+import '../../../widgets/loading/list_loading_shimmer.dart';
+import '../routes.dart';
+import './incomes.dart';
 
 class ShowIncomes extends StatefulWidget {
   const ShowIncomes({Key? key}) : super(key: key);
@@ -15,86 +16,106 @@ class ShowIncomes extends StatefulWidget {
 }
 
 class _ShowIncomesState extends State<ShowIncomes> {
-  late IncomeCubit _incomeCubit;
-
-  void _addIncome() => Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => const CreateIncome(),
-      ));
+  void _addIncome() => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const CreateIncome(),
+        ),
+      );
 
   @override
   void initState() {
     super.initState();
-    _incomeCubit = BlocProvider.of<IncomeCubit>(context);
-    _incomeCubit.getIncomes();
+    context.read<IncomeCubit>().getIncomes();
+  }
+
+  Future<void> _refreshData() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Refresh Incomes'),
+        content: const Text('You can refresh your incomes'),
+        actions: [
+          TextButton(
+              onPressed: Navigator.of(context).pop,
+              child: const Text('cancel')),
+          ElevatedButton(
+            onPressed: () => context
+                .read<IncomeCubit>()
+                .getIncomes()
+                .then(Navigator.of(context).pop),
+            child: const Text('Refresh'),
+          )
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        bottom: const PreferredSize(
-            preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
-            child: Divider()),
-        title: const Text('Incomes'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: BlocBuilder<IncomeCubit, IncomeState>(
-          builder: (context, state) {
-            if (state is IncomeLoadSuccess) {
-              if (state.data!.isNotEmpty) {
-                return AnimatedList(
-                  key: _incomeCubit.key,
-                  itemBuilder: (context, index, animation) => SlideTransition(
-                    position: animation.drive<Offset>(offset),
-                    child: FadeTransition(
-                      opacity: animation.drive<double>(opacity),
-                      child: IncomeCard(
-                        income: state.data![index],
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: CustomScrollView(
+          slivers: [
+            const SliverAppBar(title: Text('Incomes')),
+            SliverPadding(
+              padding: const EdgeInsets.all(8.0),
+              sliver: BlocConsumer<IncomeCubit, IncomeState>(
+                buildWhen: (previous, current) => previous != current,
+                listenWhen: (previous, current) => current is IncomeLoadFailed,
+                listener: (context, state) {
+                  if (state is IncomeLoadFailed && state.data != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.errMessage)),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is IncomeLoadSuccess) {
+                    if (state.data.isNotEmpty) {
+                      return Incomes(models: state.data);
+                    }
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: EmptyList(
+                          title: 'Oh! no I have no imcomes',
+                          subtitle:
+                              'You should definitly start earning some money',
+                          image: decreaseConcentration,
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }
-              return Center(
-                  child: EmptyList(
-                title: 'Oh! no I have no imcomes',
-                subtitle: 'You should definitly start earning some money',
-                image: decreaseConcentration,
-              ));
-            }
-            if (state is IncomeLoadFailed) {
-              return Container(
-                  height: 200,
-                  color: Colors.red,
-                  child: Text(state.message.toString()));
-            }
-            return Column(
-              children: [
-                const Divider(height: 1),
-                const Spacer(),
-                const CircularProgressIndicator(),
-                const SizedBox(height: 15),
-                Text('Fetching results',
-                    style: Theme.of(context).textTheme.caption),
-                const Spacer(),
-              ],
-            );
-          },
+                    );
+                  }
+                  if (state is IncomeLoadFailed) {
+                    if (state.data != null) {
+                      return Incomes(models: state.data!);
+                    }
+                    return SliverFillRemaining(
+                      child: Container(
+                          height: 200,
+                          color: Colors.red,
+                          child: Text("ERROR OCCURED ")),
+                    );
+                  } else {
+                    return const ListLoadingShimmer();
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              fixedSize: Size(size.width, 50),
-              primary: Theme.of(context).colorScheme.secondary,
-            ),
-            onPressed: _addIncome,
-            child: const Text('Add Income'),
-          ),
+              style: ElevatedButton.styleFrom(
+                fixedSize: Size(size.width, 50),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+              ),
+              onPressed: _addIncome,
+              child: const Text('Add Income')),
         ),
       ),
     );
