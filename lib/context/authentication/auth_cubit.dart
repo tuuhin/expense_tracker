@@ -1,93 +1,60 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:expense_tracker/utils/response_error.dart';
+import 'package:flutter/material.dart';
 
-import '../../data/dto/dto.dart';
-import '../../data/local/storage.dart';
-import '../../domain/models/auth/tokens.dart';
-import '../../domain/models/models.dart';
+import '../../data/repository/auth_repo_impl.dart';
+import '../../domain/repositories/repositories.dart';
 
 part 'auth_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   AuthenticationCubit() : super(AuthModeStale());
 
-  static final String _endPoint = dotenv.get('AUTH_ENDPOINT');
-  final SecureStorage _storage = SecureStorage();
+  final AuthenticationRespository _authRepository =
+      AuthenticationRespositoryImpl();
 
-  final UserProfileData _data = UserProfileData();
-  final Dio _dio = Dio()
-    ..options = BaseOptions(
-      headers: {'Content-type': 'application/json'},
-      baseUrl: _endPoint,
-    );
-
-  void _login() => emit(AuthModeLoggedIn());
-
-  void _logOut() => emit(AuthModeLoggedOut());
-
-  Future<Response?> createUser({
-    required String username,
-    required String password,
-    required String email,
-  }) async {
+  Future<void> createUser(
+      {required String username,
+      required String password,
+      required String email}) async {
     try {
-      Response response = await _dio.post('/create', data: {
-        'username': username,
-        'password': password,
-        'email': email,
-      });
-
-      Map mapedResponse = response.data as Map;
-
-      Token tokens = TokensDto.fromJson(mapedResponse['tokens']).toToken();
-      UserProfileModel userProfile =
-          UserProfileDto.fromJson(mapedResponse['profile']).toModel();
-
-      await _storage.setAccessToken(tokens.access);
-      await _storage.setRefreshToken(tokens.refresh);
-      _login();
+      emit(AuthModeRequesting(message: "Creating user"));
+      await _authRepository.createUser(
+          email: email, username: username, password: password);
+      emit(AuthModeLoggedIn());
     } on DioError catch (e) {
-      return e.response;
-    } catch (e) {
-      print(e.toString());
+      emit(AuthFailed(err: e, errorMessage: e.response?.data ?? "Dio error"));
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      emit(AuthFailed(err: e, errorMessage: "UNKNOWN ERROR"));
     }
-    return null;
   }
 
-  Future<Response?> logUserIn({
+  Future<void> logUserIn({
     required String username,
     required String password,
   }) async {
     try {
-      Response response = await _dio
-          .post('/token', data: {'username': username, 'password': password});
-      Map mapedResponse = response.data as Map;
-      Token tokens = TokensDto.fromJson(mapedResponse['tokens']).toToken();
-      UserProfileModel userProfile =
-          UserProfileDto.fromJson(mapedResponse['profile']).toModel();
-
-      await _storage.setAccessToken(tokens.access);
-      await _storage.setRefreshToken(tokens.refresh);
-      _login();
+      emit(AuthModeRequesting(message: "Requesting login for $username"));
+      await _authRepository.logUserIn(username: username, password: password);
+      emit(AuthModeLoggedIn());
     } on DioError catch (e) {
-      return e.response;
-    } catch (e) {
-      print(e.toString());
+      emit(AuthFailed(
+          err: e,
+          errorMessage:
+              showErrorsList(e.response?.data as Map<String, dynamic>?) ??
+                  "Dio error"));
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      emit(AuthFailed(err: e, errorMessage: "UNKNOWN ERROR"));
     }
-    return null;
   }
 
-  void checkAuthState() async {
-    String? token = await _storage.getAccessToken();
-    if (token == null) return _logOut();
-    return _login();
-  }
+  void checkAuthState() async => await _authRepository.checkAuthState()
+      ? emit(AuthModeLoggedIn())
+      : emit(AuthModeLoggedOut());
 
-  void logOut() async {
-    await _storage.removeTokens();
-    await _data.removeUserProfile();
-    _logOut();
-  }
+  void logOut() async =>
+      await _authRepository.logOut().then((value) => emit(AuthModeLoggedOut()));
 }

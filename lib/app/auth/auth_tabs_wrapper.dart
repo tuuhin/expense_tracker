@@ -33,11 +33,14 @@ class _AuthTabWrapperState extends State<AuthTabWrapper>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
-      body: TabBarView(controller: _controller, children: [
-        AuthHome(controller: _controller),
-        SignInPage(controller: _controller),
-        SignUpPage(controller: _controller),
-      ]),
+      body: TabBarView(
+        controller: _controller,
+        children: [
+          AuthHome(controller: _controller),
+          SignInPage(controller: _controller),
+          SignUpPage(controller: _controller),
+        ],
+      ),
     );
   }
 }

@@ -20,10 +20,10 @@ class UserProfileEntity extends HiveObject {
   String? photoURL;
 
   @HiveField(5)
-  String? createdAt;
+  DateTime createdAt;
 
   @HiveField(6)
-  String? updatedAt;
+  DateTime updatedAt;
 
   UserProfileEntity({
     this.id,
@@ -31,7 +31,7 @@ class UserProfileEntity extends HiveObject {
     this.firstName,
     this.lastName,
     this.photoURL,
-    this.createdAt,
-    this.updatedAt,
+    required this.createdAt,
+    required this.updatedAt,
   });
 }

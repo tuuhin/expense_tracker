@@ -10,3 +10,8 @@ export './user/user_profile_dto.dart';
 export './user/tokens_dto.dart';
 
 export './budget/budget_dto.dart';
+
+export './user/tokens_dto.dart';
+export './user/user_auth_base_response.dart';
+export './user/user_base_overview_dto.dart';
+export './user/user_profile_dto.dart';

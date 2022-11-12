@@ -1,7 +1,14 @@
-import 'package:expense_tracker/domain/models/models.dart';
+import 'package:expense_tracker/utils/resource.dart';
+
+import '../models/models.dart';
 
 abstract class UserProfileRepository {
-  Future<UserProfileModel> updateProfile(UserProfileModel userProfileModel);
+  Future<Resource<UserProfileModel>> updateProfile(
+      UserProfileModel userProfileModel);
 
-  Future<UserProfileModel> getProfile();
+  Future<Resource<UserProfileModel>> getProfile();
+
+  Future<void> setProfile(UserProfileModel userProfileModel);
+
+  Future changePassword(String oldPword, String newPword);
 }

@@ -1,14 +1,18 @@
-import 'package:expense_tracker/domain/models/auth/user_profile_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+import '../../../domain/models/auth/user_profile_model.dart';
 import '../../entity/user/user_profile_entity.dart';
 
+part 'user_profile_dto.g.dart';
+
+@JsonSerializable()
 class UserProfileDto {
   int? phoneNumber;
   String? firstName;
   String? lastName;
   String? photoURL;
-  String? createdAt;
-  String? updatedAt;
+  DateTime createdAt;
+  DateTime updatedAt;
   String? email;
 
   UserProfileDto({
@@ -17,19 +21,17 @@ class UserProfileDto {
     this.firstName,
     this.lastName,
     this.photoURL,
-    this.createdAt,
-    this.updatedAt,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
-  UserProfileEntity toEntity() {
-    return UserProfileEntity(
-        phoneNumber: phoneNumber,
-        firstName: firstName,
-        lastName: lastName,
-        photoURL: photoURL,
-        createdAt: createdAt,
-        updatedAt: updatedAt);
-  }
+  UserProfileEntity toEntity() => UserProfileEntity(
+      phoneNumber: phoneNumber,
+      firstName: firstName,
+      lastName: lastName,
+      photoURL: photoURL,
+      createdAt: createdAt,
+      updatedAt: updatedAt);
 
   UserProfileModel toModel() => UserProfileModel(
       phoneNumber: phoneNumber,
@@ -41,21 +43,12 @@ class UserProfileDto {
 
   factory UserProfileDto.fromModel(UserProfileModel userProfileModel) =>
       UserProfileDto(
-          phoneNumber: userProfileModel.phoneNumber,
-          firstName: userProfileModel.firstName,
-          lastName: userProfileModel.lastName,
-          photoURL: userProfileModel.photoURL,
-          createdAt: userProfileModel.createdAt,
-          updatedAt: userProfileModel.updatedAt);
-
-  factory UserProfileDto.fromJson(Map<String, dynamic> json) => UserProfileDto(
-        phoneNumber: json['phoneNumber'],
-        firstName: json['firstName'],
-        lastName: json['lastName'],
-        email: json['email'],
-        photoURL: json['photoURL'],
-        createdAt: json['createdAt'],
-        updatedAt: json['updatedAt'],
+        phoneNumber: userProfileModel.phoneNumber,
+        firstName: userProfileModel.firstName,
+        lastName: userProfileModel.lastName,
+        photoURL: userProfileModel.photoURL,
+        createdAt: userProfileModel.createdAt,
+        updatedAt: userProfileModel.updatedAt,
       );
 
   factory UserProfileDto.fromEntity(UserProfileEntity entity) {
@@ -68,13 +61,8 @@ class UserProfileDto {
       updatedAt: entity.updatedAt,
     );
   }
+  factory UserProfileDto.fromJson(Map<String, dynamic> json) =>
+      _$UserProfileDtoFromJson(json);
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'phoneNumber': phoneNumber,
-        'firstName': firstName,
-        'lastName': lastName,
-        'photoURL': photoURL,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+  Map<String, dynamic> toJson() => _$UserProfileDtoToJson(this);
 }

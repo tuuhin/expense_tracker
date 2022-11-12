@@ -1,5 +1,9 @@
-import 'package:expense_tracker/domain/models/auth/tokens.dart';
+import 'package:json_annotation/json_annotation.dart';
+import '../../../domain/models/auth/tokens.dart';
 
+part 'tokens_dto.g.dart';
+
+@JsonSerializable()
 class TokensDto {
   String? refresh;
   String? access;
@@ -12,8 +16,7 @@ class TokensDto {
   Token toToken() => Token(access: access, refresh: refresh);
 
   factory TokensDto.fromJson(Map<String, dynamic> json) =>
-      TokensDto(refresh: json['refresh'], access: json['access']);
+      _$TokensDtoFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'refresh': refresh, 'access': access};
+  Map<String, dynamic> toJson() => _$TokensDtoToJson(this);
 }
