@@ -1,14 +1,14 @@
 import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 
-class ChangePassword extends StatefulWidget {
-  const ChangePassword({Key? key}) : super(key: key);
+class ChangePasswordRoute extends StatefulWidget {
+  const ChangePasswordRoute({Key? key}) : super(key: key);
 
   @override
-  State<ChangePassword> createState() => _ChangePasswordState();
+  State<ChangePasswordRoute> createState() => _ChangePasswordRouteState();
 }
 
-class _ChangePasswordState extends State<ChangePassword> {
+class _ChangePasswordRouteState extends State<ChangePasswordRoute> {
   late TextEditingController _oldPassword;
   late TextEditingController _newPassword;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();

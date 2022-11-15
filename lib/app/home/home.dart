@@ -1,12 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:expense_tracker/app/home/tabs/tabs.dart';
-import 'package:expense_tracker/app/home/user/user_profile.dart';
-import 'package:expense_tracker/app/widgets/home/home_background.dart';
-import 'package:expense_tracker/app/widgets/tab_info.dart';
-import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import '../widgets/tab_info.dart';
+import '../widgets/widgets.dart';
+import 'tabs/entries.dart';
+import 'tabs/screen_home.dart';
+import 'routes/user/users_options_route.dart';
 
 class Home extends StatefulWidget {
   final AnimationController controller;
@@ -42,14 +41,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     }
   }
 
-  ScrollPhysics _getScrollMode() {
-    if (widget.controller.status == AnimationStatus.completed) {
-      return const NeverScrollableScrollPhysics();
-    } else {
-      return const BouncingScrollPhysics();
-    }
-  }
-
   void _animateTabs(int tabNo) {
     if (!(widget.controller.status == AnimationStatus.completed)) {
       _tabController.animateTo(tabNo);
@@ -68,16 +59,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  void _openProfile() => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const UserProfile(),
-        ),
-      );
+  void _openProfile() => Navigator.of(context)
+      .push(MaterialPageRoute(builder: (context) => const UserOptionsRoute()));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).cardColor,
         leading: IconButton(
           onPressed: _openMenu,
           icon: const FaIcon(FontAwesomeIcons.alignLeft),
@@ -87,42 +76,27 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             onPressed: _openProfile,
             icon: ClipRRect(
               borderRadius: BorderRadius.circular(5),
-              child: Hero(
+              child: const Hero(
                 tag: 'profile_image',
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: CachedNetworkImage(
-                    imageUrl:
-                        'https://media.gettyimages.com/photos/joe-root-of-england-celebrates-his-century-during-day-four-of-the-picture-id1030463034?s=2048x2048',
-                    fadeInCurve: Curves.easeInBack,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                child: AsyncUserProfileImage(),
               ),
             ),
           )
         ],
       ),
-      body: MultiBlocProvider(
-        providers: [
-          BlocProvider<EntriesCubit>(
-            create: (context) => EntriesCubit(),
-          ),
-        ],
-        child: Stack(
-          children: [
-            SizedBox.expand(
+
+      body: Stack(
+        children: [
+          SizedBox.expand(
               child: CustomPaint(
-                foregroundPainter: BackGroundDesign(context),
-              ),
-            ),
-            TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
-                controller: _tabController,
-                // physics: _getScrollMode(),
-                children: _tabInfo.map((e) => e.tab).toList()),
-          ],
-        ),
+            foregroundPainter: BackGroundDesign(context),
+          )),
+          TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              // physics: _getScrollMode(),
+              children: _tabInfo.map((e) => e.tab).toList()),
+        ],
       ),
 
       // bottomNavigationBar: BottomAppBar(
@@ -146,6 +120,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       //     )),
 
       bottomNavigationBar: BottomNavigationBar(
+        elevation: 2,
         onTap: (index) {
           _animateTabs(index);
           setState(() => _currentTab = index);

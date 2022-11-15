@@ -1,8 +1,9 @@
 import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/home/user/user.dart';
 import 'package:expense_tracker/context/authentication/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../home/routes/user/user_profile_change.dart';
 
 class AccountSettings extends StatefulWidget {
   const AccountSettings({Key? key}) : super(key: key);
@@ -12,21 +13,30 @@ class AccountSettings extends StatefulWidget {
 }
 
 class _AccountSettingsState extends State<AccountSettings> {
-  void _logout() async => await showDialog(
+  void logOut() {
+    context.read<AuthenticationCubit>().logOut();
+    Navigator.of(context)
+      ..pop()
+      ..pop();
+  }
+
+  void _changePasswordRoute() =>
+      Navigator.of(context).push(appRouteBuilder(const ChangePasswordRoute()));
+
+  void _logoutDialog() async => showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Logout'),
           content: const Text('Are you sure you want to log out?'),
           actions: [
-            TextButton(
-              onPressed: () {
-                context.read<AuthenticationCubit>().logOut();
-                Navigator.of(context)
-                  ..pop()
-                  ..pop();
-              },
-              child: Text('Logout',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary),
+              onPressed: logOut,
+              child: const Text(
+                'Logout',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             )
           ],
         ),
@@ -35,7 +45,7 @@ class _AccountSettingsState extends State<AccountSettings> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(4.0),
@@ -54,13 +64,12 @@ class _AccountSettingsState extends State<AccountSettings> {
                 title: const Text('Change profile'),
               ),
               ListTile(
-                onTap: () => Navigator.of(context)
-                    .push(appRouteBuilder(const ChangePassword())),
+                onTap: _changePasswordRoute,
                 leading: const Icon(Icons.visibility),
                 title: const Text('Change password'),
               ),
               ListTile(
-                onTap: _logout,
+                onTap: _logoutDialog,
                 leading: const Icon(Icons.logout_outlined),
                 title: const Text('Logout'),
               ),

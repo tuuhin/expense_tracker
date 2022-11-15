@@ -18,4 +18,4 @@ export './income/show_incomes.dart';
 
 export './route_builder.dart';
 
-export './account/change_password.dart';
+export './user/change_password.dart';
