@@ -7,18 +7,25 @@ part 'user_profile_dto.g.dart';
 
 @JsonSerializable()
 class UserProfileDto {
+  @JsonKey(name: "phoneNumber")
   int? phoneNumber;
-  String? firstName;
+  @JsonKey(name: "firstName")
+  String firstName;
+  @JsonKey(name: "lastName")
   String? lastName;
+  @JsonKey(name: "photoURL")
   String? photoURL;
+  @JsonKey(name: "createdAt")
   DateTime createdAt;
+  @JsonKey(name: "updatedAt")
   DateTime updatedAt;
+  @JsonKey(name: "email")
   String? email;
 
   UserProfileDto({
     this.phoneNumber,
     this.email,
-    this.firstName,
+    required this.firstName,
     this.lastName,
     this.photoURL,
     required this.createdAt,
@@ -41,15 +48,14 @@ class UserProfileDto {
       createdAt: createdAt,
       updatedAt: updatedAt);
 
-  factory UserProfileDto.fromModel(UserProfileModel userProfileModel) =>
-      UserProfileDto(
-        phoneNumber: userProfileModel.phoneNumber,
-        firstName: userProfileModel.firstName,
-        lastName: userProfileModel.lastName,
-        photoURL: userProfileModel.photoURL,
-        createdAt: userProfileModel.createdAt,
-        updatedAt: userProfileModel.updatedAt,
-      );
+  factory UserProfileDto.fromModel(UserProfileModel model) => UserProfileDto(
+      phoneNumber: model.phoneNumber,
+      firstName: model.firstName,
+      lastName: model.lastName,
+      photoURL: model.photoURL,
+      createdAt: model.createdAt ?? DateTime.now(),
+      updatedAt: model.updatedAt,
+      email: model.email);
 
   factory UserProfileDto.fromEntity(UserProfileEntity entity) {
     return UserProfileDto(

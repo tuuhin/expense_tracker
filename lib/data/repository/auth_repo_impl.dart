@@ -7,7 +7,7 @@ import '../../domain/repositories/repositories.dart';
 import '../../domain/repositories/user_profile_repository.dart';
 import '../dto/dto.dart';
 import '../local/storage.dart';
-import '../remote/user_profile.dart';
+import './user_profile_repo_impl.dart';
 
 class AuthenticationRespositoryImpl implements AuthenticationRespository {
   static final String _endPoint = dotenv.get('AUTH_ENDPOINT');

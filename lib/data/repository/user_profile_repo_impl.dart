@@ -15,9 +15,8 @@ class UserProfileRepositoryImpl extends AuthClient
   final UserProfileData _profile = UserProfileData();
 
   @override
-  Future<Resource<UserProfileModel>> getProfile() async {
+  Future<UserProfileModel?> getProfile() async {
     UserProfileEntity? userProfile = await _profile.getUserProfile();
-
     if (userProfile == null) {
       try {
         Response response = await dio.get('/profile');
@@ -26,46 +25,45 @@ class UserProfileRepositoryImpl extends AuthClient
         await _profile.updateUserProfile(
             UserProfileDto.fromModel(userProfileModel).toEntity());
         UserProfileEntity? updatedProfile = await _profile.getUserProfile();
-        return Resource.data(
-            data: UserProfileDto.fromEntity(updatedProfile!).toModel());
-      } on DioError catch (err) {
-        return Resource.error(
-            err: err,
-            errorMessage:
-                err.response?.statusMessage ?? "DIO RELATED ERROR OCCURED");
+        return UserProfileDto.fromEntity(updatedProfile!).toModel();
       } catch (e, stk) {
         debugPrintStack(stackTrace: stk);
         logger.shout('Error Occured');
 
-        return Resource.error(err: e, errorMessage: "ERROR OCCURED");
+        return null;
       }
     }
-    return Resource.data(
-        data: UserProfileDto.fromEntity(userProfile).toModel());
+    return UserProfileDto.fromEntity(userProfile).toModel();
   }
 
   @override
   Future<Resource<UserProfileModel>> updateProfile(
-      UserProfileModel userProfileModel) async {
+      UserProfileModel model) async {
+    Map<String, dynamic> data = <String, dynamic>{
+      ...UserProfileDto.fromModel(model).toJson(),
+      'photoURL': model.photoURL != null
+          ? await MultipartFile.fromFile(model.photoURL!,
+              filename: model.photoURL)
+          : null
+    };
+    if (model.email == null) data.addAll({'email': ''});
+    if (model.phoneNumber == null) data.addAll({'phoneNumber': ''});
+
+    logger.fine(data);
     try {
-      Response response = await dio.put(
-        '/profile',
-        data: FormData.fromMap(
-          UserProfileDto.fromModel(userProfileModel).toJson(),
-          ListFormat.multi,
-        ),
-      );
-      UserProfileDto.fromJson(response.data).toModel();
-      await _profile.updateUserProfile(
-          UserProfileDto.fromModel(userProfileModel).toEntity());
-      UserProfileEntity? updatedProfile = await _profile.getUserProfile();
+      Response response = await dio.put('/update-profile',
+          data: FormData.fromMap(data, ListFormat.multi));
+      logger.fine(response.data);
+      UserProfileModel profile =
+          await setProfile(UserProfileDto.fromJson(response.data).toModel());
+
       return Resource.data(
-          data: UserProfileDto.fromEntity(updatedProfile!).toModel());
+          data: profile, message: "Profile Changed Sucessfully");
     } on DioError catch (dio) {
-      logger.shout(dio.error);
       return Resource.error(
           err: dio, errorMessage: dio.response?.statusMessage ?? "DIO ERROR");
-    } catch (e) {
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       logger.severe(e.toString());
       return Resource.error(err: e, errorMessage: "ERROR OCCURED");
     }
@@ -75,8 +73,10 @@ class UserProfileRepositoryImpl extends AuthClient
   Future changePassword(String oldPword, String newPword) async {}
 
   @override
-  Future<void> setProfile(UserProfileModel userProfileModel) async {
+  Future<UserProfileModel> setProfile(UserProfileModel userProfileModel) async {
     await _profile.updateUserProfile(
         UserProfileDto.fromModel(userProfileModel).toEntity());
+    UserProfileEntity? updatedProfile = await _profile.getUserProfile();
+    return UserProfileDto.fromEntity(updatedProfile!).toModel();
   }
 }
