@@ -5,7 +5,7 @@ import '../../domain/models/auth/user_profile_model.dart';
 import '../../domain/repositories/user_profile_repository.dart';
 import '../../main.dart';
 import '../../utils/resource.dart';
-import '../dto/user/user_profile_dto.dart';
+import '../dto/dto.dart';
 import '../entity/user/user_profile_entity.dart';
 import '../local/storage.dart';
 import '../remote/clients/auth_client.dart';
@@ -70,7 +70,30 @@ class UserProfileRepositoryImpl extends AuthClient
   }
 
   @override
-  Future changePassword(String oldPword, String newPword) async {}
+  Future<Resource<void>> changePassword(
+      String oldPword, String newPword) async {
+    try {
+      await Future.delayed(const Duration(seconds: 5));
+      logger.fine("req");
+      await dio.post('/change-password', data: <String, String>{
+        'old_password': oldPword,
+        'new_password': newPword
+      });
+      return Resource.data(
+          data: null, message: "Succcessfully changed youkr password");
+    } on DioError catch (e) {
+      return Resource.error(
+        err: e,
+        errorMessage:
+            ErrorDetialsDto.fromJson((e.response!.data as Map<String, dynamic>))
+                    .details ??
+                'DIO ERROR',
+      );
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: 'Unknown Error');
+    }
+  }
 
   @override
   Future<UserProfileModel> setProfile(UserProfileModel userProfileModel) async {

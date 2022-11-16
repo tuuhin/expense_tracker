@@ -1,4 +1,4 @@
-export 'entries/entries_dto.dart';
+export './entries/entries_dto.dart';
 
 export './expense/expense_dto.dart';
 export './expense/expense_category_dto.dart';
@@ -15,3 +15,5 @@ export './user/tokens_dto.dart';
 export './user/user_auth_base_response.dart';
 export './user/user_base_overview_dto.dart';
 export './user/user_profile_dto.dart';
+
+export './details_dto.dart';

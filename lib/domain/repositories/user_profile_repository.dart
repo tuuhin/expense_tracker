@@ -10,5 +10,5 @@ abstract class UserProfileRepository {
 
   Future<UserProfileModel> setProfile(UserProfileModel userProfileModel);
 
-  Future changePassword(String oldPword, String newPword);
+  Future<Resource<void>> changePassword(String oldPword, String newPword);
 }
