@@ -21,8 +21,8 @@ class BudgetStorage {
         ),
       );
 
-  List<BudgetModel> getBudget() => budget!.values
-      .map((BudgetEntity e) => BudgetDto.fromEntity(e).toBudgetModel())
+  static List<BudgetModel> getBudget() => budget!.values
+      .map((BudgetEntity e) => BudgetDto.fromEntity(e).toModel())
       .toList();
 
   Future<void> deleteBudget(BudgetModel budgetModel) async {

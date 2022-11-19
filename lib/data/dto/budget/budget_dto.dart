@@ -1,15 +1,29 @@
-import 'package:expense_tracker/data/entity/entity.dart';
-import 'package:expense_tracker/domain/models/budget/budget_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+import '../../../domain/models/budget/budget_model.dart';
+import '../../entity/entity.dart';
+
+part 'budget_dto.g.dart';
+
+@JsonSerializable()
 class BudgetDto {
+  @JsonKey(name: "id")
   final int id;
+  @JsonKey(name: "title")
   final String title;
+  @JsonKey(name: "desc")
   final String? desc;
+  @JsonKey(name: "_from")
   final DateTime statedFrom;
+  @JsonKey(name: "to")
   final DateTime tillDate;
+  @JsonKey(name: "total_amount")
   final double amount;
+  @JsonKey(name: "amount_used")
   final double amountUsed;
+  @JsonKey(name: "issued_at")
   final DateTime issedAt;
+  @JsonKey(name: "has_expired")
   final bool hasExpired;
 
   BudgetDto({
@@ -24,28 +38,22 @@ class BudgetDto {
     required this.hasExpired,
   });
 
-  factory BudgetDto.fromJson(Map<String, dynamic> json) => BudgetDto(
-        id: json['id'],
-        title: json['title'],
-        desc: json['desc'],
-        statedFrom: DateTime.parse(json['_from']),
-        tillDate: DateTime.parse(json['to']),
-        amount: json['total_amount'],
-        amountUsed: json['amount_used'],
-        issedAt: DateTime.parse(json['issued_at']),
-        hasExpired: json['has_expired'],
-      );
+  factory BudgetDto.fromJson(Map<String, dynamic> json) =>
+      _$BudgetDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BudgetDtoToJson(this);
 
   factory BudgetDto.fromModel(BudgetModel budgetModel) => BudgetDto(
-      id: budgetModel.id,
-      title: budgetModel.title,
-      desc: budgetModel.desc,
-      statedFrom: budgetModel.statedFrom,
-      tillDate: budgetModel.tillDate,
-      amount: budgetModel.amount,
-      amountUsed: budgetModel.amountUsed,
-      issedAt: budgetModel.issedAt,
-      hasExpired: budgetModel.hasExpired);
+        id: budgetModel.id,
+        title: budgetModel.title,
+        desc: budgetModel.desc,
+        statedFrom: budgetModel.statedFrom,
+        tillDate: budgetModel.tillDate,
+        amount: budgetModel.amount,
+        amountUsed: budgetModel.amountUsed,
+        issedAt: budgetModel.issedAt,
+        hasExpired: budgetModel.hasExpired,
+      );
 
   factory BudgetDto.fromEntity(BudgetEntity budgetEntity) => BudgetDto(
         id: budgetEntity.id,
@@ -82,16 +90,4 @@ class BudgetDto {
         issedAt: issedAt,
         hasExpired: hasExpired,
       );
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'desc': desc,
-        '_from': statedFrom.toIso8601String(),
-        'to': tillDate.toIso8601String(),
-        'total_amount': amount,
-        'amount_used': amountUsed,
-        'issued_at': issedAt.toIso8601String(),
-        'has_expired': hasExpired
-      };
 }

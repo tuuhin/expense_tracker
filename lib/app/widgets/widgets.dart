@@ -30,6 +30,13 @@ export './income/income_card.dart';
 
 export './budget/show_budget_card.dart';
 export './budget/budget_chart.dart';
+export './budget/budget_indicator.dart';
+export './budget/budget_amount_data.dart';
 
 export './empty_list.dart';
 export './slide_and_fade_transition.dart';
+
+export './user/account_settings.dart';
+export './user/application_settings.dart';
+export './user/async_user_profile_image.dart';
+export './user/change_profile_header.dart';

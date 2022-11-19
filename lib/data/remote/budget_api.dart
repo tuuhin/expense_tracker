@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/data/dto/budget/budget_dto.dart';
-import 'package:expense_tracker/data/remote/remote.dart';
-import 'package:expense_tracker/domain/models/budget/budget_model.dart';
-import 'package:expense_tracker/domain/repositories/budget_repository.dart';
+
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
+import '../dto/dto.dart';
+import 'clients/plans_client.dart';
 
 class BudgetApi extends PlansClient implements BudgetRepository {
   @override
@@ -24,5 +25,11 @@ class BudgetApi extends PlansClient implements BudgetRepository {
     Response response = await dio.get('/budget');
     List models = response.data as List;
     return models.map((e) => BudgetDto.fromJson(e).toModel()).toList();
+  }
+
+  @override
+  Future deleteBudget(BudgetModel budget) async {
+    int budgetId = budget.id;
+    await dio.delete('/budget/$budgetId');
   }
 }
