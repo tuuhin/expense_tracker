@@ -10,3 +10,5 @@ export './budget/budget_model.dart';
 
 export './user/user_base_overview_model.dart';
 export './auth/user_profile_model.dart';
+
+export './notification/notification_model.dart';
