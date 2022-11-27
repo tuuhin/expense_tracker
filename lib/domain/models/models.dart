@@ -1,4 +1,4 @@
-export './entries_model.dart';
+export './entries/entries_model.dart';
 
 export './expense/expense_categories_model.dart';
 export './expense/expense_model.dart';

@@ -7,8 +7,8 @@ import './context/context.dart';
 import './data/local/local_storage.dart';
 import './app/app.dart';
 import './utils/palette.dart';
-import './data/repository/user_profile_repo_impl.dart';
-import './domain/repositories/user_profile_repository.dart';
+
+import 'providers.dart';
 
 final logger = Logger('App Logger');
 
@@ -26,38 +26,7 @@ void main() async {
   // SystemChrome.setSystemUIOverlayStyle(
   //     const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
 
-  runApp(const ProvidersWrapper());
-}
-
-class ProvidersWrapper extends StatelessWidget {
-  const ProvidersWrapper({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => MultiBlocProvider(
-        providers: [
-          // hold all the providers here
-          BlocProvider<AuthenticationCubit>(
-              create: (context) => AuthenticationCubit()),
-          BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
-          BlocProvider<IncomeSourceCubit>(
-              create: (context) => IncomeSourceCubit()),
-          BlocProvider<IncomeCubit>(create: (context) => IncomeCubit()),
-          BlocProvider<ExpenseCubit>(create: (context) => ExpenseCubit()),
-          BlocProvider<ExpenseCategoriesCubit>(
-              create: (context) => ExpenseCategoriesCubit()),
-          BlocProvider<BudgetCubit>(create: (context) => BudgetCubit()),
-          BlocProvider<BaseInformationCubit>(
-              create: (context) => BaseInformationCubit()),
-          BlocProvider<EntriesCubit>(create: (context) => EntriesCubit()),
-        ],
-        child: MultiRepositoryProvider(
-          providers: [
-            RepositoryProvider<UserProfileRepository>(
-                create: (context) => UserProfileRepositoryImpl())
-          ],
-          child: const MyApp(),
-        ),
-      );
+  runApp(const ProvidersWrapper(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

@@ -1,6 +1,7 @@
-import 'package:expense_tracker/domain/models/entries_information_model.dart';
+import '../models/models.dart';
 
 abstract class EntriesRepository {
-  Future<EntriesInfomationModel> getEntries();
-  Future<EntriesInfomationModel> getMoreEntries(Map<String, dynamic> query);
+  Future<EntriesModel> getEntries();
+
+  Future<EntriesModel> getMoreEntries({int? offset, int? limit});
 }

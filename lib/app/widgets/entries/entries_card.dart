@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../domain/models/entries_model.dart';
+import '../../../domain/models/models.dart';
 
 class EntriesCard extends StatelessWidget {
-  final EntriesModel model;
+  final EntriesDataModel model;
   const EntriesCard({Key? key, required this.model}) : super(key: key);
 
   @override

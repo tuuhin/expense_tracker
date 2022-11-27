@@ -1,10 +1,9 @@
-import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/widgets/widgets.dart';
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/main.dart';
-import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../context/context.dart';
+import '../../widgets/entries/entries_loading_card.dart';
+import '../../widgets/widgets.dart';
 
 class EntriesTab extends StatefulWidget {
   const EntriesTab({Key? key}) : super(key: key);
@@ -15,34 +14,44 @@ class EntriesTab extends StatefulWidget {
 
 class _EntriesTabState extends State<EntriesTab> {
   late ScrollController _scrollController;
-  late EntriesCubit _entries;
-  bool loadMore = false;
 
   void _scrollListener() async {
-    if (_scrollController.offset >
-            _scrollController.position.maxScrollExtent * 0.9 &&
-        !loadMore) {
-      if (_entries.nextURL == null) return;
-      loadMore = !loadMore;
-      await _entries.getMoreEntries(_entries.nextURL!);
-      if (_entries.nextURL == null) return;
-      loadMore = !loadMore;
+    double delta = MediaQuery.of(context).size.height * .2;
+    if (_scrollController.position.maxScrollExtent -
+            _scrollController.position.pixels <=
+        delta) {
+      context.read<EntriesBloc>().fetchMore();
     }
+  }
+
+  Future<void> itemLoader(Duration _) async {
+    EntriesBloc bloc = context.read<EntriesBloc>();
+    for (int i = 0; i < bloc.entriesCount; i++) {
+      await Future.delayed(const Duration(milliseconds: 100),
+          () => bloc.key.currentState?.insertItem(i));
+    }
+  }
+
+  Future<void> _refresh() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Refresh'),
+        content: const Text('Refresh your entries'),
+        actions: [
+          TextButton(
+              onPressed: Navigator.of(context).pop, child: const Text('Cancel'))
+        ],
+      ),
+    );
   }
 
   @override
   void initState() {
     super.initState();
-
-    _entries = BlocProvider.of<EntriesCubit>(context);
     _scrollController = ScrollController();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _entries.getEntires();
     _scrollController.addListener(_scrollListener);
+    WidgetsBinding.instance.addPostFrameCallback(itemLoader);
   }
 
   @override
@@ -53,61 +62,32 @@ class _EntriesTabState extends State<EntriesTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: Text(
-          'Your Entries',
-          style: Theme.of(context)
-              .textTheme
-              .headline6
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: BlocBuilder<EntriesCubit, EntriesState>(
-          builder: (context, state) {
-            if (state is EntriesLoad) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 10),
-                  Text('Loading', style: Theme.of(context).textTheme.subtitle1),
-                ],
-              );
-            }
-            if (state is EntriesLoadSuccess) {
-              if (state.data.isEmpty) {
-                return Center(
-                  child: EmptyList(
-                    title: 'Haven\'t you add any expense or income',
-                    image: categoriesImage,
-                  ),
-                );
-              }
-              return AnimatedList(
-                controller: _scrollController,
-                key: _entries.entriesKey,
-                itemBuilder: (context, index, animation) {
-                  return FadeTransition(
-                    opacity: animation.drive(opacity),
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      child: EntriesCard(model: state.data[index]),
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            centerTitle: false,
+            title: Text('Your Entries',
+                style: Theme.of(context)
+                    .textTheme
+                    .headline6
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+          ),
+          BlocBuilder<EntriesBloc, EntriesState>(
+            builder: (context, state) => state.when(
+                loading: () => const SliverPadding(
+                    padding: EdgeInsets.all(8.0), sliver: EntriesLoadingCard()),
+                data: (data) => EntriesList(data: data),
+                error: (error) => const SliverFillRemaining(
+                      child: Text('error'),
                     ),
-                  );
-                },
-              );
-            }
-            if (state is EntriesLoadFailed) {
-              logger.shout(state.message);
-            }
-            return const SizedBox();
-          },
-        ),
+                loadMore: (data) => EntriesList(data: data),
+                errorLoadMore: ((data, error) => Text('error')),
+                end: (data, message) => Text(message)),
+          ),
+        ],
       ),
     );
   }

@@ -1,44 +1,16 @@
-part of 'entries_cubit.dart';
+part of 'entries_bloc.dart';
 
-@immutable
-abstract class EntriesState {}
+@freezed
+class EntriesState with _$EntriesState {
+  const factory EntriesState.loading() = _Loading;
 
-class EntriesLoad extends EntriesState {}
+  const factory EntriesState.data(List<EntriesDataModel> data) = _Data;
+  const factory EntriesState.error(String error) = _StateError;
+  const factory EntriesState.loadMore(List<EntriesDataModel> data) = _MoreData;
 
-class EntriesLoadSuccess extends EntriesState {
-  final List<EntriesModel> data;
-  final String? message;
-  EntriesLoadSuccess({
-    required this.data,
-    this.message,
-  });
-}
+  const factory EntriesState.errorLoadMore(
+      List<EntriesDataModel> data, String error) = _ErrorLoadMore;
 
-class EntriesLoadFailed extends EntriesState {
-  final String errMessage;
-
-  EntriesLoadFailed({
-    required this.errMessage,
-  });
-}
-
-class EntriesLoadMore extends EntriesLoadSuccess {
-  EntriesLoadMore({
-    required List<EntriesModel> data,
-    String? message,
-  }) : super(data: data, message: message);
-}
-
-class EntriesLoadMoreFailed extends EntriesLoadSuccess {
-  EntriesLoadMoreFailed({
-    required List<EntriesModel> data,
-    required String errMessage,
-  }) : super(data: data, message: errMessage);
-}
-
-class EntriesLoadedAll extends EntriesLoadSuccess {
-  EntriesLoadedAll({
-    required List<EntriesModel> data,
-    required String message,
-  }) : super(data: data, message: message);
+  const factory EntriesState.end(List<EntriesDataModel> data, String message) =
+      _End;
 }
