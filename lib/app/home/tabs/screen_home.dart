@@ -1,74 +1,117 @@
-import 'package:expense_tracker/app/home/routes/routes.dart';
+import 'package:expense_tracker/app/widgets/home/planning_cards.dart';
 import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class MainTab extends StatelessWidget {
+import '../../../context/context.dart';
+import '../../widgets/notifications/notification_data_more.dart';
+import '../../widgets/notifications/notifications_data.dart';
+
+class MainTab extends StatefulWidget {
   const MainTab({Key? key}) : super(key: key);
 
   @override
+  State<MainTab> createState() => _MainTabState();
+}
+
+class _MainTabState extends State<MainTab> {
+  late ScrollController _controller;
+
+  void _scrollCallBack() {
+    double delta = MediaQuery.of(context).size.height * .2;
+    if (_controller.position.maxScrollExtent - _controller.position.pixels <=
+        delta) {
+      context.read<NotificationBloc>().fetchMore();
+    }
+  }
+
+  void _postFrameCallBack(Duration _) async {
+    final int count = context.read<NotificationBloc>().itemCount;
+    final GlobalKey<SliverAnimatedListState> key =
+        context.read<NotificationBloc>().key;
+
+    for (int i = 0; i < count; i++) {
+      await Future.delayed(
+        const Duration(milliseconds: 40),
+        () => key.currentState?.insertItem(i),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ScrollController();
+    _controller.addListener(_scrollCallBack);
+    WidgetsBinding.instance.addPostFrameCallback(_postFrameCallBack);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double _screenY = MediaQuery.of(context).size.height;
-    return SizedBox.expand(
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: [
-          const SizedBox(height: 80),
-          Text('Overview',
-              style: Theme.of(context)
-                  .textTheme
-                  .headline5!
-                  .copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: _screenY * .3,
-            child: ListView(
-              padding: EdgeInsets.zero,
-              scrollDirection: Axis.horizontal,
-              children: const [
-                DataCards(title: 'Total Salary', amount: 2908.90),
-                DataCards(title: 'Total Expense', amount: 2908.90),
-                DataCards(title: 'purchase', amount: 2908.90),
-                DataCards(title: 'purchase', amount: 2908.90),
-              ],
+    final Size size = MediaQuery.of(context).size;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      child: Scrollbar(
+        controller: _controller,
+        child: CustomScrollView(
+          controller: _controller,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Overview',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline5!
+                            .copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: size.height * .3,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: ClientBaseInfomation(),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 15),
-          SizedBox(
-            height: _screenY * .2,
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              // padding: EdgeInsets.zero,
-              scrollDirection: Axis.horizontal,
-              children: [
-                ImportanceCard(
-                  icon: Icons.star,
-                  title: 'Savings',
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const Savings()));
-                  },
-                ),
-                ImportanceCard(
-                  icon: Icons.notifications_active,
-                  title: 'Reminders',
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const Reminders())),
-                ),
-                ImportanceCard(
-                  icon: Icons.account_balance,
-                  title: 'Budget',
-                  onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => const Budget())),
-                ),
-              ],
+            SliverToBoxAdapter(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Planning',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline6!
+                            .copyWith(fontWeight: FontWeight.w600)),
+                  ),
+                  PlanningCards(),
+                ],
+              ),
             ),
-          ),
-          ListTile(
-            onTap: () {},
-            trailing: const Icon(Icons.more_vert),
-            title: const Text('Latest entries'),
-          ),
-        ],
+            SliverToBoxAdapter(
+              child: Text('Notifications',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6!
+                      .copyWith(fontWeight: FontWeight.w600)),
+            ),
+            NotificationsData(),
+            NotificationsDataLoadMore()
+          ],
+        ),
       ),
     );
   }
