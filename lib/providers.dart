@@ -1,9 +1,14 @@
+import 'package:expense_tracker/context/goals/goals_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'context/context.dart';
+import 'data/local/goals_dao.dart';
+import 'data/remote/goals_client.dart';
 import 'data/remote/remote.dart';
+import 'data/repository/goals_repo_impl.dart';
 import 'data/repository/repository.dart';
+import 'domain/repositories/goals_repository.dart';
 import 'domain/repositories/repositories.dart';
 
 class ProvidersWrapper extends StatelessWidget {
@@ -21,7 +26,12 @@ class ProvidersWrapper extends StatelessWidget {
           RepositoryProvider<EntriesRepository>(
               create: (context) => EntriesRepositoryImpl()),
           RepositoryProvider<ExpenseRepostiory>(
-              create: (context) => ExpensesApi())
+              create: (context) => ExpensesApi()),
+
+          RepositoryProvider<GoalsRepository>(
+            create: (context) =>
+                GoalsRepositoryImpl(clt: GoalsClient(), dao: GoalsDao()),
+          )
         ],
         child: MultiBlocProvider(
           providers: [
@@ -41,6 +51,10 @@ class ProvidersWrapper extends StatelessWidget {
             BlocProvider<BudgetCubit>(create: (context) => BudgetCubit()),
             BlocProvider<BaseInformationCubit>(
                 create: (context) => BaseInformationCubit()),
+
+            BlocProvider<GoalsBloc>(
+              create: (context) => GoalsBloc(context.read<GoalsRepository>()),
+            ),
             BlocProvider<EntriesBloc>(
                 create: (context) =>
                     EntriesBloc(context.read<EntriesRepository>())),
