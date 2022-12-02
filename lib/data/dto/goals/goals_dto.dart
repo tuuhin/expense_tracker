@@ -44,6 +44,7 @@ class GoalsDto {
         id: model.id,
         title: model.title,
         collected: model.collected,
+        desc: model.desc,
         createdAt: model.createdAt,
         updatedAt: model.updatedAt,
         price: model.price,
@@ -52,20 +53,23 @@ class GoalsDto {
       );
 
   factory GoalsDto.fromEntity(GoalsEntity entity) => GoalsDto(
-      id: entity.id,
-      title: entity.title,
-      collected: entity.collected,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-      price: entity.price,
-      accomplished: entity.accomplished,
-      imageUrl: null);
+        id: entity.id,
+        title: entity.title,
+        desc: entity.desc,
+        collected: entity.collected,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt,
+        price: entity.price,
+        accomplished: entity.accomplished,
+        imageUrl: entity.image,
+      );
 
   Map<String, dynamic> toJson() => _$GoalsDtoToJson(this);
 
   GoalsModel toModel() => GoalsModel(
         id: id,
         title: title,
+        desc: desc,
         collected: collected,
         createdAt: createdAt,
         updatedAt: updatedAt,
@@ -77,10 +81,12 @@ class GoalsDto {
   GoalsEntity toEntity() => GoalsEntity(
         id: id,
         title: title,
+        desc: desc,
         collected: collected,
         createdAt: createdAt,
         updatedAt: updatedAt,
         price: price,
         accomplished: accomplished,
+        image: imageUrl,
       );
 }

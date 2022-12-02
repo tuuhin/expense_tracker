@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:expense_tracker/main.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../domain/models/models.dart';
@@ -12,8 +13,6 @@ part 'goals_bloc.freezed.dart';
 class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
   final GoalsRepository _repo;
 
-  final List<GoalsModel> _goals = [];
-
   final GlobalKey<SliverAnimatedListState> _key =
       GlobalKey<SliverAnimatedListState>();
 
@@ -23,16 +22,17 @@ class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
     on<_GetData>((event, emit) async {
       try {
         List<GoalsModel> goals = await _repo.getGoals();
-        _goals.addAll(goals);
-        emit(GoalsState.success(data: _goals, message: "Successfull"));
-      } catch (e) {
-        emit(GoalsState.error(message: e.toString()));
-      } finally {
-        for (int i = 0; i < _goals.length; i++) {
+
+        emit(GoalsState.success(data: goals, message: "Successfull"));
+        for (int i = 0; i < goals.length; i++) {
           _key.currentState?.insertItem(i);
         }
+      } catch (e, stk) {
+        debugPrintStack(stackTrace: stk);
+        emit(GoalsState.error(message: e.toString()));
       }
     });
+    on<_Refresh>((event, emit) {});
   }
 
   void fetchGoals() => add(_GetData());

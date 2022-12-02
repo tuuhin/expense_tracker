@@ -28,6 +28,9 @@ class GoalsEntity extends HiveObject {
   @HiveField(7)
   final bool accomplished;
 
+  @HiveField(8)
+  final String? image;
+
   GoalsEntity({
     required this.id,
     required this.title,
@@ -37,5 +40,6 @@ class GoalsEntity extends HiveObject {
     required this.price,
     required this.accomplished,
     this.desc,
+    this.image,
   });
 }

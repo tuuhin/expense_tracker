@@ -5,13 +5,13 @@ import 'remote.dart';
 
 class GoalsClient extends PlansClient {
   Future<List<GoalsDto>> getGoals() async {
-    Response resp = await dio.get('goals');
+    Response resp = await dio.get('/goals');
     return (resp.data as List).map((e) => GoalsDto.fromJson(e)).toList();
   }
 
   Future<GoalsDto> addGoal(GoalsDto goal) async {
     Response resp = await dio.post(
-      'goals',
+      '/goals',
       data: FormData.fromMap(
         {
           ...goal.toJson(),
@@ -26,7 +26,7 @@ class GoalsClient extends PlansClient {
 
   Future<GoalsDto> updateGoal(GoalsDto goal) async {
     Response resp = await dio.post(
-      'goals/${goal.id}',
+      '/goals/${goal.id}',
       data: FormData.fromMap(
         {
           ...goal.toJson(),
@@ -40,6 +40,6 @@ class GoalsClient extends PlansClient {
   }
 
   Future deleteGoal(GoalsDto goal) async {
-    await dio.delete('goals/${goal.id}');
+    await dio.delete('/goals/${goal.id}');
   }
 }
