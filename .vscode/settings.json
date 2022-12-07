@@ -6,9 +6,13 @@
 		"editor.suggest.insertMode": "replace",
 		"editor.defaultFormatter": "Dart-Code.dart-code",
 		"editor.inlayHints.enabled": "offUnlessPressed",
-		"editor.formatOnSave": true,
+		"editor.formatOnSave": true
 	},
-	"dart.previewFlutterUiGuides": true,
+	// "dart.previewFlutterUiGuides": true,
 	"editor.fontSize": 13,
-	"editor.tabSize": 2
+	"editor.tabSize": 2,
+	"files.exclude": {
+		"**/*.freezed.dart": true,
+		"**/*.g.dart": true
+	}
 }
