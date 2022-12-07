@@ -14,9 +14,9 @@ class BudgetDto {
   @JsonKey(name: "desc")
   final String? desc;
   @JsonKey(name: "_from")
-  final DateTime statedFrom;
+  final DateTime start;
   @JsonKey(name: "to")
-  final DateTime tillDate;
+  final DateTime end;
   @JsonKey(name: "total_amount")
   final double amount;
   @JsonKey(name: "amount_used")
@@ -30,8 +30,8 @@ class BudgetDto {
     required this.id,
     required this.title,
     this.desc,
-    required this.statedFrom,
-    required this.tillDate,
+    required this.start,
+    required this.end,
     required this.amount,
     required this.amountUsed,
     required this.issedAt,
@@ -43,36 +43,36 @@ class BudgetDto {
 
   Map<String, dynamic> toJson() => _$BudgetDtoToJson(this);
 
-  factory BudgetDto.fromModel(BudgetModel budgetModel) => BudgetDto(
-        id: budgetModel.id,
-        title: budgetModel.title,
-        desc: budgetModel.desc,
-        statedFrom: budgetModel.statedFrom,
-        tillDate: budgetModel.tillDate,
-        amount: budgetModel.amount,
-        amountUsed: budgetModel.amountUsed,
-        issedAt: budgetModel.issedAt,
-        hasExpired: budgetModel.hasExpired,
+  factory BudgetDto.fromModel(BudgetModel model) => BudgetDto(
+        id: model.id,
+        title: model.title,
+        desc: model.desc,
+        start: model.start,
+        end: model.end,
+        amount: model.amount,
+        amountUsed: model.amountUsed,
+        issedAt: model.issedAt,
+        hasExpired: model.hasExpired,
       );
 
-  factory BudgetDto.fromEntity(BudgetEntity budgetEntity) => BudgetDto(
-        id: budgetEntity.id,
-        title: budgetEntity.title,
-        desc: budgetEntity.desc,
-        statedFrom: budgetEntity.statedFrom,
-        tillDate: budgetEntity.tillDate,
-        amount: budgetEntity.amount,
-        amountUsed: budgetEntity.amountUsed,
-        issedAt: budgetEntity.issedAt,
-        hasExpired: budgetEntity.hasExpired,
+  factory BudgetDto.fromEntity(BudgetEntity entity) => BudgetDto(
+        id: entity.id,
+        title: entity.title,
+        desc: entity.desc,
+        start: entity.statedFrom,
+        end: entity.tillDate,
+        amount: entity.amount,
+        amountUsed: entity.amountUsed,
+        issedAt: entity.issedAt,
+        hasExpired: entity.hasExpired,
       );
 
   BudgetModel toModel() => BudgetModel(
         id: id,
         title: title,
         desc: desc,
-        statedFrom: statedFrom,
-        tillDate: tillDate,
+        start: start,
+        end: end,
         amount: amount,
         amountUsed: amountUsed,
         issedAt: issedAt,
@@ -83,8 +83,8 @@ class BudgetDto {
         id: id,
         title: title,
         desc: desc,
-        statedFrom: statedFrom,
-        tillDate: tillDate,
+        statedFrom: start,
+        tillDate: end,
         amount: amount,
         amountUsed: amountUsed,
         issedAt: issedAt,

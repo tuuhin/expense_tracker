@@ -1,11 +1,14 @@
-import 'package:expense_tracker/context/goals/goals_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'context/context.dart';
+import 'context/goals/goals_bloc.dart';
 import 'data/local/goals_dao.dart';
+import 'data/local/storage.dart';
+import 'data/remote/budget_api.dart';
 import 'data/remote/goals_client.dart';
 import 'data/remote/remote.dart';
+import 'data/repository/budget_repository_impl.dart';
 import 'data/repository/goals_repo_impl.dart';
 import 'data/repository/repository.dart';
 import 'domain/repositories/goals_repository.dart';
@@ -31,6 +34,10 @@ class ProvidersWrapper extends StatelessWidget {
           RepositoryProvider<GoalsRepository>(
             create: (context) =>
                 GoalsRepositoryImpl(clt: GoalsClient(), dao: GoalsDao()),
+          ),
+          RepositoryProvider<BudgetRepository>(
+            create: (context) =>
+                BudgetRepositoryImpl(api: BudgetApi(), cache: BudgetStorage()),
           )
         ],
         child: MultiBlocProvider(
@@ -48,7 +55,9 @@ class ProvidersWrapper extends StatelessWidget {
             BlocProvider<ExpenseCategoriesCubit>(
                 create: (context) =>
                     ExpenseCategoriesCubit(context.read<ExpenseRepostiory>())),
-            BlocProvider<BudgetCubit>(create: (context) => BudgetCubit()),
+            BlocProvider<BudgetCubit>(
+                create: (context) =>
+                    BudgetCubit(context.read<BudgetRepository>())),
             BlocProvider<BaseInformationCubit>(
                 create: (context) => BaseInformationCubit()),
 

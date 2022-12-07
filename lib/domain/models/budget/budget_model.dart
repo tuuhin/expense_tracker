@@ -1,23 +1,29 @@
-class BudgetModel {
-  final int id;
-  final String title;
-  final String? desc;
-  final DateTime statedFrom;
-  final DateTime tillDate;
-  final double amount;
-  final double amountUsed;
-  final DateTime issedAt;
-  final bool hasExpired;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  BudgetModel({
-    required this.id,
-    required this.title,
-    this.desc,
-    required this.statedFrom,
-    required this.tillDate,
-    required this.amount,
-    required this.amountUsed,
-    required this.issedAt,
-    required this.hasExpired,
-  });
+part 'budget_model.freezed.dart';
+
+@freezed
+class BudgetModel with _$BudgetModel {
+  factory BudgetModel({
+    required int id,
+    required String title,
+    String? desc,
+    required DateTime start,
+    required DateTime end,
+    required double amount,
+    required double amountUsed,
+    required DateTime issedAt,
+    required bool hasExpired,
+  }) = _BudgetModel;
+}
+
+@freezed
+class CreateBudgetModel with _$CreateBudgetModel {
+  factory CreateBudgetModel({
+    required String title,
+    String? desc,
+    required DateTime start,
+    required DateTime end,
+    required double amount,
+  }) = _CreateBudgetModel;
 }
