@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 part 'expense_categories_entity.g.dart';
 
 @HiveType(typeId: 03)
-class ExpenseCategoriesEntity extends HiveObject {
+class CategoryEntity extends HiveObject {
   @HiveField(0)
   final int id;
 
@@ -13,9 +13,5 @@ class ExpenseCategoriesEntity extends HiveObject {
   @HiveField(2)
   final String? desc;
 
-  ExpenseCategoriesEntity({
-    required this.id,
-    required this.title,
-    this.desc,
-  });
+  CategoryEntity({required this.id, required this.title, this.desc});
 }

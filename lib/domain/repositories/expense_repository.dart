@@ -1,17 +1,16 @@
-import 'package:expense_tracker/domain/models/models.dart';
-import 'dart:io';
+import 'package:expense_tracker/utils/resource.dart';
 
-abstract class ExpenseRepostiory {
-  Future<ExpenseModel> createExpense(String title, double amount,
-      {String? desc, List<ExpenseCategoriesModel>? categories, File? receipt});
+import '../models/models.dart';
 
-  Future<ExpenseCategoriesModel> createCategory(String title, {String? desc});
+abstract class ExpenseRespository {
+  Future<Resource<List<ExpenseCategoriesModel>>> getCategories();
+  Future<Resource<ExpenseCategoriesModel?>> createCategory(
+      CreateCategoryModel category);
+  Future<Resource<void>> deleteCategory(ExpenseCategoriesModel category);
+  List<ExpenseCategoriesModel> cachedCategories();
 
-  Future deleteCategory(ExpenseCategoriesModel expenseCategoriesModel);
-
-  Future deleteExpense(ExpenseModel expenseModel);
-
-  Future<List<ExpenseCategoriesModel>?> getCategories();
-
-  Future<List<ExpenseModel>?> getExpenses();
+  Future<Resource<List<ExpenseModel>>> getExpense();
+  Future<Resource<ExpenseModel?>> createExpense(CreateExpenseModel expense);
+  Future<Resource<void>> deleteExpense(ExpenseModel expense);
+  List<ExpenseModel> cachedExpenses();
 }

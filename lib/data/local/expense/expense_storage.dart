@@ -1,8 +1,6 @@
-import 'package:expense_tracker/data/entity/entity.dart';
-import 'package:expense_tracker/domain/models/expense/expense_model.dart';
 import 'package:hive/hive.dart';
 
-import '../../dto/expense/expense_dto.dart';
+import '../../entity/entity.dart';
 
 class ExpenseStorage {
   static Box<ExpenseEntity>? expenses;
@@ -11,25 +9,24 @@ class ExpenseStorage {
     expenses = await Hive.openBox<ExpenseEntity>('expenses');
   }
 
-  Future<void> addExpense(ExpenseModel expenseModel) async =>
-      await expenses!.add(ExpenseDto.fromExpenseModel(expenseModel).toEntity());
+  Future<void> addExpense(ExpenseEntity entity) async =>
+      await expenses!.put(entity.id, entity);
 
-  Future<void> addExpenses(List<ExpenseModel> expenseModels) async =>
-      await expenses!.addAll(
-        expenseModels.map(
-          (ExpenseModel model) => ExpenseDto.fromExpenseModel(model).toEntity(),
-        ),
+  Future<void> addExpenses(List<ExpenseEntity> enitites) async =>
+      await expenses!.putAll(
+        enitites.asMap().map((key, entity) => MapEntry(entity.id, entity)),
       );
 
-  List<ExpenseModel> getExpense() => expenses!.values
-      .map((ExpenseEntity e) => ExpenseDto.fromEntity(e).toExpenseModel())
-      .toList();
+  Iterable<ExpenseEntity> getExpenses() => expenses!.values.toList().reversed;
 
-  Future<void> deleteExpenseCategory(ExpenseModel expenseModel) async {
-    int index =
-        getExpense().indexWhere((element) => element.id == expenseModel.id);
-    await expenses!.deleteAt(index);
-  }
+  ExpenseEntity? getExpenseById(ExpenseEntity entity) =>
+      expenses?.get(entity.id);
 
-  Future<void> deleteExpense() async => await expenses!.clear();
+  Future<void> updateExpense(ExpenseEntity entity) async =>
+      await expenses?.put(entity.id, entity);
+
+  Future<void> deleteExpense(ExpenseEntity entity) async =>
+      await expenses!.delete(entity.id);
+
+  Future<void> deleteAll() async => await expenses!.clear();
 }

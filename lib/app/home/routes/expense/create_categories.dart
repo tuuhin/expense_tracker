@@ -1,7 +1,7 @@
-import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../context/context.dart';
 import '../../../../domain/models/models.dart';
 import '../../../../utils/resource.dart';
 
@@ -15,7 +15,8 @@ class CreateCategory extends StatefulWidget {
 class _CreateCategoryState extends State<CreateCategory> {
   late TextEditingController _title;
   late TextEditingController _desc;
-  late ExpenseCategoriesCubit _expenseCategoriesCubit;
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -31,90 +32,64 @@ class _CreateCategoryState extends State<CreateCategory> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _expenseCategoriesCubit = BlocProvider.of<ExpenseCategoriesCubit>(context);
-  }
-
   void _addCategory() async {
-    if (_title.text.isEmpty) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Category Title can\'t be blank')));
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Adding categoty ${_title.text}')));
-
-    Resource<ExpenseCategoriesModel?> resource = await _expenseCategoriesCubit
-        .addExpenseCategory(_title.text, desc: _desc.text);
-    if (mounted) {
-      FocusScope.of(context).requestFocus(FocusNode());
-    }
-    if (resource is ResourceSucess) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(
-            'Succuessfully created category ${resource.data!.title}',
-          ),
-        ),
-      );
-    }
-    if (resource is ResourceFailed) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(resource.message.toString()),
-        ),
-      );
-    }
-    if (mounted) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      Navigator.of(context)
-        ..pop()
-        ..pop();
-    }
+    context
+        .read<ExpenseCategoriesCubit>()
+        .createCategory(CreateCategoryModel(
+          title: _title.text.trim(),
+          desc: _desc.text.isEmpty ? null : _desc.text,
+        ))
+        .then(Navigator.of(context).pop);
   }
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
 
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 10),
-          TextField(
-            controller: _title,
-            decoration: const InputDecoration(
-              hintText: 'Title',
-              helperText: 'Maximum 50 characters alowed',
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            maxLines: 3,
-            controller: _desc,
-            decoration: const InputDecoration(
-              hintText: 'Description',
-              helperText: 'Maximum 250 characters alowed',
-            ),
-          ),
-          const Divider(),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).colorScheme.secondary,
-                fixedSize: Size(size.width, 50),
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _title,
+              validator: (value) => value != null && value.isEmpty
+                  ? 'Can\'t have a blank title'
+                  : value != null && value.length > 50
+                      ? 'Title cannot have more than 50 chars'
+                      : null,
+              decoration: const InputDecoration(
+                hintText: 'Title',
+                helperText: 'Maximum 50 characters alowed',
               ),
-              onPressed: _addCategory,
-              child: const Text('Add category'))
-        ],
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              maxLines: 3,
+              controller: _desc,
+              validator: (value) => value != null && value.length > 250
+                  ? 'Description is too big'
+                  : null,
+              decoration: const InputDecoration(
+                hintText: 'Description',
+                helperText: 'Maximum 250 characters alowed',
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    fixedSize: Size(size.width, 50)),
+                onPressed: _addCategory,
+                child: const Text('Create category'))
+          ],
+        ),
       ),
     );
   }

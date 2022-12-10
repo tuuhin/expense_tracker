@@ -1,48 +1,33 @@
-import 'package:expense_tracker/domain/models/models.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-import '../../entity/expense/expense_categories_entity.dart';
+import '../../../domain/models/models.dart';
+import '../../entity/entity.dart';
 
+part 'expense_category_dto.g.dart';
+
+@JsonSerializable()
 class ExpenseCategoryDto {
+  @JsonKey(name: "id")
   final int id;
+  @JsonKey(name: "title")
   final String title;
+  @JsonKey(name: "desc")
   final String? desc;
-  ExpenseCategoryDto({
-    required this.id,
-    required this.title,
-    this.desc,
-  });
+  ExpenseCategoryDto({required this.id, required this.title, this.desc});
 
   factory ExpenseCategoryDto.fromJson(Map<String, dynamic> json) =>
-      ExpenseCategoryDto(
-        id: json['id'],
-        title: json['title'],
-        desc: json['desc'],
-      );
+      _$ExpenseCategoryDtoFromJson(json);
 
-  ExpenseCategoriesEntity toEntity() =>
-      ExpenseCategoriesEntity(id: id, title: title, desc: desc);
+  factory ExpenseCategoryDto.fromEntity(CategoryEntity entity) =>
+      ExpenseCategoryDto(id: entity.id, title: entity.title, desc: entity.desc);
 
-  ExpenseCategoriesModel toExpenseCategoryModel() =>
+  factory ExpenseCategoryDto.fromModel(ExpenseCategoriesModel model) =>
+      ExpenseCategoryDto(id: model.id, title: model.title, desc: model.desc);
+
+  Map<String, dynamic> toJson() => _$ExpenseCategoryDtoToJson(this);
+
+  CategoryEntity toEntity() => CategoryEntity(id: id, title: title, desc: desc);
+
+  ExpenseCategoriesModel toModel() =>
       ExpenseCategoriesModel(id: id, title: title, desc: desc);
-
-  factory ExpenseCategoryDto.fromExpenseEntity(
-          ExpenseCategoriesEntity entity) =>
-      ExpenseCategoryDto(
-        id: entity.id,
-        title: entity.title,
-        desc: entity.desc,
-      );
-
-  factory ExpenseCategoryDto.fromExpenseCategoryModel(
-          ExpenseCategoriesModel categoriesModel) =>
-      ExpenseCategoryDto(
-          id: categoriesModel.id,
-          title: categoriesModel.title,
-          desc: categoriesModel.desc);
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'desc': desc,
-      };
 }

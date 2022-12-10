@@ -18,7 +18,7 @@ class ExpenseEntity extends HiveObject {
   final DateTime addedAt;
 
   @HiveField(4)
-  final List<ExpenseCategoriesEntity>? categories;
+  final List<CategoryEntity> categories;
 
   @HiveField(5)
   final BudgetEntity budget;
@@ -34,7 +34,7 @@ class ExpenseEntity extends HiveObject {
     required this.title,
     required this.amount,
     required this.addedAt,
-    this.categories,
+    required this.categories,
     required this.budget,
     this.desc,
     this.imageURL,

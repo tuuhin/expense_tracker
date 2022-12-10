@@ -1,77 +1,72 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 
 import './remote.dart';
 import '../../domain/models/models.dart';
-import '../../domain/repositories/repositories.dart';
 import '../dto/dto.dart';
 
-class ExpensesApi extends ResourceClient implements ExpenseRepostiory {
-  @override
-  Future<ExpenseCategoriesModel> createCategory(String title,
-      {String? desc}) async {
-    final Response response = await dio.post(
-      '/categories',
-      data: {'title': title, 'desc': desc},
-    );
-    return ExpenseCategoryDto.fromJson(response.data).toExpenseCategoryModel();
+class ExpensesApi extends ResourceClient {
+  Future<ExpenseCategoryDto> createCategory(CreateCategoryDto dto) async {
+    Response response = await dio.post('/categories', data: dto.toJson());
+    return ExpenseCategoryDto.fromJson(response.data);
   }
 
-  @override
-  Future<ExpenseModel> createExpense(
-    String title,
-    double amount, {
-    required BudgetModel budget,
-    String? desc,
-    required List<ExpenseCategoriesModel> categories,
-    File? receipt,
-  }) async {
+  Future<ExpenseDto> createExpense(CreateExpenseDto dto) async {
     Response response = await dio.post(
       '/expenses',
       data: FormData.fromMap(
         {
-          'title': title,
-          'amount': amount,
-          'desc': desc,
-          'budget': BudgetDto.fromModel(budget).id,
-          'categories': categories
-              .map<int>((ExpenseCategoriesModel e) =>
-                  ExpenseCategoryDto.fromExpenseCategoryModel(e).id)
-              .toList(),
-          'receipt': receipt != null
-              ? await MultipartFile.fromFile(receipt.path,
-                  filename: receipt.path)
+          ...dto.toJson(),
+          'receipt': dto.image != null
+              ? await MultipartFile.fromFile(
+                  dto.image!,
+                  filename: dto.image,
+                )
               : null
         },
       ),
     );
-    return ExpenseDto.fromJson(response.data).toExpenseModel();
+    return ExpenseDto.fromJson(response.data);
   }
 
-  @override
-  Future deleteCategory(ExpenseCategoriesModel expenseCategoriesModel) async =>
-      await dio.delete('/categories/${expenseCategoriesModel.id}');
+  Future<ExpenseDto> updateExpense(ExpenseDto dto) async {
+    Response response = await dio.put(
+      '/expenses/${dto.id}',
+      data: FormData.fromMap(
+        {
+          ...dto.toJson(),
+          'receipt': dto.receipt != null
+              ? await MultipartFile.fromFile(
+                  dto.receipt!,
+                  filename: dto.receipt,
+                )
+              : null
+        },
+      ),
+    );
+    return ExpenseDto.fromJson(response.data);
+  }
 
-  @override
-  Future deleteExpense(ExpenseModel expenseModel) async =>
-      await dio.delete('/expenses/${expenseModel.id}');
+  Future<ExpenseCategoryDto> updateCategory(ExpenseCategoryDto dto) async {
+    Response response =
+        await dio.put('/categories/${dto.id}', data: dto.toJson());
 
-  @override
-  Future<List<ExpenseCategoriesModel>?> getCategories() async {
+    return ExpenseCategoryDto.fromJson(response.data);
+  }
+
+  Future deleteCategory(ExpenseCategoryDto category) async =>
+      await dio.delete('/categories/${category.id}');
+
+  Future deleteExpense(ExpenseDto expense) async =>
+      await dio.delete('/expenses/${expense.id}');
+
+  Future<Iterable<ExpenseCategoryDto>> getCategories() async {
     Response response = await dio.get('/categories');
-    List categories = response.data as List;
-    return categories
-        .map((json) =>
-            ExpenseCategoryDto.fromJson(json).toExpenseCategoryModel())
-        .toList();
+    return (response.data as List)
+        .map((json) => ExpenseCategoryDto.fromJson(json));
   }
 
-  @override
-  Future<List<ExpenseModel>?> getExpenses() async {
+  Future<Iterable<ExpenseDto>> getExpenses() async {
     Response response = await dio.get('/expenses');
-    List expenses = response.data as List;
-    return expenses
-        .map((json) => ExpenseDto.fromJson(json).toExpenseModel())
-        .toList();
+    return (response.data as List).map((json) => ExpenseDto.fromJson(json));
   }
 }

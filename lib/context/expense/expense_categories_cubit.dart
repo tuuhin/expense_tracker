@@ -1,111 +1,95 @@
-import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../app/widgets/widgets.dart';
-import '../../data/local/storage.dart';
-import '../../data/remote/remote.dart';
 import '../../domain/models/models.dart';
-import '../../main.dart';
+import '../../domain/repositories/repositories.dart';
 import '../../utils/resource.dart';
 
 part 'expense_categories_state.dart';
 
+part 'expense_categories_cubit.freezed.dart';
+
 class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
-  ExpenseCategoriesCubit() : super(ExpenseCategoryStateLoading());
+  ExpenseCategoriesCubit(this._repo) : super(ExpenseCategoryState.loading());
 
-  final ExpensesApi _expensesApi = ExpensesApi();
-  final ExpenseCategoriesStorage _categoryStore = ExpenseCategoriesStorage();
+  final ExpenseRespository _repo;
 
-  List<ExpenseCategoriesModel> _models =
-      ExpenseCategoriesStorage.getExpenseCategories();
+  GlobalKey<SliverAnimatedListState> get key => _key;
+  final GlobalKey<SliverAnimatedListState> _key =
+      GlobalKey<SliverAnimatedListState>();
 
-  List<ExpenseCategoriesModel> get models => _models;
+  Future<void> removeCategory(ExpenseCategoriesModel category,
+      {required Widget widget}) async {
+    Resource<void> delete = await _repo.deleteCategory(category);
 
-  GlobalKey<AnimatedListState> get expenseSourceListKey => _key;
-  final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();
+    delete.whenOrNull(
+      data: (data, message) {
+        if (state is! _Success) return;
 
-  Future<Resource> deleteExpenseCategory(ExpenseCategoriesModel model) async {
-    try {
-      await _expensesApi.deleteCategory(model);
+        int itemIndex = (state as _Success).data.indexOf(category);
 
-      _key.currentState?.removeItem(
-        _models.indexOf(model),
-        (context, animation) => SlideAndFadeTransition(
-          animation: animation,
-          child: ExpenseCategoryCard(category: model),
-        ),
-      );
-      await _categoryStore.deleteExpenseCategory(model);
-      _models = ExpenseCategoriesStorage.getExpenseCategories();
+        key.currentState?.removeItem(
+          itemIndex,
+          (context, animation) =>
+              SizeTransition(sizeFactor: animation, child: widget),
+        );
 
-      return Resource.data(
-          data: [], message: 'Successfully removed category ${model.title}');
-    } on DioError catch (dio) {
-      return Resource.error(
-          err: dio.response?.statusMessage ??
-              "Something related to dio occured ");
-    } on SocketException {
-      return Resource.error(
-          err: "Something related to internet occured  occured ");
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      return Resource.error(err: "Unknown error");
-    }
+        List<ExpenseCategoriesModel> newCategorySet =
+            (state as _Success).data.toList()..removeAt(itemIndex);
+
+        emit(ExpenseCategoryState.data(data: newCategorySet, message: message));
+      },
+    );
   }
 
-  Future<Resource<ExpenseCategoriesModel?>> addExpenseCategory(
-    String title, {
-    String? desc,
-  }) async {
-    try {
-      ExpenseCategoriesModel newCategory =
-          await _expensesApi.createCategory(title, desc: desc);
-      _categoryStore.addExpenseCategory(newCategory);
-      _models.add(newCategory);
-      _key.currentState?.insertItem(0);
+  Future<void> createCategory(CreateCategoryModel category) async {
+    Resource<ExpenseCategoriesModel?> newCategory =
+        await _repo.createCategory(category);
 
-      return Resource.data(data: newCategory, message: "NEW CATEGORY ADDED");
-    } on DioError catch (dio) {
-      return Resource.error(
-          err: dio.response?.statusMessage ??
-              "Something related to dio occured  occured ");
-    } catch (e) {
-      return Resource.error(
-          err: "Something related to internet occured  occured ");
-    }
+    newCategory.whenOrNull(
+      data: (data, message) {
+        if (state is! _Success && data != null) return;
+
+        emit(ExpenseCategoryState.data(
+            data: [data!, ...(state as _Success).data], message: message));
+
+        key.currentState?.insertItem(0);
+      },
+      error: (err, errorMessage, data) {
+        if (state is! _Success) return;
+        emit(
+          ExpenseCategoryState.data(
+              data: [...(state as _Success).data],
+              message: "Cannot add category"),
+        );
+      },
+    );
   }
 
-  void getCategories() async {
-    try {
-      List<ExpenseCategoriesModel>? updatedCategories =
-          await _expensesApi.getCategories();
-      if (updatedCategories != null) {
-        logger.info('Invalidating cache for expense_categories');
-        await _categoryStore.deleteExpenseCategories();
-        await _categoryStore.addExpenseCategories(updatedCategories);
-      }
-      _models = ExpenseCategoriesStorage.getExpenseCategories();
-      emit(ExpenseCategoryStateSuccess(data: _models));
-      for (var element in _models) {
-        await Future.delayed(const Duration(milliseconds: 50),
-            () => _key.currentState?.insertItem(models.indexOf(element)));
-      }
-    } on DioError catch (dio) {
-      return emit(
-        ExpenseCategoryStateFailed(
-            errMessage:
-                dio.response?.statusMessage ?? "Something related to dio ",
-            data: _models),
-      );
-    } on SocketException {
-      emit(ExpenseCategoryStateSuccess(
-          data: _models, message: 'NO INTERNET lOADING ITEMS FROM CACHE'));
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      emit(ExpenseCategoryStateSuccess(
-          data: _models, message: 'UNUSUAL ERROR OCCURED '));
-    }
+  Future<void> getCategories() async {
+    emit(ExpenseCategoryState.loading());
+
+    Resource<List<ExpenseCategoriesModel>> budgets =
+        await _repo.getCategories();
+
+    budgets.when(
+      loading: () {},
+      data: (data, message) async {
+        if (data.isEmpty) {
+          emit(ExpenseCategoryState.noData(message: "No data"));
+          return;
+        }
+        emit(ExpenseCategoryState.data(data: data, message: message));
+      },
+      error: (err, errorMessage, data) {
+        if (data != null && data.isNotEmpty) {
+          emit(ExpenseCategoryState.errorWithData(
+              data: data, err: err, errMessage: errorMessage));
+          return;
+        }
+        emit(ExpenseCategoryState.error(errMessage: errorMessage, err: err));
+      },
+    );
   }
 }

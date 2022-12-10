@@ -1,5 +1,6 @@
-import 'package:expense_tracker/domain/models/models.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import '../models.dart';
 
 part 'expense_model.freezed.dart';
 
@@ -10,9 +11,21 @@ class ExpenseModel with _$ExpenseModel {
     required String title,
     required double amount,
     required DateTime addedAt,
-    List<ExpenseCategoriesModel>? categories,
+    required List<ExpenseCategoriesModel> categories,
     required BudgetModel budget,
     String? desc,
     String? imageURL,
   }) = _ExpenseModel;
+}
+
+@freezed
+class CreateExpenseModel with _$CreateExpenseModel {
+  factory CreateExpenseModel({
+    required String title,
+    required double amount,
+    required int budgetId,
+    required List<int> categoryIds,
+    String? desc,
+    String? path,
+  }) = _CreateExpenseModel;
 }

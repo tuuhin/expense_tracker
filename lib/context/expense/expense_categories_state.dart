@@ -1,23 +1,19 @@
 part of 'expense_categories_cubit.dart';
 
-@immutable
-abstract class ExpenseCategoryState {}
+@freezed
+class ExpenseCategoryState with _$ExpenseCategoryState {
+  factory ExpenseCategoryState.loading() = _Loading;
 
-class ExpenseCategoryStateSuccess extends ExpenseCategoryState {
-  final List<ExpenseCategoriesModel?>? data;
-  final String? message;
-  ExpenseCategoryStateSuccess({this.data, this.message});
+  factory ExpenseCategoryState.data(
+      {required List<ExpenseCategoriesModel> data, String? message}) = _Success;
+
+  factory ExpenseCategoryState.error(
+      {required String errMessage, required Object err}) = _Error;
+
+  factory ExpenseCategoryState.noData({String? message}) = _NoData;
+
+  factory ExpenseCategoryState.errorWithData(
+      {required String errMessage,
+      required Object err,
+      required List<ExpenseCategoriesModel> data}) = _ErrorWithData;
 }
-
-class ExpenseCategoryStateFailed extends ExpenseCategoryState {
-  final List<ExpenseCategoriesModel?>? data;
-  final String errMessage;
-  final StackTrace? stackTrace;
-  ExpenseCategoryStateFailed({
-    required this.errMessage,
-    this.data,
-    this.stackTrace,
-  });
-}
-
-class ExpenseCategoryStateLoading extends ExpenseCategoryState {}

@@ -15,3 +15,11 @@ class ExpenseCategoriesModel with _$ExpenseCategoriesModel {
     return "$id: $title";
   }
 }
+
+@freezed
+class CreateCategoryModel with _$CreateCategoryModel {
+  factory CreateCategoryModel({
+    required String title,
+    String? desc,
+  }) = _CreateCategoryModel;
+}
