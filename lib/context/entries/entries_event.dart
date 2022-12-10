@@ -6,5 +6,7 @@ class EntriesEvent with _$EntriesEvent {
 
   const factory EntriesEvent.fetchMore() = _FetchMore;
 
+  const factory EntriesEvent.refresh() = _Referesh;
+
   const factory EntriesEvent.clear() = _Clear;
 }

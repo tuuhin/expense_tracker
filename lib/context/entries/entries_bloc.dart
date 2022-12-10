@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -25,7 +26,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
   int? _offsetFromString(String url) =>
       int.tryParse(Uri.parse(url).queryParameters["offset"] ?? '');
 
-  Timer _limiter = Timer(const Duration(milliseconds: 1000), () {});
+  Timer _limiter = Timer(const Duration(milliseconds: 2000), () {});
 
   int _offset = 0;
 
@@ -33,48 +34,52 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
 
   EntriesBloc(this._repository) : super(const _Loading()) {
     on<_FetchSome>((event, emit) async {
-      try {
-        EntriesModel holder = await _repository.getEntries();
-        _nextURL = holder.nextURL;
-        if (holder.nextURL != null) {
-          _offset = _offsetFromString(holder.nextURL!) ?? 1;
-        }
-        emit(EntriesState.data(_entries..addAll(holder.entries)));
-        for (int i = 0; i < _entries.length; i++) {
-          await Future.delayed(const Duration(milliseconds: 50),
-              () => _key.currentState?.insertItem(0));
-        }
-      } catch (err, stk) {
-        debugPrintStack(stackTrace: stk);
-        emit(EntriesState.error(err.toString()));
-      }
+      Resource<EntriesModel> entries = await _repository.getEntries();
+
+      entries.whenOrNull(
+        data: (data, message) {
+          _nextURL = data.nextURL;
+          if (_nextURL != null) {
+            _offset = _offsetFromString(_nextURL!) ?? 1;
+          }
+          emit(EntriesState.data(_entries..addAll(data.entries)));
+        },
+        error: (err, errorMessage, data) {
+          emit(EntriesState.error(errorMessage));
+        },
+      );
     });
 
     on<_FetchMore>((event, emit) async {
-      try {
-        if (_nextURL == null) {
-          emit(EntriesState.end(_entries, "End of list"));
-          return;
-        }
-        if (_limiter.isActive) return;
-        _limiter = Timer(const Duration(seconds: 2), () {});
-
-        emit(EntriesState.loadMore(_entries));
-        EntriesModel holder =
-            await _repository.getMoreEntries(offset: _offset, limit: 5);
-        _nextURL = holder.nextURL;
-        if (holder.nextURL != null) {
-          _offset = _offsetFromString(holder.nextURL!) ?? 1;
-        }
-        emit(EntriesState.data(_entries..addAll(holder.entries)));
-        for (int i = 0; i < _entries.length; i++) {
-          await Future.delayed(const Duration(milliseconds: 50),
-              () => _key.currentState?.insertItem(0));
-        }
-      } catch (e, stk) {
-        debugPrintStack(stackTrace: stk);
-        emit(EntriesState.errorLoadMore(_entries, e.toString()));
+      if (_nextURL == null) {
+        emit(EntriesState.end(_entries, "END OF THE LIST"));
+        return;
       }
+      if (_limiter.isActive) return;
+      _limiter = Timer(const Duration(milliseconds: 2000), () {});
+      emit(EntriesState.loadMore(_entries));
+
+      Resource<EntriesModel> entries =
+          await _repository.getMoreEntries(offset: _offset, limit: 5);
+
+      entries.whenOrNull(
+        data: (data, message) {
+          _nextURL = data.nextURL;
+          if (_nextURL != null) {
+            _offset = _offsetFromString(_nextURL!) ?? 1;
+          }
+          emit(EntriesState.data(_entries..addAll(data.entries)));
+        },
+        error: (err, errorMessage, data) {
+          emit(EntriesState.errorLoadMore(_entries, errorMessage));
+        },
+      );
+    });
+
+    on<_Referesh>((event, emit) {
+      _entries.clear();
+      emit(const EntriesState.loading());
+      add(const _FetchSome());
     });
 
     on<_Clear>((event, emit) {
@@ -83,9 +88,11 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
     });
   }
 
-  void clear() => add(const _Clear());
+  Future<void> refresh() async => add(const _Referesh());
 
   void fetchMore() => add(const _FetchMore());
+
+  void clear() => add(const _Clear());
 
   void init() =>
       _entries.isEmpty ? add(const _FetchSome()) : add(const _FetchMore());

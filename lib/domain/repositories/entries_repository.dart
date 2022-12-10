@@ -1,7 +1,9 @@
+import 'package:expense_tracker/utils/resource.dart';
+
 import '../models/models.dart';
 
 abstract class EntriesRepository {
-  Future<EntriesModel> getEntries();
+  Future<Resource<EntriesModel>> getEntries();
 
-  Future<EntriesModel> getMoreEntries({int? offset, int? limit});
+  Future<Resource<EntriesModel>> getMoreEntries({int? offset, int? limit});
 }

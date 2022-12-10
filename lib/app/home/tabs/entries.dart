@@ -24,23 +24,22 @@ class _EntriesTabState extends State<EntriesTab> {
     }
   }
 
-  Future<void> itemLoader(Duration _) async {
-    EntriesBloc bloc = context.read<EntriesBloc>();
-    for (int i = 0; i < bloc.entriesCount; i++) {
-      await Future.delayed(const Duration(milliseconds: 100),
-          () => bloc.key.currentState?.insertItem(i));
-    }
-  }
-
   Future<void> _refresh() async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Refresh'),
-        content: const Text('Refresh your entries'),
+        title: const Text('Refresh Entries'),
+        content: const Text('Refresh your entries from the begining '),
         actions: [
           TextButton(
-              onPressed: Navigator.of(context).pop, child: const Text('Cancel'))
+              onPressed: Navigator.of(context).pop,
+              child: const Text('Cancel')),
+          ElevatedButton(
+              onPressed: () => context
+                  .read<EntriesBloc>()
+                  .refresh()
+                  .then(Navigator.of(context).pop),
+              child: Text('Refresh'))
         ],
       ),
     );
@@ -51,7 +50,6 @@ class _EntriesTabState extends State<EntriesTab> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
-    WidgetsBinding.instance.addPostFrameCallback(itemLoader);
   }
 
   @override
@@ -64,30 +62,49 @@ class _EntriesTabState extends State<EntriesTab> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _refresh,
-      child: CustomScrollView(
+      child: Scrollbar(
         controller: _scrollController,
-        slivers: [
-          SliverAppBar(
-            centerTitle: false,
-            title: Text('Your Entries',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-          ),
-          BlocBuilder<EntriesBloc, EntriesState>(
-            builder: (context, state) => state.when(
-                loading: () => const SliverPadding(
-                    padding: EdgeInsets.all(8.0), sliver: EntriesLoadingCard()),
-                data: (data) => EntriesList(data: data),
-                error: (error) => const SliverFillRemaining(
-                      child: Text('error'),
-                    ),
-                loadMore: (data) => EntriesList(data: data),
-                errorLoadMore: ((data, error) => Text('error')),
-                end: (data, message) => Text(message)),
-          ),
-        ],
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              centerTitle: false,
+              title: Text('Your Entries',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+            ),
+            BlocBuilder<EntriesBloc, EntriesState>(
+              builder: (context, state) => state.when(
+                  loading: () => const SliverPadding(
+                      padding: EdgeInsets.all(8.0),
+                      sliver: EntriesLoadingCard()),
+                  data: (data) => EntriesList(data: data),
+                  error: (error) => const SliverFillRemaining(
+                        child: Text('error'),
+                      ),
+                  loadMore: (data) => EntriesList(data: data),
+                  errorLoadMore: (data, error) => EntriesList(data: data),
+                  end: (data, message) => EntriesList(data: data)),
+            ),
+            BlocBuilder<EntriesBloc, EntriesState>(
+              builder: (context, state) => state.maybeWhen(
+                  orElse: () => const SliverToBoxAdapter(
+                        child: SizedBox.shrink(),
+                      ),
+                  loadMore: (data) => SliverToBoxAdapter(
+                        child: Text('Loadmore'),
+                      ),
+                  errorLoadMore: (data, error) =>
+                      SliverToBoxAdapter(child: Text('error')),
+                  end: (data, message) =>
+                      SliverToBoxAdapter(child: Text(message))),
+            ),
+          ],
+        ),
       ),
     );
   }
