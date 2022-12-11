@@ -62,7 +62,7 @@ class ExpenseRepoImpl implements ExpenseRespository {
       return Resource.data(
           data: ExpenseCategoryDto.fromEntity(entity).toModel());
     } catch (e) {
-      return Resource.error(err: e, errorMessage: "Error");
+      return Resource.error(err: e, errorMessage: "Unknown error");
     }
   }
 
