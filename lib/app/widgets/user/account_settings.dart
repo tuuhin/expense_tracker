@@ -1,9 +1,7 @@
 import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/context/authentication/auth_cubit.dart';
+import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../home/routes/user/user_profile_change.dart';
 
 class AccountSettings extends StatefulWidget {
   const AccountSettings({Key? key}) : super(key: key);
@@ -15,6 +13,8 @@ class AccountSettings extends StatefulWidget {
 class _AccountSettingsState extends State<AccountSettings> {
   void logOut() {
     context.read<AuthenticationCubit>().logOut();
+    context.read<EntriesBloc>().clear();
+    // context.read<NotificationBloc>().close();
     Navigator.of(context)
       ..pop()
       ..pop();

@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 
-class AuthLoading extends StatelessWidget {
-  const AuthLoading({Key? key}) : super(key: key);
+class AuthLoadingScreen extends StatelessWidget {
+  const AuthLoadingScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final Size _size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: SizedBox(
-        width: _size.width,
+      body: const Center(child: CircularProgressIndicator.adaptive()),
+      bottomNavigationBar: BottomAppBar(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator.adaptive(),
-            const SizedBox(height: 20),
-            Text(
-              'Loading',
-              style: Theme.of(context).textTheme.subtitle2,
-            )
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Checking Auth state",
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle1
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
       ),

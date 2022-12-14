@@ -1,52 +1,44 @@
-import 'package:dio/dio.dart' show Response;
-import 'package:expense_tracker/app/widgets/widgets.dart';
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/utils/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../context/context.dart';
+import '../../domain/models/models.dart';
+import '../../utils/utils.dart';
+import '../widgets/splash/signin_painter.dart';
 
 class SignInPage extends StatefulWidget {
-  final TabController controller;
-  const SignInPage({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
+  final void Function() onTabchange;
+
+  const SignInPage({Key? key, required this.onTabchange}) : super(key: key);
 
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
 
 class _SignInPageState extends State<SignInPage> {
+  final GlobalKey<FormState> _fromKey = GlobalKey<FormState>();
+
   late TextEditingController _username;
   late TextEditingController _password;
-
-  late AuthenticationCubit _auth;
 
   bool _isPasswordVisible = false;
 
   Future<void> _signInUser() async {
+    if (!_fromKey.currentState!.validate()) return;
+
     if (_username.text.isEmpty && _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Some the fields are blank')),
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Authenticating')),
-    );
-    Response? _resp = await _auth.logUserIn(
-        username: _username.text, password: _password.text);
-    ScaffoldMessenger.of(context).clearSnackBars();
-    if (_resp != null) {
-      showDialog(
-        context: context,
-        builder: (context) => const AlertDialog(
-          title: Text('Authorization failed'),
-          content: Text('No active account found with this credentials'),
-        ),
-      );
-    }
+
+    await context.read<AuthenticationCubit>().logUserIn(
+          LoginUserModel(
+            username: _username.text,
+            password: _password.text,
+          ),
+        );
   }
 
   @override
@@ -54,12 +46,6 @@ class _SignInPageState extends State<SignInPage> {
     super.initState();
     _username = TextEditingController();
     _password = TextEditingController();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _auth = BlocProvider.of<AuthenticationCubit>(context);
   }
 
   @override
@@ -73,7 +59,7 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Size _size = MediaQuery.of(context).size;
+    final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
       extendBody: true,
@@ -81,86 +67,88 @@ class _SignInPageState extends State<SignInPage> {
       body: Stack(
         children: [
           SizedBox.expand(
-            child: CustomPaint(painter: SignInSplash(context: context)),
+            child: CustomPaint(
+              painter: SignInSplash(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? SummerSplash.blueGreen
+                    : MermaidLagoon.babyBlue,
+                secondaryColor: Theme.of(context).brightness == Brightness.light
+                    ? SummerSplash.blueGrotto
+                    : MermaidLagoon.midnightBlue,
+              ),
+            ),
           ),
           TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 500),
-              child: signInImage,
-              builder: (context, double value, child) => AnimatedPositioned(
-                    duration: _duration,
-                    bottom: 40 + value * 20,
-                    left: 15,
-                    child: AnimatedOpacity(
-                        duration: _duration, opacity: value, child: child),
-                  )),
-          TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 600),
-              child: Text('Welcome Back!',
-                  style: Theme.of(context).textTheme.headline5!.copyWith(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        wordSpacing: 2,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      )),
-              builder: (context, double value, child) => AnimatedPositioned(
-                    left: 15,
-                    top: 40 + value * 10,
-                    duration: _duration,
-                    child: AnimatedOpacity(
-                        opacity: value, duration: _duration, child: child),
-                  )),
-          TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0.0, end: 1.0),
-              duration: _duration,
-              child: SizedBox(
-                  width: _size.width * .9,
-                  child: Text(
-                      'Hey Dear user ,we think you are quite happy with our service,sign in to continue with your account.',
-                      style: Theme.of(context).textTheme.caption!.copyWith(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ))),
-              builder: (context, double value, child) => AnimatedPositioned(
-                    duration: _duration,
-                    left: 15,
-                    top: 90 + value * 10,
-                    child: AnimatedOpacity(
-                        opacity: value, duration: _duration, child: child),
-                  )),
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: 1.0),
-            duration: _duration,
+            tween: Tween<double>(begin: 0, end: 60),
+            duration: const Duration(milliseconds: 500),
+            child: Image.asset('assets/flaticons/flatline.png'),
             builder: (context, double value, child) => AnimatedPositioned(
               duration: _duration,
+              bottom: value,
               left: 15,
-              top: 170 + value * 10,
               child: AnimatedOpacity(
-                  opacity: value, duration: _duration, child: child),
+                  duration: _duration, opacity: value / 60, child: child),
             ),
-            child: SizedBox(
-              height: _size.height * .25,
+          ),
+          Form(
+            key: _fromKey,
+            child: Container(
+              height: size.height,
+              width: size.width,
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: _size.width * .9,
-                    child: TextField(
-                      controller: _username,
-                      keyboardType: TextInputType.text,
-                      cursorColor: Theme.of(context).colorScheme.secondary,
-                      decoration: const InputDecoration(
-                          hintStyle: TextStyle(color: Colors.white70),
-                          hintText: 'Username',
-                          prefixIcon: Icon(Icons.person)),
+                  const SizedBox(height: kTextTabBarHeight),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 600),
+                    child: Text(
+                      'Welcome Back!',
+                      style: Theme.of(context).textTheme.headline5!.copyWith(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          wordSpacing: 2,
+                          color: Colors.white,
+                          letterSpacing: 1.2),
                     ),
+                    builder: (context, double value, child) => AnimatedOpacity(
+                        opacity: value, duration: _duration, child: child),
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    width: _size.width * .9,
-                    child: TextField(
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0.0, end: 1.0),
+                    duration: _duration,
+                    child: Text(
+                      'Hey Dear user ,we think you are quite happy with our service,sign in to continue with your account.',
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1!
+                          .copyWith(color: Colors.white),
+                    ),
+                    builder: (context, double value, child) => AnimatedOpacity(
+                        opacity: value, duration: _duration, child: child),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _username,
+                    validator: (value) => value != null && value.isEmpty
+                        ? "Fill the username"
+                        : null,
+                    keyboardType: TextInputType.text,
+                    cursorColor: Theme.of(context).colorScheme.secondary,
+                    decoration: const InputDecoration(
+                        hintStyle: TextStyle(color: Colors.white70),
+                        hintText: 'Username',
+                        prefixIcon: Icon(Icons.person)),
+                  ),
+                  const SizedBox(height: 10),
+                  StatefulBuilder(
+                    builder: (context, changeState) => TextFormField(
+                      validator: (value) => value != null && value.isEmpty
+                          ? "Fill the password"
+                          : null,
                       controller: _password,
                       obscureText: !_isPasswordVisible,
                       obscuringCharacter: '*',
@@ -169,9 +157,10 @@ class _SignInPageState extends State<SignInPage> {
                       decoration: InputDecoration(
                         hintStyle: const TextStyle(color: Colors.white70),
                         hintText: 'Password',
-                        prefixIcon: const Icon(Icons.password),
+                        prefixIcon: const Icon(Icons.lock),
                         suffixIcon: IconButton(
-                            onPressed: () => setState(
+                            color: Theme.of(context).colorScheme.secondary,
+                            onPressed: () => changeState(
                                 () => _isPasswordVisible = !_isPasswordVisible),
                             icon: Icon(!_isPasswordVisible
                                 ? Icons.visibility_off
@@ -179,49 +168,43 @@ class _SignInPageState extends State<SignInPage> {
                       ),
                     ),
                   ),
+                  const Spacer(flex: 5)
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 20),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              GestureDetector(
-                onTap: () =>
-                    widget.controller.animateTo(2, curve: Curves.easeInOut),
-                child:
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  const Text('Don\'t have an account? ',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                          wordSpacing: 1)),
-                  Text('SignIn',
-                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                          decoration: TextDecoration.underline,
-                          fontFamily: GoogleFonts.poppins().fontFamily,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.1,
-                          color: Theme.of(context).colorScheme.secondary))
-                ]),
+              TextButton(
+                onPressed: widget.onTabchange,
+                child: Text(
+                  'Don\'t have an account? Sign Up',
+                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.1,
+                      color: Theme.of(context).colorScheme.secondary),
+                ),
               ),
-              const Divider(),
+              const Divider(height: 2),
               ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      fixedSize: Size(_size.width, 50),
-                      primary: Theme.of(context).colorScheme.secondary),
-                  onPressed: _signInUser,
-                  child: Text('Sign In',
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1!
-                          .copyWith(color: Colors.white))),
+                style: ElevatedButton.styleFrom(
+                    fixedSize: Size(size.width, 50),
+                    backgroundColor: Theme.of(context).colorScheme.secondary),
+                onPressed: _signInUser,
+                child: Text(
+                  'Sign In',
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1!
+                      .copyWith(color: Colors.white),
+                ),
+              ),
             ],
           ),
         ),

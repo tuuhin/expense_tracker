@@ -2,15 +2,14 @@ import 'package:expense_tracker/utils/palette.dart';
 import 'package:flutter/material.dart';
 
 class AuthWrapperSplash extends CustomPainter {
-  final BuildContext context;
-  AuthWrapperSplash({required this.context});
+  final Color color;
+  final Color secondaryColor;
+  AuthWrapperSplash({required this.color, required this.secondaryColor});
   @override
   void paint(Canvas canvas, Size size) {
     Paint paintOne = Paint()
       ..strokeWidth = 10
-      ..color = Theme.of(context).brightness == Brightness.light
-          ? SummerSplash.blueGrotto
-          : MermaidLagoon.midnightBlue
+      ..color = secondaryColor
       ..style = PaintingStyle.fill;
 
     Path _pathOne = Path()
@@ -24,9 +23,7 @@ class AuthWrapperSplash extends CustomPainter {
 
     Paint paintTwo = Paint()
       ..strokeWidth = 10
-      ..color = Theme.of(context).brightness == Brightness.light
-          ? SummerSplash.blueGreen
-          : MermaidLagoon.babyBlue
+      ..color = color
       ..style = PaintingStyle.fill;
     Path _pathTwo = Path()
       ..moveTo(size.width * .25, size.height)

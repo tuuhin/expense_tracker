@@ -12,14 +12,17 @@ class _AuthTabWrapperState extends State<AuthTabWrapper>
     with SingleTickerProviderStateMixin {
   late TabController _controller;
 
+  void _tabToSignUp() => _controller.animateTo(2, curve: Curves.easeIn);
+
+  void _tabToSignIn() => _controller.animateTo(1, curve: Curves.easeIn);
+
   @override
   void initState() {
     super.initState();
     _controller = TabController(
-      animationDuration: const Duration(milliseconds: 300),
-      length: 3,
-      vsync: this,
-    );
+        animationDuration: const Duration(milliseconds: 300),
+        length: 3,
+        vsync: this);
   }
 
   @override
@@ -36,9 +39,9 @@ class _AuthTabWrapperState extends State<AuthTabWrapper>
       body: TabBarView(
         controller: _controller,
         children: [
-          AuthHome(controller: _controller),
-          SignInPage(controller: _controller),
-          SignUpPage(controller: _controller),
+          AuthHome(signInTab: _tabToSignIn, signUpTab: _tabToSignUp),
+          SignInPage(onTabchange: _tabToSignUp),
+          SignUpPage(onTabChange: _tabToSignIn),
         ],
       ),
     );
