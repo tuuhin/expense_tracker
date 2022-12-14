@@ -1,60 +1,56 @@
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
-import 'package:expense_tracker/utils/response_error.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../data/repository/auth_repo_impl.dart';
+import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
+import '../../utils/resource.dart';
 
 part 'auth_state.dart';
 
+part 'auth_cubit.freezed.dart';
+
 class AuthenticationCubit extends Cubit<AuthenticationState> {
-  AuthenticationCubit() : super(AuthModeStale());
+  AuthenticationCubit(this._repo) : super(AuthenticationState.checkState());
 
-  final AuthenticationRespository _authRepository =
-      AuthenticationRespositoryImpl();
+  final AuthRespository _repo;
 
-  Future<void> createUser(
-      {required String username,
-      required String password,
-      required String email}) async {
-    try {
-      emit(AuthModeRequesting(message: "Creating user"));
-      await _authRepository.createUser(
-          email: email, username: username, password: password);
-      emit(AuthModeLoggedIn());
-    } on DioError catch (e) {
-      emit(AuthFailed(err: e, errorMessage: e.response?.data ?? "Dio error"));
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      emit(AuthFailed(err: e, errorMessage: "UNKNOWN ERROR"));
-    }
+  Future<void> createUser(CreateUserModel user) async {
+    Resource resource = await _repo.createUser(user);
+
+    resource.whenOrNull();
   }
 
-  Future<void> logUserIn({
-    required String username,
-    required String password,
-  }) async {
-    try {
-      emit(AuthModeRequesting(message: "Requesting login for $username"));
-      await _authRepository.logUserIn(username: username, password: password);
-      emit(AuthModeLoggedIn());
-    } on DioError catch (e) {
-      emit(AuthFailed(
-          err: e,
-          errorMessage:
-              showErrorsList(e.response?.data as Map<String, dynamic>?) ??
-                  "Dio error"));
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      emit(AuthFailed(err: e, errorMessage: "UNKNOWN ERROR"));
-    }
+  Future<void> logUserIn(LoginUserModel user) async {
+    emit(AuthenticationState.requesting(
+        message: "Requesting login for ${user.username}"));
+    Resource login = await _repo.logUserIn(user);
+
+    login.whenOrNull(
+      data: (data, message) {
+        emit(AuthenticationState.loggedIn());
+      },
+      error: (err, errorMessage, data) {
+        emit(AuthenticationState.requestFailed(err: err, message: ""));
+      },
+    );
   }
 
-  void checkAuthState() async => await _authRepository.checkAuthState()
-      ? emit(AuthModeLoggedIn())
-      : emit(AuthModeLoggedOut());
+  void checkAuthState() async {
+    Resource authState = await _repo.checkAuthState();
 
-  void logOut() async =>
-      await _authRepository.logOut().then((value) => emit(AuthModeLoggedOut()));
+    authState.whenOrNull(
+      data: (data, message) {
+        emit(AuthenticationState.loggedIn());
+      },
+      error: (err, errorMessage, data) {
+        emit(AuthenticationState.loggedOut());
+      },
+    );
+  }
+
+  void logOut() async {
+    await _repo.logOut();
+    emit(AuthenticationState.loggedOut());
+  }
 }

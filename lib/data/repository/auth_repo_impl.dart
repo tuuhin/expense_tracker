@@ -1,79 +1,75 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:expense_tracker/main.dart';
+import 'package:flutter/cupertino.dart';
 
-import '../../domain/models/auth/tokens.dart';
-import '../../domain/models/models.dart';
-import '../../domain/repositories/repositories.dart';
-import '../../domain/repositories/user_profile_repository.dart';
 import '../dto/dto.dart';
 import '../local/storage.dart';
-import './user_profile_repo_impl.dart';
+import '../remote/auth_api.dart';
+import '../../utils/resource.dart';
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
-class AuthenticationRespositoryImpl implements AuthenticationRespository {
-  static final String _endPoint = dotenv.get('AUTH_ENDPOINT');
-  final SecureStorage _storage = SecureStorage();
+class AuthRespositoryImpl implements AuthRespository {
+  final SecureStorage storage;
+  final AuthApi auth;
+  final UserProfileRepository profileData;
 
-  final UserProfileRepository _profileData = UserProfileRepositoryImpl();
-
-  final Dio _dio = Dio()
-    ..options = BaseOptions(
-      headers: {'Content-type': 'application/json'},
-      baseUrl: _endPoint,
-    );
+  AuthRespositoryImpl({
+    required this.storage,
+    required this.auth,
+    required this.profileData,
+  });
 
   @override
-  Future<void> createUser({
-    required String username,
-    required String password,
-    required String email,
-  }) async {
-    Response response = await _dio.post('/create', data: {
-      'username': username,
-      'password': password,
-      'email': email,
-    });
+  Future<Resource> createUser(CreateUserModel user) async {
+    try {
+      AuthResultsDto dto = await auth.createUser(CreateUserDto.fromModel(user));
 
-    UserAuthBaseResponseDto responseData =
-        UserAuthBaseResponseDto.fromJson(response.data);
-
-    Token tokens = responseData.tokens.toToken();
-    UserProfileModel userProfile = responseData.profile.toModel();
-    // storing the tokens in user-profile box
-    await _profileData.setProfile(userProfile);
-    // Storing the tokens in secure storage
-    await _storage.setAccessToken(tokens.access);
-    await _storage.setRefreshToken(tokens.refresh);
+      await profileData.setProfile(dto.profile.toModel());
+      await storage.setTokens(
+          access: dto.token.access, refresh: dto.token.refresh);
+      return Resource.data(data: null);
+    } catch (e) {
+      return Resource.error(err: e, errorMessage: "Unknown error");
+    }
   }
 
   @override
-  Future<void> logUserIn({
-    required String username,
-    required String password,
-  }) async {
-    Response response = await _dio
-        .post('/token', data: {'username': username, 'password': password});
-    UserAuthBaseResponseDto responseData =
-        UserAuthBaseResponseDto.fromJson(response.data);
+  Future<Resource> logUserIn(LoginUserModel user) async {
+    try {
+      AuthResultsDto dto = await auth.loginUser(LoginUserDto.fromModel(user));
 
-    Token tokens = responseData.tokens.toToken();
-    UserProfileModel userProfile = responseData.profile.toModel();
-    // storing the tokens in user-profile box
-    await _profileData.setProfile(userProfile);
-    // Storing the tokens in secure storage
-    await _storage.setAccessToken(tokens.access);
-    await _storage.setRefreshToken(tokens.refresh);
+      await profileData.setProfile(dto.profile.toModel());
+      await storage.setTokens(
+          access: dto.token.access, refresh: dto.token.refresh);
+      return Resource.data(data: null);
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: "unknown error");
+    }
   }
 
   @override
-  Future<bool> checkAuthState() async {
-    String? token = await _storage.getAccessToken();
-    if (token == null) return false;
-    return true;
+  Future<Resource> checkAuthState() async {
+    try {
+      String? token = await storage.getAccessToken();
+      TokensDto dto = await auth.checkAuthState(token: token ?? "");
+      await storage.setTokens(access: dto.access, refresh: dto.refresh);
+      logger.fine("setting new tokens");
+      return Resource.data(data: null);
+    } on DioError catch (e) {
+      if (e.response?.statusCode == 401) {
+        return Resource.error(err: e, errorMessage: "Unauthorized");
+      }
+      return Resource.data(data: null);
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.data(data: null);
+    }
   }
 
   @override
   Future<void> logOut() async {
-    await _storage.removeTokens();
-    // await Hive.close();
+    await storage.removeTokens();
   }
 }

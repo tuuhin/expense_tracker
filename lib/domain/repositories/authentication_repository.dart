@@ -1,16 +1,13 @@
-abstract class AuthenticationRespository {
-  Future<void> createUser({
-    required String username,
-    required String password,
-    required String email,
-  });
+import 'package:expense_tracker/utils/resource.dart';
 
-  Future<void> logUserIn({
-    required String username,
-    required String password,
-  });
+import '../models/models.dart';
+
+abstract class AuthRespository {
+  Future<Resource> createUser(CreateUserModel user);
+
+  Future<Resource> logUserIn(LoginUserModel user);
 
   Future<void> logOut();
 
-  Future<bool> checkAuthState();
+  Future<Resource> checkAuthState();
 }
