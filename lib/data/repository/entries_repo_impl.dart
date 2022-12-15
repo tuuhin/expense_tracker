@@ -10,8 +10,8 @@ class EntriesRepositoryImpl implements EntriesRepository {
   EntriesRepositoryImpl({required this.api});
   @override
   Future<Resource<EntriesModel>> getEntries() async {
-    EntriesDto dto = await api.getEntries();
     try {
+      EntriesDto dto = await api.getEntries();
       return Resource.data(data: dto.toModel());
     } catch (e) {
       return Resource.error(err: e, errorMessage: "Unknown error");

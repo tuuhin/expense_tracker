@@ -4,13 +4,18 @@ part of 'entries_bloc.dart';
 class EntriesState with _$EntriesState {
   const factory EntriesState.loading() = _Loading;
 
-  const factory EntriesState.data(List<EntriesDataModel> data) = _Data;
-  const factory EntriesState.error(String error) = _StateError;
-  const factory EntriesState.loadMore(List<EntriesDataModel> data) = _MoreData;
+  const factory EntriesState.data({required List<EntriesDataModel> data}) =
+      _Data;
+  const factory EntriesState.error({required String error}) = _Error;
+  const factory EntriesState.loadMore({required List<EntriesDataModel> data}) =
+      _MoreData;
+
+  const factory EntriesState.noData({required String message}) = _Nodata;
 
   const factory EntriesState.errorLoadMore(
-      List<EntriesDataModel> data, String error) = _ErrorLoadMore;
+      {required List<EntriesDataModel> data,
+      required String error}) = _ErrorOnMore;
 
-  const factory EntriesState.end(List<EntriesDataModel> data, String message) =
-      _End;
+  const factory EntriesState.end(
+      {required List<EntriesDataModel> data, required String message}) = _End;
 }

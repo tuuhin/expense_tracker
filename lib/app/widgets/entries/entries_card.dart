@@ -53,11 +53,12 @@ class EntriesCard extends StatelessWidget {
                   )
                 ],
               ),
-              const SizedBox(height: 4.0),
+              const SizedBox(height: 6.0),
               if (model.desc != null && model.desc!.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(model.desc!),
+                  child: Text(model.desc!,
+                      overflow: TextOverflow.ellipsis, maxLines: 4),
                 )
             ],
           ),

@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../domain/models/models.dart';
 import '../../../domain/repositories/repositories.dart';
+import '../../utils/resource.dart';
 
 part 'entries_event.dart';
 part 'entries_state.dart';
@@ -42,22 +42,26 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
           if (_nextURL != null) {
             _offset = _offsetFromString(_nextURL!) ?? 1;
           }
-          emit(EntriesState.data(_entries..addAll(data.entries)));
+          if (data.entries.isEmpty) {
+            emit(const EntriesState.noData(message: "No data found"));
+            return;
+          }
+          emit(EntriesState.data(data: _entries..addAll(data.entries)));
         },
         error: (err, errorMessage, data) {
-          emit(EntriesState.error(errorMessage));
+          emit(EntriesState.error(error: errorMessage));
         },
       );
     });
 
     on<_FetchMore>((event, emit) async {
       if (_nextURL == null) {
-        emit(EntriesState.end(_entries, "END OF THE LIST"));
+        emit(EntriesState.end(data: _entries, message: "END OF THE LIST"));
         return;
       }
       if (_limiter.isActive) return;
       _limiter = Timer(const Duration(milliseconds: 2000), () {});
-      emit(EntriesState.loadMore(_entries));
+      emit(EntriesState.loadMore(data: _entries));
 
       Resource<EntriesModel> entries =
           await _repository.getMoreEntries(offset: _offset, limit: 5);
@@ -68,10 +72,10 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
           if (_nextURL != null) {
             _offset = _offsetFromString(_nextURL!) ?? 1;
           }
-          emit(EntriesState.data(_entries..addAll(data.entries)));
+          emit(EntriesState.data(data: _entries..addAll(data.entries)));
         },
         error: (err, errorMessage, data) {
-          emit(EntriesState.errorLoadMore(_entries, errorMessage));
+          emit(EntriesState.errorLoadMore(data: _entries, error: errorMessage));
         },
       );
     });

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../context/context.dart';
-import '../../widgets/entries/entries_loading_card.dart';
 import '../../widgets/widgets.dart';
 
 class EntriesTab extends StatefulWidget {
@@ -28,8 +27,14 @@ class _EntriesTabState extends State<EntriesTab> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Refresh Entries'),
-        content: const Text('Refresh your entries from the begining '),
+        title: const Text(
+          'Refresh Entries',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'Refresh your entries from the begining',
+          style: Theme.of(context).textTheme.bodyText2,
+        ),
         actions: [
           TextButton(
               onPressed: Navigator.of(context).pop,
@@ -39,7 +44,7 @@ class _EntriesTabState extends State<EntriesTab> {
                   .read<EntriesBloc>()
                   .refresh()
                   .then(Navigator.of(context).pop),
-              child: Text('Refresh'))
+              child: const Text('Refresh'))
         ],
       ),
     );
@@ -69,40 +74,45 @@ class _EntriesTabState extends State<EntriesTab> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverAppBar(
+              toolbarHeight: kTextTabBarHeight * 0.75,
+              backgroundColor: Theme.of(context).cardColor,
               pinned: true,
               centerTitle: false,
-              title: Text('Your Entries',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      ?.copyWith(fontWeight: FontWeight.w700)),
+              title: const Text(
+                'Your Entries',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-            BlocBuilder<EntriesBloc, EntriesState>(
+            const SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 12.0),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                    "Entries are the simplified versions of your income and expenses"),
+              ),
+            ),
+            BlocConsumer<EntriesBloc, EntriesState>(
+              listener: (context, state) => state.whenOrNull(),
               builder: (context, state) => state.when(
-                  loading: () => const SliverPadding(
-                      padding: EdgeInsets.all(8.0),
-                      sliver: EntriesLoadingCard()),
+                  noData: (message) =>
+                      SliverFillRemaining(child: NoDataWidget.entries()),
+                  loading: () => const LoadingShimmer(),
                   data: (data) => EntriesList(data: data),
-                  error: (error) => const SliverFillRemaining(
-                        child: Text('error'),
-                      ),
+                  error: (error) => EntriesError(
+                      onRefresh: context.read<EntriesBloc>().refresh),
                   loadMore: (data) => EntriesList(data: data),
                   errorLoadMore: (data, error) => EntriesList(data: data),
                   end: (data, message) => EntriesList(data: data)),
             ),
             BlocBuilder<EntriesBloc, EntriesState>(
               builder: (context, state) => state.maybeWhen(
-                  orElse: () => const SliverToBoxAdapter(
-                        child: SizedBox.shrink(),
-                      ),
-                  loadMore: (data) => SliverToBoxAdapter(
-                        child: Text('Loadmore'),
-                      ),
+                  orElse: () =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  loadMore: (data) => const PaginatorLoadMore(),
                   errorLoadMore: (data, error) =>
-                      SliverToBoxAdapter(child: Text('error')),
-                  end: (data, message) =>
-                      SliverToBoxAdapter(child: Text(message))),
+                      PaginatorLoadMoreFailed(message: error),
+                  end: (data, message) => PaginatorEnd(message: message)),
             ),
+            const SliverToBoxAdapter(child: SizedBox(height: 20))
           ],
         ),
       ),
