@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
-import '../../../domain/models/income/income_source_model.dart';
-import '../../dto/income/income_source_dto.dart';
-import '../../entity/income/income_source_entity.dart';
+
+import '../../entity/entity.dart';
 
 class IncomeSourceStorage {
   static Box<IncomeSourceEntity>? incomeSource;
@@ -10,30 +9,21 @@ class IncomeSourceStorage {
     incomeSource = await Hive.openBox<IncomeSourceEntity>('income_source');
   }
 
-  Future<void> addIncomeSource(IncomeSourceModel incomeSourceModel) async =>
-      await incomeSource!.add(
-        IncomeSourceDto.fromIncomeSourceModel(incomeSourceModel).toEntity(),
-      );
+  Future<void> addSource(IncomeSourceEntity entity) async =>
+      await incomeSource!.put(entity.id, entity);
 
-  Future<void> addIncomeSources(
-          List<IncomeSourceModel> incomeSourceModels) async =>
-      await incomeSource!.addAll(
-        incomeSourceModels.map(
-          (IncomeSourceModel model) =>
-              IncomeSourceDto.fromIncomeSourceModel(model).toEntity(),
-        ),
-      );
+  Future<void> addSources(List<IncomeSourceEntity> enitites) async =>
+      await incomeSource!.putAll(enitites
+          .asMap()
+          .map((key, enitity) => MapEntry(enitity.id, enitity)));
 
-  List<IncomeSourceModel> getIncomeSources() => incomeSource!.values
-      .map((IncomeSourceEntity e) =>
-          IncomeSourceDto.fromEntity(e).toIncomeSourceModel())
-      .toList();
+  Iterable<IncomeSourceEntity> getSources() => incomeSource!.values.toList();
 
-  Future<void> deleteIncomeSource(IncomeSourceModel incomeSourceModel) async {
-    int index = getIncomeSources()
-        .indexWhere((element) => element.id == incomeSourceModel.id);
-    await incomeSource!.deleteAt(index);
-  }
+  IncomeSourceEntity? getEntityById(IncomeSourceEntity entity) =>
+      incomeSource?.get(entity.id);
 
-  Future<void> deleteIncomeSources() async => await incomeSource!.clear();
+  Future<void> deleteSource(IncomeSourceEntity entity) async =>
+      await incomeSource!.delete(entity.id);
+
+  Future<void> deleteAll() async => await incomeSource!.clear();
 }

@@ -11,3 +11,12 @@ class IncomeSourceModel with _$IncomeSourceModel {
     required bool? isSecure,
   }) = _IncomeSourceModel;
 }
+
+@freezed
+class CreateIncomeSourceModel with _$CreateIncomeSourceModel {
+  factory CreateIncomeSourceModel({
+    required String title,
+    required bool isSecure,
+    String? desc,
+  }) = _CreateIncomeSourceModel;
+}

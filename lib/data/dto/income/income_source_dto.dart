@@ -28,23 +28,21 @@ class IncomeSourceDto {
   IncomeSourceEntity toEntity() =>
       IncomeSourceEntity(id: id, title: title, desc: desc, isSecure: isSecure);
 
-  factory IncomeSourceDto.fromEntity(IncomeSourceEntity incomeSourceEntity) =>
+  factory IncomeSourceDto.fromEntity(IncomeSourceEntity entity) =>
       IncomeSourceDto(
-        id: incomeSourceEntity.id,
-        title: incomeSourceEntity.title,
-        desc: incomeSourceEntity.desc,
-        isSecure: incomeSourceEntity.isSecure ?? false,
+        id: entity.id,
+        title: entity.title,
+        desc: entity.desc,
+        isSecure: entity.isSecure ?? false,
       );
 
-  IncomeSourceModel toIncomeSourceModel() =>
+  IncomeSourceModel toModel() =>
       IncomeSourceModel(id: id, title: title, desc: desc, isSecure: isSecure);
 
-  factory IncomeSourceDto.fromIncomeSourceModel(
-          IncomeSourceModel incomeSourceModel) =>
-      IncomeSourceDto(
-        id: incomeSourceModel.id,
-        title: incomeSourceModel.title,
-        desc: incomeSourceModel.desc,
-        isSecure: incomeSourceModel.isSecure ?? false,
+  factory IncomeSourceDto.fromModel(IncomeSourceModel model) => IncomeSourceDto(
+        id: model.id,
+        title: model.title,
+        desc: model.desc,
+        isSecure: model.isSecure ?? false,
       );
 }

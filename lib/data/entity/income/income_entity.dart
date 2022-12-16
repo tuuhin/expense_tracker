@@ -1,5 +1,6 @@
-import 'package:expense_tracker/data/entity/income/income_source_entity.dart';
 import 'package:hive/hive.dart';
+
+import '../entity.dart';
 part 'income_entity.g.dart';
 
 @HiveType(typeId: 06)
@@ -17,7 +18,7 @@ class IncomeEntity extends HiveObject {
   final DateTime addedAt;
 
   @HiveField(4)
-  final List<IncomeSourceEntity>? sources;
+  final List<IncomeSourceEntity> sources;
 
   @HiveField(5)
   final String? desc;
@@ -27,7 +28,7 @@ class IncomeEntity extends HiveObject {
     required this.title,
     required this.amount,
     required this.addedAt,
-    this.sources,
+    required this.sources,
     this.desc,
   });
 }

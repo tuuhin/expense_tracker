@@ -8,5 +8,5 @@ class UiEventState<T> with _$UiEventState<T> {
       _Snackbar;
 
   const factory UiEventState.showDialog(
-      {required String message, String? content, T? data}) = _Dialog;
+      {required String message, required String content, T? data}) = _Dialog;
 }

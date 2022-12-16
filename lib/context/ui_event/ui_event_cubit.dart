@@ -12,9 +12,8 @@ class UiEventCubit<T> extends Cubit<UiEventState<T>> {
     emit(const UiEventState.normal());
   }
 
-  void showDialog(String message, {String? secondary, T? data}) {
-    emit(UiEventState.showDialog(
-        message: message, content: secondary, data: data));
+  void showDialog(String title, {required String content, T? data}) {
+    emit(UiEventState.showDialog(message: title, content: content, data: data));
     emit(const UiEventState.normal());
   }
 }

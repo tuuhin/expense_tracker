@@ -1,58 +1,38 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/data/dto/dto.dart';
-import 'package:expense_tracker/data/remote/remote.dart';
-import 'package:expense_tracker/domain/models/models.dart';
-import 'package:expense_tracker/domain/repositories/income_repository.dart';
 
-class IncomeApi extends ResourceClient implements IncomeRepostiory {
-  @override
-  Future<IncomeModel> createIncome(String title, double amount,
-      {String? desc, required List<IncomeSourceModel> sources}) async {
-    Response response = await dio.post(
-      '/income',
-      data: {
-        'title': title,
-        'desc': desc,
-        'source': sources
-            .map((e) => IncomeSourceDto.fromIncomeSourceModel(e).id)
-            .toList(),
-        'amount': amount
-      },
-    );
-    return IncomeDto.fromJson(response.data).toIncomeModel();
+import '../dto/dto.dart';
+import 'remote.dart';
+
+class IncomeApi extends ResourceClient {
+  Future<IncomeDto> createIncome(CreateIncomeDto dto) async {
+    Response response = await dio.post('/income', data: dto.toJson());
+    return IncomeDto.fromJson(response.data);
   }
 
-  @override
-  Future<IncomeSourceModel> createSource(String title,
-      {String? desc, bool? isSecure}) async {
-    Response response = await dio.post('/sources',
-        data: {'title': title, 'desc': desc, 'isSecure': isSecure});
-    return IncomeSourceDto.fromJson(response.data).toIncomeSourceModel();
+  Future<IncomeDto> updateIncome(IncomeDto dto) async {
+    Response response = await dio.put('/income/${dto.id}', data: dto.toJson());
+    return IncomeDto.fromJson(response.data);
   }
 
-  @override
-  Future<List<IncomeModel>?> getIcomes() async {
+  Future<IncomeSourceDto> createSource(CreateSourceDto dto) async {
+    Response response = await dio.post('/sources', data: dto.toJson());
+    return IncomeSourceDto.fromJson(response.data);
+  }
+
+  Future<Iterable<IncomeDto>> getIcomes() async {
     Response response = await dio.get('/income');
-    List incomes = response.data as List;
-    return incomes
-        .map((json) => IncomeDto.fromJson(json).toIncomeModel())
-        .toList();
+    return (response.data as List).map((json) => IncomeDto.fromJson(json));
   }
 
-  @override
-  Future<List<IncomeSourceModel>?> getSources() async {
+  Future<Iterable<IncomeSourceDto>> getSources() async {
     Response response = await dio.get('/sources');
-    List sources = response.data as List;
-    return sources
-        .map((json) => IncomeSourceDto.fromJson(json).toIncomeSourceModel())
-        .toList();
+    return (response.data as List)
+        .map((json) => IncomeSourceDto.fromJson(json));
   }
 
-  @override
-  Future deleteIncome(IncomeModel incomeModel) async =>
-      await dio.delete('/income/${incomeModel.id}');
+  Future deleteIncome(IncomeDto dto) async =>
+      await dio.delete('/income/${dto.id}');
 
-  @override
-  Future deleteSource(IncomeSourceModel incomeSourceModel) async =>
-      await dio.delete('/sources/${incomeSourceModel.id}');
+  Future deleteSource(IncomeSourceDto dto) async =>
+      await dio.delete('/sources/${dto.id}');
 }

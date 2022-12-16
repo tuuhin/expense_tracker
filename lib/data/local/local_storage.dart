@@ -11,24 +11,21 @@ class LocalStorage {
       ..registerAdapter(UserProfileEntityAdapter())
       ..registerAdapter(ThemeEnumAdapter())
       ..registerAdapter(ExpenseEntityAdapter())
-      ..registerAdapter(ExpenseCategoriesEntityAdapter())
+      ..registerAdapter(CategoryEntityAdapter())
       ..registerAdapter(IncomeEntityAdapter())
       ..registerAdapter(IncomeSourceEntityAdapter())
       ..registerAdapter(BudgetEntityAdapter())
       ..registerAdapter(UserBaseDataEntityAdapter())
       ..registerAdapter(GoalsEntityAdapter());
 
-    await UserProfileData.init();
+    await UserProfileDao.init();
     await UserThemePreferences.init();
-    await ExpenseCategoriesStorage.init();
+    await CategoriesStorage.init();
     await IncomeSourceStorage.init();
     await IncomeStorage.init();
     await ExpenseStorage.init();
     await BudgetStorage.init();
     await UserBaseData.init();
-  }
-
-  Future<void> clear() async {
-    ExpenseStorage().deleteExpense();
+    await GoalsDao.init();
   }
 }

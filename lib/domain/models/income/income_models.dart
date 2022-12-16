@@ -14,3 +14,13 @@ class IncomeModel with _$IncomeModel {
     String? desc,
   }) = _IncomeModel;
 }
+
+@freezed
+class CreateIncomeModel with _$CreateIncomeModel {
+  factory CreateIncomeModel({
+    required String title,
+    required double amount,
+    String? desc,
+    required List<int> sourcesId,
+  }) = _CreateIncomeModel;
+}

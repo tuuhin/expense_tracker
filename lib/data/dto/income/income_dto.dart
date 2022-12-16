@@ -1,8 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../../domain/models/models.dart';
-import '../../entity/entity.dart';
 import '../dto.dart';
+import '../../entity/entity.dart';
+import '../../../domain/models/models.dart';
 
 part 'income_dto.g.dart';
 
@@ -34,12 +34,12 @@ class IncomeDto {
 
   Map<String, dynamic> toJson() => _$IncomeDtoToJson(this);
 
-  IncomeModel toIncomeModel() => IncomeModel(
+  IncomeModel toModel() => IncomeModel(
       id: id,
       title: title,
       amount: amount,
       addedAt: addedAt,
-      sources: sources.map((e) => e.toIncomeSourceModel()).toList(),
+      sources: sources.map((e) => e.toModel()).toList(),
       desc: desc);
 
   IncomeEntity toEntity() => IncomeEntity(
@@ -50,25 +50,23 @@ class IncomeDto {
       sources: sources.map((e) => e.toEntity()).toList(),
       desc: desc);
 
-  factory IncomeDto.fromEntity(IncomeEntity incomeEntity) => IncomeDto(
-        id: incomeEntity.id,
-        title: incomeEntity.title,
-        desc: incomeEntity.desc,
-        amount: incomeEntity.amount,
-        addedAt: incomeEntity.addedAt,
-        sources: incomeEntity.sources!
-            .map((e) => IncomeSourceDto.fromEntity(e))
-            .toList(),
+  factory IncomeDto.fromEntity(IncomeEntity entity) => IncomeDto(
+        id: entity.id,
+        title: entity.title,
+        desc: entity.desc,
+        amount: entity.amount,
+        addedAt: entity.addedAt,
+        sources:
+            entity.sources.map((e) => IncomeSourceDto.fromEntity(e)).toList(),
       );
 
-  factory IncomeDto.fromIncomeModel(IncomeModel incomeModel) => IncomeDto(
-        id: incomeModel.id,
-        title: incomeModel.title,
-        desc: incomeModel.desc,
-        amount: incomeModel.amount,
-        addedAt: incomeModel.addedAt,
-        sources: incomeModel.sources
-            .map((e) => IncomeSourceDto.fromIncomeSourceModel(e))
-            .toList(),
+  factory IncomeDto.fromModel(IncomeModel model) => IncomeDto(
+        id: model.id,
+        title: model.title,
+        desc: model.desc,
+        amount: model.amount,
+        addedAt: model.addedAt,
+        sources:
+            model.sources.map((e) => IncomeSourceDto.fromModel(e)).toList(),
       );
 }

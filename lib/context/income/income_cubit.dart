@@ -1,116 +1,119 @@
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../app/home/routes/route_builder.dart';
-import '../../app/widgets/income/income_card.dart';
-import '../../data/local/storage.dart';
-import '../../data/remote/income_api.dart';
-import '../../domain/models/income/income_models.dart';
-import '../../domain/models/income/income_source_model.dart';
+import '../context.dart';
 import '../../utils/resource.dart';
-import 'income_source_notifier.dart';
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
 part 'income_state.dart';
 
-class IncomeCubit extends Cubit<IncomeState> {
-  IncomeCubit() : super(IncomeLoading());
+part 'income_cubit.freezed.dart';
 
-  final IncomeSourceNotifier _incomeSourceNotifier = IncomeSourceNotifier();
-  final IncomeApi _incomeClient = IncomeApi();
-  final IncomeStorage _storage = IncomeStorage();
-  final IncomeSourceStorage _incomeSourceStorage = IncomeSourceStorage();
+class IncomeCubit extends Cubit<IncomeState> {
+  IncomeCubit(this._repo) : super(IncomeState.loading());
+
+  final IncomeRepostiory _repo;
+
+  final Notifier<IncomeSourceModel> notifier = Notifier<IncomeSourceModel>();
+
+  final UiEventCubit<IncomeCubit> _uiEvent = UiEventCubit<IncomeCubit>();
+
+  UiEventCubit<IncomeCubit> get uiEvent => _uiEvent;
 
   final GlobalKey<SliverAnimatedListState> _key =
       GlobalKey<SliverAnimatedListState>();
 
-  List<IncomeModel> get _incomes => _storage.getIncomes();
-
-  List<IncomeSourceModel> get allIncomeSources =>
-      _incomeSourceStorage.getIncomeSources();
-
-  IncomeSourceNotifier get notifier => _incomeSourceNotifier;
-
   GlobalKey<SliverAnimatedListState> get key => _key;
 
   void addIncomeSources(IncomeSourceModel sourceModel) =>
-      _incomeSourceNotifier.checkSource(sourceModel);
+      notifier.check(sourceModel);
 
-  Future<Resource<IncomeModel>> addIncome(
-    String title,
-    double amount, {
-    String? desc,
-    required List<IncomeSourceModel> sources,
-  }) async {
-    try {
-      IncomeModel model = await _incomeClient.createIncome(title, amount,
-          desc: desc, sources: sources);
+  List<IncomeSourceModel> get sources => _repo.cachedSources();
 
-      return Resource.data(data: model);
-    } on DioError catch (dio) {
-      return Resource.error(
-          err: dio,
-          errorMessage: dio.response?.statusMessage ?? "DIO ERROR OCCURED");
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      return Resource.error(err: e, errorMessage: "UNKNOWN ERROR OCCURED");
-    }
+  Future<void> addIncome(CreateIncomeModel income) async {
+    Resource<IncomeModel?> newIncome = await _repo.createIncome(income);
+
+    newIncome.whenOrNull(
+      data: (data, message) {
+        if (state is! _Data && data != null) {
+          _uiEvent.showDialog(
+            "Refresh and try again ",
+            content:
+                "The category is created but could not be shown because the rest categories aren't load properly",
+          );
+          return;
+        }
+        List<IncomeModel> newSet = (state as _Data).data.toList()..add(data!);
+
+        int itemIndex = newSet.indexOf(data);
+
+        emit(IncomeState.data(data: newSet, message: message));
+
+        key.currentState?.insertItem(itemIndex);
+
+        _uiEvent.showSnackBar("Added new Category ${data.title}");
+      },
+      error: (err, errorMessage, data) => _uiEvent.showDialog(
+          "Cannot add category ${income.title}. ",
+          content: "Error Occured :$errorMessage "),
+    );
   }
 
-  Future<Resource> deleteIncome(IncomeModel incomeModel) async {
-    try {
-      await _incomeClient.deleteIncome(incomeModel);
-      _key.currentState?.removeItem(
-        _incomes.indexOf(incomeModel),
-        (context, animation) => FadeTransition(
-          opacity: animation.drive<double>(opacity),
-          child: SlideTransition(
-            position: animation.drive<Offset>(offset),
-            child: IncomeCard(income: incomeModel),
-          ),
-        ),
-      );
-      _storage.deleteIncomeModel(incomeModel);
-      // _sources.remove(incomeSourceModel);
-      return Resource.data(data: null, message: "REMOVED SUCCESSFULLY");
-    } on DioError catch (dio) {
-      return Resource.error(
-        err: dio,
-        errorMessage: dio.response?.statusMessage ?? "DIO ERROR OCCURED",
-      );
-    } catch (e) {
-      return Resource.error(
-        err: e,
-        errorMessage: "UNKNOWN ERROR OCCURED",
-      );
-    }
+  Future<void> deleteIncome(
+    IncomeModel income, {
+    required Widget widget,
+  }) async {
+    Resource<void> remove = await _repo.deleteIncome(income);
+
+    remove.whenOrNull(
+      data: (data, message) {
+        if (state is! _Data) {
+          _uiEvent.showSnackBar(
+              "Your income has been removed please refresh to see results");
+          return;
+        }
+        int index = (state as _Data).data.indexOf(income);
+        _key.currentState?.removeItem(
+          index,
+          (context, animation) =>
+              SizeTransition(sizeFactor: animation, child: widget),
+        );
+
+        List<IncomeModel> newIncomeSet = (state as _Data).data.toList()
+          ..removeAt(index);
+
+        emit(IncomeState.data(data: newIncomeSet, message: message));
+
+        _uiEvent.showSnackBar("Removed category ${income.title}");
+      },
+      error: (err, errorMessage, data) => _uiEvent.showSnackBar(
+          "Cannot delete category ${income.title}. Error Occured :$errorMessage"),
+    );
   }
 
   Future<void> getIncomes() async {
-    emit(IncomeLoading());
-    try {
-      List<IncomeModel>? incomes = await _incomeClient.getIcomes();
-      if (incomes != null) {
-        await _storage.deleteIncomeModels();
-        await _storage.addIncomes(incomes);
-      }
-      emit(IncomeLoadSuccess(data: _incomes, message: "Your Incomes"));
-    } on DioError catch (dio) {
-      emit(IncomeLoadFailed(
-          errMessage: dio.response?.statusMessage ?? "Dio realted error",
-          data: _incomes));
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
+    emit(IncomeState.loading());
 
-      emit(IncomeLoadFailed(
-          errMessage: "Unknown errorr occured", data: _incomes));
-    } finally {
-      for (var element in _incomes) {
-        await Future.delayed(
-          const Duration(milliseconds: 50),
-          () => _key.currentState?.insertItem(_incomes.indexOf(element)),
-        );
-      }
-    }
+    Resource<List<IncomeModel>> incomes = await _repo.getIncomes();
+
+    incomes.whenOrNull(
+      data: (data, message) {
+        if (data.isEmpty) {
+          emit(IncomeState.noData(message: "No data"));
+          return;
+        }
+        emit(IncomeState.data(data: data, message: message));
+      },
+      error: (err, errorMessage, data) {
+        if (data != null && data.isNotEmpty) {
+          emit(IncomeState.errorWithData(
+              errMessage: errorMessage, err: err, data: data));
+          return;
+        }
+        emit(IncomeState.error(errMessage: errorMessage, err: err));
+      },
+    );
   }
 }

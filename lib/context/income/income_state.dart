@@ -1,20 +1,20 @@
 part of 'income_cubit.dart';
 
-@immutable
-abstract class IncomeState {}
+@freezed
+class IncomeState with _$IncomeState {
+  factory IncomeState.loading() = _Loading;
 
-class IncomeLoading extends IncomeState {}
+  factory IncomeState.data({required List<IncomeModel> data, String? message}) =
+      _Data;
 
-class IncomeLoadSuccess extends IncomeState {
-  final List<IncomeModel> data;
+  factory IncomeState.error({required String errMessage, required Object err}) =
+      _Error;
 
-  final String? message;
-  IncomeLoadSuccess({required this.data, this.message});
-}
+  factory IncomeState.errorWithData({
+    required String errMessage,
+    required Object err,
+    required List<IncomeModel> data,
+  }) = _ErrorWithData;
 
-class IncomeLoadFailed extends IncomeState {
-  final String errMessage;
-  final List<IncomeModel>? data;
-  final StackTrace? stk;
-  IncomeLoadFailed({required this.errMessage, this.data, this.stk});
+  factory IncomeState.noData({required String message}) = _NoData;
 }
