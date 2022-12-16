@@ -1,9 +1,8 @@
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/domain/models/income/income_source_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../utils/resource.dart';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
 
 class CreateSource extends StatefulWidget {
   const CreateSource({Key? key}) : super(key: key);
@@ -13,6 +12,8 @@ class CreateSource extends StatefulWidget {
 }
 
 class _CreateSourceState extends State<CreateSource> {
+  final GlobalKey<FormState> _fromKey = GlobalKey<FormState>();
+
   late TextEditingController _title;
   late TextEditingController _desc;
 
@@ -33,41 +34,15 @@ class _CreateSourceState extends State<CreateSource> {
   }
 
   void _addSource() async {
-    if (_title.text.isEmpty) {
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      Navigator.of(context).pop();
+    if (!_fromKey.currentState!.validate()) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Source can\'t have a blank title')));
-      return;
-    }
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Adding source ${_title.text}')));
-
-    Resource<IncomeSourceModel> resource = await context
+    context
         .read<IncomeSourceCubit>()
-        .addIncomeSource(_title.text, desc: _desc.text, isSecure: _isSecure);
-
-    if (mounted) {
-      FocusScope.of(context).requestFocus(FocusNode());
-      Navigator.of(context).pop();
-
-      resource.when(
-          loading: () {},
-          data: (data, message) {
-            ScaffoldMessenger.of(context)
-              ..clearSnackBars()
-              ..showSnackBar(
-                SnackBar(content: Text('${data.title} created ')),
-              );
-          },
-          error: (err, errorMessage, data) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(errorMessage)),
-            );
-          });
-    }
+        .addSource(CreateIncomeSourceModel(
+            title: _title.text,
+            isSecure: _isSecure,
+            desc: _desc.text.isEmpty ? null : _desc.text))
+        .then(Navigator.of(context).pop);
   }
 
   @override
@@ -76,40 +51,47 @@ class _CreateSourceState extends State<CreateSource> {
 
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 10),
-          TextField(
-            controller: _title,
-            decoration: const InputDecoration(
-                hintText: 'Title', helperText: 'Maximum 50 characters alowed'),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            maxLines: 3,
-            controller: _desc,
-            decoration: const InputDecoration(
-                hintText: 'Description',
-                helperText: 'Maximum 250 characters alowed'),
-          ),
-          Row(
-            children: [
-              Checkbox(
-                  value: _isSecure,
-                  onChanged: (bool? value) =>
-                      setState(() => _isSecure = value ?? false)),
-              const Text('Is this a healthy source ')
-            ],
-          ),
-          const Divider(),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  fixedSize: Size(size.width, 50)),
-              onPressed: _addSource,
-              child: const Text('Add Income Source'))
-        ],
+      child: Form(
+        key: _fromKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            TextFormField(
+              validator: (value) => value != null && value.length < 5
+                  ? "The size is too small"
+                  : null,
+              controller: _title,
+              decoration: const InputDecoration(
+                  hintText: 'Title',
+                  helperText: 'Maximum 50 characters alowed'),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              maxLines: 3,
+              controller: _desc,
+              decoration: const InputDecoration(
+                  hintText: 'Description',
+                  helperText: 'Maximum 250 characters alowed'),
+            ),
+            CheckboxListTile(
+              checkboxShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)),
+              dense: true,
+              value: _isSecure,
+              onChanged: (t) => setState(() => _isSecure = t ?? false),
+              title: const Text("An healthy source"),
+              subtitle: const Text("Is this an verified source,"),
+            ),
+            const Divider(),
+            ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    fixedSize: Size(size.width, 50)),
+                onPressed: _addSource,
+                child: const Text('Add Income Source'))
+          ],
+        ),
       ),
     );
   }

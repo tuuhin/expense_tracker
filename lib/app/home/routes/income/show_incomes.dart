@@ -1,11 +1,12 @@
+import 'package:expense_tracker/app/widgets/ui_event_dialog_error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../context/context.dart';
-import '../../../../utils/utils.dart';
-import '../../../widgets/empty_list.dart';
-import '../../../widgets/loading/list_loading_shimmer.dart';
-import '../routes.dart';
+import '../../../widgets/base_error.dart';
+import '../../../widgets/loading_shimmer.dart';
+import '../../../widgets/no_data_widget.dart';
 import './incomes.dart';
 
 class ShowIncomes extends StatefulWidget {
@@ -16,11 +17,7 @@ class ShowIncomes extends StatefulWidget {
 }
 
 class _ShowIncomesState extends State<ShowIncomes> {
-  void _addIncome() => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const CreateIncome(),
-        ),
-      );
+  void _addIncome() => context.push("/create-income");
 
   @override
   void initState() {
@@ -56,54 +53,47 @@ class _ShowIncomesState extends State<ShowIncomes> {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refreshData,
-        child: CustomScrollView(
-          slivers: [
-            const SliverAppBar(title: Text('Incomes')),
-            SliverPadding(
-              padding: const EdgeInsets.all(8.0),
-              sliver: BlocConsumer<IncomeCubit, IncomeState>(
-                buildWhen: (previous, current) => previous != current,
-                listenWhen: (previous, current) => current is IncomeLoadFailed,
-                listener: (context, state) {
-                  if (state is IncomeLoadFailed && state.data != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.errMessage)),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is IncomeLoadSuccess) {
-                    if (state.data.isNotEmpty) {
-                      return Incomes(models: state.data);
-                    }
-                    return SliverFillRemaining(
-                      child: Center(
-                        child: EmptyList(
-                          title: 'Oh! no I have no imcomes',
-                          subtitle:
-                              'You should definitly start earning some money',
-                          image: decreaseConcentration,
-                        ),
-                      ),
-                    );
-                  }
-                  if (state is IncomeLoadFailed) {
-                    if (state.data != null) {
-                      return Incomes(models: state.data!);
-                    }
-                    return SliverFillRemaining(
-                      child: Container(
-                          height: 200,
-                          color: Colors.red,
-                          child: Text("ERROR OCCURED ")),
-                    );
-                  } else {
-                    return const ListLoadingShimmer();
-                  }
-                },
+        child:
+            BlocListener<UiEventCubit<IncomeCubit>, UiEventState<IncomeCubit>>(
+          bloc: context.read<IncomeCubit>().uiEvent,
+          listener: (context, state) => state.whenOrNull(
+            showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(content: Text(message)),
               ),
-            ),
-          ],
+            showDialog: (message, content, data) => showDialog(
+                context: context,
+                builder: (context) =>
+                    UiEventDialog(title: message, content: content)),
+          ),
+          child: CustomScrollView(
+            slivers: [
+              const SliverAppBar(title: Text('Incomes')),
+              SliverPadding(
+                padding: const EdgeInsets.all(8.0),
+                sliver: BlocConsumer<IncomeCubit, IncomeState>(
+                  buildWhen: (previous, current) => previous != current,
+                  listener: (context, state) => state.whenOrNull(
+                    errorWithData: (errMessage, err, _) =>
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text(errMessage))),
+                    error: (errMessage, err) => ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(errMessage))),
+                  ),
+                  builder: (context, state) => state.when(
+                    loading: () => const LoadingShimmer(),
+                    noData: (message) =>
+                        SliverFillRemaining(child: NoDataWidget.categories()),
+                    data: (data, message) => Incomes(incomes: data),
+                    error: (errMessage, err) => SliverFillRemaining(
+                        child: BaseError(message: errMessage, error: err)),
+                    errorWithData: (_, __, data) => Incomes(incomes: data),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(

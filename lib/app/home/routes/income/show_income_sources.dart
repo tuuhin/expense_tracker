@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../context/income/income_source_cubit.dart';
-import '../../../../utils/app_images.dart';
-import '../../../widgets/empty_list.dart';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
+import '../../../widgets/widgets.dart';
 import '../../../widgets/loading/list_loading_shimmer.dart';
 import '../routes.dart';
 import 'sources.dart';
@@ -16,7 +16,6 @@ class ShowIncomeSources extends StatefulWidget {
 }
 
 class _ShowIncomeSourcesState extends State<ShowIncomeSources> {
-  late IncomeSourceCubit _incomeSourceCubit;
   void _addSource() => showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -29,8 +28,7 @@ class _ShowIncomeSourcesState extends State<ShowIncomeSources> {
   @override
   void initState() {
     super.initState();
-    _incomeSourceCubit = BlocProvider.of<IncomeSourceCubit>(context);
-    _incomeSourceCubit.getIncomeSources();
+    context.read<IncomeSourceCubit>().getIncomeSources();
   }
 
   Future<void> _refreshData() async => showDialog(
@@ -59,61 +57,55 @@ class _ShowIncomeSourcesState extends State<ShowIncomeSources> {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refreshData,
-        child: CustomScrollView(
-          slivers: [
-            const SliverAppBar(
-              title: Text('Income Sources'),
+        child: BlocListener<UiEventCubit<IncomeSourceModel>,
+            UiEventState<IncomeSourceModel>>(
+          bloc: context.read<IncomeSourceCubit>().uiEvent,
+          listener: (context, state) => state.whenOrNull(
+            showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(message))),
+            showDialog: (message, content, data) => showDialog(
+              context: context,
+              builder: (context) =>
+                  UiEventDialog(title: message, content: content),
             ),
-            SliverToBoxAdapter(
-              child: Center(
-                child: Text(
-                  'Incomes source helps to structure your incomes',
-                  style: Theme.of(context).textTheme.caption,
+          ),
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: true,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                title: const Text('Income Sources'),
+              ),
+              SliverToBoxAdapter(
+                child: Center(
+                  child: Text('Incomes source helps to structure your incomes',
+                      style: Theme.of(context).textTheme.caption),
                 ),
               ),
-            ),
-            //  Sliverto
-            SliverPadding(
-              padding: const EdgeInsets.all(8.0),
-              sliver: BlocConsumer<IncomeSourceCubit, IncomeSourceState>(
-                listenWhen: (previous, current) =>
-                    current is IncomeSourcesLoadFailed,
-                buildWhen: (previous, current) => previous != current,
-                listener: (context, state) {
-                  if (state is IncomeSourcesLoadFailed && state.data != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.errMessage)),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is IncomeSourcesLoadSuccess) {
-                    if (state.data.isNotEmpty) {
-                      return Sources(models: state.data);
-                    }
-                    return SliverFillRemaining(
-                      child: Center(
-                        child: EmptyList(
-                          title: 'No income sources',
-                          subtitle: 'You haven\'t add any income sources',
-                          image: sadnessImage,
-                        ),
-                      ),
-                    );
-                  }
-                  if (state is IncomeSourcesLoadFailed) {
-                    if (state.data != null) {
-                      return Sources(models: state.data!);
-                    }
-                    return SliverFillRemaining(
-                        child: Container(height: 200, color: Colors.red));
-                  } else {
-                    return const ListLoadingShimmer();
-                  }
-                },
+              //  Sliverto
+              SliverPadding(
+                padding: const EdgeInsets.all(8.0),
+                sliver: BlocConsumer<IncomeSourceCubit, IncomeSourceState>(
+                  listener: (context, state) => state.whenOrNull(
+                    error: (errMessage, _) => ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(errMessage))),
+                    errorWithData: (errMessage, _, __) =>
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text(errMessage))),
+                  ),
+                  builder: (context, state) => state.when(
+                    loading: () => const ListLoadingShimmer(),
+                    data: (data, _) => Sources(sources: data),
+                    error: (errMessage, err) => SliverFillRemaining(
+                        child: BaseError(message: errMessage, error: err)),
+                    noData: (message) =>
+                        SliverFillRemaining(child: NoDataWidget.sources()),
+                    errorWithData: (_, __, data) => Sources(sources: data),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(

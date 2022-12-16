@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../context/context.dart';
-import '../../../../domain/models/income/income_models.dart';
-import '../../../../utils/resource.dart';
-import '../../../widgets/income/income_source_grid.dart';
+
+import '../../../../domain/models/models.dart';
+import '../../../widgets/widgets.dart';
 import '../routes.dart';
 import 'income_source_picker.dart';
 
 class CreateIncome extends StatefulWidget {
-  const CreateIncome({Key? key}) : super(key: key);
+  final IncomeModel? income;
+  final bool isUpdate;
+  const CreateIncome({super.key, this.income, this.isUpdate = false})
+      : assert(isUpdate ? income != null : true);
 
   @override
   State<CreateIncome> createState() => _CreateIncomeState();
@@ -20,58 +23,36 @@ class _CreateIncomeState extends State<CreateIncome> {
   late TextEditingController _value;
   late TextEditingController _description;
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   void _selectSources() => showModalBottomSheet(
       context: context, builder: (context) => const IncomeSourcePicker());
 
   void _showBottomSheet() => showModalBottomSheet(
-      isScrollControlled: true,
-      context: context,
-      builder: (context) => Padding(
-            padding: MediaQuery.of(context).viewInsets,
-            child: const CreateSource(),
-          ));
+        isScrollControlled: true,
+        context: context,
+        builder: (context) => Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: const CreateSource(),
+        ),
+      );
 
   void _addNewIncome() async {
-    if (_title.text.isEmpty || _value.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Some required fields are blank')),
-      );
-      return;
-    }
-    if (num.tryParse(_value.text) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Amount should alaways be a number.')),
-      );
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Adding Income')));
-
-    Resource<IncomeModel> resource = await context
-        .read<IncomeCubit>()
-        .addIncome(_title.text, double.parse(_value.text),
+    await context.read<IncomeCubit>().addIncome(
+          CreateIncomeModel(
+            title: _title.text,
+            amount: double.parse(_value.text),
             desc: _description.text,
-            sources: context.read<IncomeCubit>().notifier.sources);
-
-    resource.when(
-        loading: () {},
-        data: (data, message) {
-          if (mounted) {
-            Navigator.of(context).pop();
-          }
-          ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(const SnackBar(content: Text("Income created ")));
-        },
-        error: (err, errorMessage, data) {
-          if (mounted) {
-            Navigator.of(context).pop();
-          }
-          ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(SnackBar(content: Text(errorMessage)));
-        });
+            sourcesId: context
+                .read<IncomeCubit>()
+                .notifier
+                .selected
+                .map((e) => e.id)
+                .toList(),
+          ),
+        );
   }
 
   @override
@@ -98,44 +79,72 @@ class _CreateIncomeState extends State<CreateIncome> {
       appBar: AppBar(
         title: const Text('Add Income'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const Divider(),
-            TextField(
-              controller: _title,
-              keyboardType: TextInputType.name,
-              decoration: const InputDecoration(
-                  labelText: 'Title',
-                  helperText: 'Income title can be of maximum 50 characters'),
+      body: BlocListener<UiEventCubit<IncomeCubit>, UiEventState<IncomeCubit>>(
+        bloc: context.read<IncomeCubit>().uiEvent,
+        listener: (context, state) => state.whenOrNull(
+          showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+            ..removeCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(message)),
             ),
-            const SizedBox(height: 15),
-            TextField(
-              maxLines: 3,
-              controller: _description,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                  labelText: 'Description',
-                  helperText: 'Add a income description for future preference'),
+          showDialog: (message, content, data) => showDialog(
+              context: context,
+              builder: (context) =>
+                  UiEventDialog(title: message, content: content)),
+        ),
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Divider(),
+                TextFormField(
+                  validator: (value) => value != null && value.isEmpty
+                      ? "Title cannot be empty"
+                      : null,
+                  controller: _title,
+                  keyboardType: TextInputType.name,
+                  maxLength: 50,
+                  decoration: const InputDecoration(
+                      labelText: 'Title',
+                      helperText:
+                          'Income title can be of maximum 50 characters'),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  maxLines: 3,
+                  controller: _description,
+                  maxLength: 250,
+                  keyboardType: TextInputType.text,
+                  decoration: const InputDecoration(
+                      labelText: 'Description',
+                      helperText:
+                          'Add a income description for future preference'),
+                ),
+                const SizedBox(height: 15),
+                TextFormField(
+                  validator: (value) =>
+                      value != null && double.tryParse(value) == null
+                          ? "Non number value are not allowed"
+                          : null,
+                  controller: _value,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Amount'),
+                ),
+                ListTile(
+                  onTap: _selectSources,
+                  trailing: const Icon(Icons.add),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 5),
+                  title: const Text('Sources'),
+                  subtitle: const Text('Select your income sources'),
+                ),
+                const SizedBox(height: 10),
+                const Expanded(child: IncomeSourceGrid())
+              ],
             ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _value,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount'),
-            ),
-            ListTile(
-              onTap: _selectSources,
-              trailing: const Icon(Icons.add),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 5),
-              title: const Text('Sources'),
-              subtitle: const Text('Select your income sources'),
-            ),
-            const SizedBox(height: 10),
-            const Expanded(child: IncomeSourceGrid())
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -145,19 +154,21 @@ class _CreateIncomeState extends State<CreateIncome> {
             mainAxisSize: MainAxisSize.min,
             children: [
               OutlinedButton(
-                  style:
-                      OutlinedButton.styleFrom(fixedSize: Size(size.width, 50)),
-                  onPressed: _showBottomSheet,
-                  child: const Text('Add new  Sources',
-                      style: TextStyle(fontWeight: FontWeight.w600))),
+                style:
+                    OutlinedButton.styleFrom(fixedSize: Size(size.width, 50)),
+                onPressed: _showBottomSheet,
+                child: const Text('Add new  Sources',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
               const Divider(),
               ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    fixedSize: Size(size.width, 50),
-                  ),
-                  onPressed: _addNewIncome,
-                  child: const Text('Add Income'))
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  fixedSize: Size(size.width, 50),
+                ),
+                onPressed: _addNewIncome,
+                child: const Text('Add Income'),
+              )
             ],
           ),
         ),

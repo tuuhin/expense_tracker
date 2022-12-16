@@ -1,8 +1,8 @@
-import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../context/income/income_source_notifier.dart';
-import 'income_chips.dart';
+
+import '../../../context/context.dart';
+import '../../../domain/models/models.dart';
 
 class IncomeSourceGrid extends StatelessWidget {
   const IncomeSourceGrid({Key? key}) : super(key: key);
@@ -12,9 +12,11 @@ class IncomeSourceGrid extends StatelessWidget {
     return AnimatedBuilder(
       animation: context.read<IncomeCubit>().notifier,
       builder: (context, child) {
-        IncomeSourceNotifier notifier = context.read<IncomeCubit>().notifier;
+        Notifier<IncomeSourceModel> notifier =
+            context.read<IncomeCubit>().notifier;
         return GridView.builder(
-          itemCount: notifier.sources.length,
+          padding: EdgeInsets.zero,
+          itemCount: notifier.selected.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 3,
@@ -22,12 +24,16 @@ class IncomeSourceGrid extends StatelessWidget {
             childAspectRatio: 3,
           ),
           itemBuilder: (context, index) => GridTile(
-            child: IncomeChips(
-              backgroundColor: index % 2 != 0
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.secondary,
-              label: notifier.sources[index].title,
-              onDelete: () => notifier.checkSource(notifier.sources[index]),
+            child: Chip(
+              backgroundColor:
+                  Theme.of(context).colorScheme.primary.withOpacity(0.75),
+              label: Text(
+                notifier.selected[index].title,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+              deleteIconColor: Colors.white,
+              onDeleted: () => notifier.check(notifier.selected[index]),
             ),
           ),
         );

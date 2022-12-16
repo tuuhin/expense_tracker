@@ -1,12 +1,12 @@
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/domain/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../utils/resource.dart';
+import '../../../context/context.dart';
+import '../../../domain/models/models.dart';
 
 class IncomeSourceCard extends StatefulWidget {
-  final IncomeSourceModel? source;
+  final IncomeSourceModel source;
+
   const IncomeSourceCard({
     Key? key,
     required this.source,
@@ -17,40 +17,68 @@ class IncomeSourceCard extends StatefulWidget {
 }
 
 class _IncomeSourceCardState extends State<IncomeSourceCard> {
-  Future<void> _deleteSource() async {
-    Resource request = await context
-        .read<IncomeSourceCubit>()
-        .deleteIncomeSource(widget.source!);
-
-    if (mounted && request.message != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(request.message!),
+  void _deleteSource() => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Delete Source ${widget.source.title}'),
+          content: Text(
+              'This source will be remove from all your income containing this source',
+              style: Theme.of(context).textTheme.bodyText2),
+          actions: [
+            TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text('Cancel')),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Theme.of(context).errorColor)),
+              onPressed: () => context
+                  .read<IncomeSourceCubit>()
+                  .deleteSource(widget.source, widget: widget)
+                  .then(Navigator.of(context).pop),
+              child: Text(
+                'Delete',
+                style: TextStyle(color: Theme.of(context).errorColor),
+              ),
+            )
+          ],
         ),
       );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).colorScheme.primary,
-      child: ListTile(
-        trailing: IconButton(
-            onPressed: _deleteSource, icon: const Icon(Icons.delete_outline)),
-        title: Text(
-          widget.source!.title,
-          style:
-              const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.primary,
+              strokeAlign: StrokeAlign.inside,
+              width: 1.2),
         ),
-        subtitle: widget.source!.desc != null
-            ? Text(
-                widget.source!.desc!,
-                style: const TextStyle(
-                    color: Colors.white60, fontWeight: FontWeight.w400),
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
+        child: ListTile(
+          trailing: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: IconButton(
+              onPressed: _deleteSource,
+              icon: const Icon(Icons.delete_outline, color: Colors.white),
+            ),
+          ),
+          title: Text(
+            widget.source.title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Text(
+            widget.source.desc ?? '',
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ),
     );
   }
