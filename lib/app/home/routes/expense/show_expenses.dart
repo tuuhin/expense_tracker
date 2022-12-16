@@ -1,10 +1,11 @@
+import 'package:expense_tracker/domain/models/expense/expense_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import "package:go_router/go_router.dart";
 
+import './expenses.dart';
 import '../../../widgets/widgets.dart';
-import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/utils/app_images.dart';
+import '../../../../context/context.dart';
 
 class ShowExpenses extends StatefulWidget {
   const ShowExpenses({Key? key}) : super(key: key);
@@ -14,63 +15,87 @@ class ShowExpenses extends StatefulWidget {
 }
 
 class _ShowExpensesState extends State<ShowExpenses> {
-  late ExpenseCubit _expenseCubit;
-
-  void _addExpense() =>
-      Navigator.of(context).push(appRouteBuilder(const CreateExpense()));
+  void _addExpense() => context.push("/create-expense");
 
   @override
   void initState() {
     super.initState();
-    _expenseCubit = BlocProvider.of<ExpenseCubit>(context);
-    _expenseCubit.getExpenses();
+    context.read<ExpenseCubit>().getExpenses();
   }
+
+  Future<void> _refresh() async => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Refresh data'),
+          content: const Text('Refresh your expenses'),
+          actions: [
+            TextButton(
+              onPressed: Navigator.of(context).pop,
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => context
+                  .read<ExpenseCubit>()
+                  .getExpenses()
+                  .then(Navigator.of(context).pop),
+              child: const Text('Refresh'),
+            )
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Expenses'),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(kTextTabBarHeight * .1),
-          child: Divider(),
+      extendBody: true,
+      body:
+          BlocListener<UiEventCubit<ExpenseModel>, UiEventState<ExpenseModel>>(
+        bloc: context.read<ExpenseCubit>().uiEvent,
+        listener: (context, state) => state.whenOrNull(
+          showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+            ..removeCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(message)),
+            ),
+          showDialog: (message, content, data) => showDialog(
+              context: context,
+              builder: (context) =>
+                  UiEventDialog(title: message, content: content)),
         ),
-      ),
-      body: BlocBuilder<ExpenseCubit, ExpenseState>(
-        builder: (context, state) {
-          if (state is ExpenseLoadSuccess) {
-            if (state.data!.isEmpty) {
-              return Center(
-                  child: EmptyList(
-                title: 'Haven\'t you added your expense',
-                subtitle: 'Did you forgot to add your data.',
-                image: noMoneyImage,
-              ));
-            }
-            return AnimatedList(
-              key: _expenseCubit.key,
-              itemBuilder: (context, index, animation) => FadeTransition(
-                opacity: animation.drive(opacity),
-                child: SlideTransition(
-                  position: animation.drive(offset),
-                  child: ExpenseCard(
-                    expense: state.data![index],
+        child: RefreshIndicator(
+          onRefresh: _refresh,
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                  pinned: true,
+                  title: const Text('Expenses'),
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor),
+              SliverPadding(
+                padding: const EdgeInsets.all(8.0),
+                sliver: BlocConsumer<ExpenseCubit, ExpenseState>(
+                  listener: (context, state) => state.whenOrNull(
+                    error: (errMessage, __) => ScaffoldMessenger.of(context)
+                      ..clearSnackBars()
+                      ..showSnackBar(SnackBar(content: Text(errMessage))),
+                  ),
+                  builder: (context, state) => state.when(
+                    loading: () => const LoadingShimmer(),
+                    data: (data, _) => Expenses(expenses: data),
+                    error: (errMessage, err) => SliverFillRemaining(
+                        child: BaseError(message: errMessage, error: err)),
+                    noData: (_) =>
+                        SliverFillRemaining(child: NoDataWidget.expenses()),
+                    errorWithData: (data, errMessage, err) =>
+                        Expenses(expenses: data),
                   ),
                 ),
               ),
-            );
-          }
-
-          if (state is ExpenseLoadFailed) {
-            return Container(
-              color: Colors.red,
-              child: Text(state.message ?? ''),
-            );
-          }
-          return const Center(child: CircularProgressIndicator());
-        },
+              const SliverToBoxAdapter(
+                  child: SizedBox(height: 10 + kTextTabBarHeight))
+            ],
+          ),
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),

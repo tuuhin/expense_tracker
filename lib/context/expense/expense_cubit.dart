@@ -1,91 +1,121 @@
-import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
-import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../data/local/expense/expense_storage.dart';
-import '../../data/remote/remote.dart';
 import '../../domain/models/models.dart';
-import '../../main.dart';
+import '../../domain/repositories/repositories.dart';
+import '../../utils/resource.dart';
 import '../context.dart';
 
 part 'expense_state.dart';
+part 'expense_cubit.freezed.dart';
 
 class ExpenseCubit extends Cubit<ExpenseState> {
-  ExpenseCubit() : super(ExpensesLoading());
+  ExpenseCubit(this._repo) : super(ExpenseState.loading());
 
-  final ExpensesApi _expensesApi = ExpensesApi();
-  final ExpenseCategoryNotifier _incomeSourceNotifier =
-      ExpenseCategoryNotifier();
+  final ExpenseRespository _repo;
 
-  final ExpenseStorage _expenseStorage = ExpenseStorage();
+  final UiEventCubit<ExpenseModel> _uiEvent = UiEventCubit<ExpenseModel>();
 
-  final GlobalKey<AnimatedListState> _key = GlobalKey<AnimatedListState>();
+  final Notifier<ExpenseCategoriesModel> _categories =
+      Notifier<ExpenseCategoriesModel>();
 
-  List<ExpenseModel> _expenses = ExpenseStorage.getExpense();
+  final GlobalKey<SliverAnimatedListState> _key =
+      GlobalKey<SliverAnimatedListState>();
 
-  ExpenseCategoryNotifier get notifier => _incomeSourceNotifier;
+  Notifier<ExpenseCategoriesModel> get notifier => _categories;
 
-  List<ExpenseModel> get expenses => _expenses;
+  GlobalKey<SliverAnimatedListState> get key => _key;
 
-  GlobalKey<AnimatedListState> get key => _key;
+  UiEventCubit<ExpenseModel> get uiEvent => _uiEvent;
 
-  Future<Resource<ExpenseModel>> addExpense(
-    String title,
-    double amount, {
-    required BudgetModel budget,
-    String? desc,
-    List<ExpenseCategoriesModel>? categories,
-    File? receipt,
-  }) async {
-    try {
-      ExpenseModel newExpense = await _expensesApi.createExpense(title, amount,
-          desc: desc,
-          receipt: receipt,
-          budget: budget,
-          categories: categories ?? []);
+  List<ExpenseCategoriesModel> get categories => _repo.cachedCategories();
 
-      _expenseStorage.addExpense(newExpense);
-      _expenses.add(newExpense);
-      _key.currentState?.insertItem(0);
-      return Resource.data(data: newExpense, message: "New Expense Added");
-    } on Dio catch (dio) {
-      return Resource.error(err: dio, errorMessage: "DIO ERROR OCCURED");
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      return Resource.error(err: e, errorMessage: "UNKNOWN ERROR OCCURED");
-    }
+  Future<void> addExpense(CreateExpenseModel expense) async {
+    Resource<ExpenseModel?> newExpense = await _repo.createExpense(expense);
+
+    newExpense.whenOrNull(
+      data: (data, message) {
+        if (state is! _Data && data != null) {
+          _uiEvent.showDialog(
+            "Refresh and try again ",
+            content:
+                "The expense titled ${expense.title} created.Refresh to see reuslts",
+          );
+          return;
+        }
+
+        List<ExpenseModel> newSet = (state as _Data).data.toList()..add(data!);
+
+        emit(ExpenseState.data(data: newSet, message: message));
+
+        key.currentState?.insertItem(0);
+
+        _uiEvent.showSnackBar("Added new expense ${data.title}");
+      },
+      error: (err, errorMessage, data) => _uiEvent.showDialog(
+          "Cannot add category ${expense.title}. ",
+          content: "Error Occured :$errorMessage "),
+    );
   }
 
-  Future<void> getExpenses() async {
-    try {
-      List<ExpenseModel>? updatedExpenses = await _expensesApi.getExpenses();
-      logger.config('got updated expense ');
-      if (updatedExpenses != null) {
-        logger.info('Invalidating cache for expenses');
-        await _expenseStorage.deleteExpense();
-        await _expenseStorage.addExpenses(updatedExpenses);
-      }
-      _expenses = ExpenseStorage.getExpense();
-      emit(ExpenseLoadSuccess(data: _expenses));
+  Future<void> deleteExpense(
+    ExpenseModel expense, {
+    required Widget widget,
+  }) async {
+    Resource<void> removedExpense = await _repo.deleteExpense(expense);
 
-      for (final ExpenseModel exp in _expenses) {
-        await Future.delayed(
-          const Duration(milliseconds: 50),
-          () => _key.currentState?.insertItem(_expenses.indexOf(exp)),
+    removedExpense.whenOrNull(
+      data: (data, message) {
+        if (state is! _Data) {
+          _uiEvent.showSnackBar(
+              "Your expense has been removed please refresh to see results");
+          return;
+        }
+        int index = (state as _Data).data.indexOf(expense);
+        _key.currentState?.removeItem(
+          index,
+          (context, animation) =>
+              SizeTransition(sizeFactor: animation, child: widget),
         );
-      }
-    } on DioError catch (dio) {
-      emit(
-        ExpenseLoadFailed(
-            data: _expenses,
-            errMessage: dio.response?.statusMessage ?? "DIO RELATED ERROR"),
-      );
-    } catch (e) {
-      emit(
-        ExpenseLoadFailed(data: _expenses, errMessage: "UNKNOWN ERROR"),
-      );
-    }
+
+        List<ExpenseModel> newExpenseSet = (state as _Data).data.toList()
+          ..removeAt(index);
+
+        emit(ExpenseState.data(data: newExpenseSet, message: message));
+
+        _uiEvent.showSnackBar("Removed expense ${expense.title}");
+        return;
+      },
+      error: (err, errorMessage, data) => _uiEvent.showSnackBar(
+          "Cannot delete expense ${expense.title}. Error Occured :$errorMessage"),
+    );
+  }
+
+  Future<void> updateExpense(ExpenseModel expense) async {}
+
+  Future<void> getExpenses() async {
+    emit(ExpenseState.loading());
+
+    Resource<List<ExpenseModel>> budgets = await _repo.getExpense();
+
+    budgets.when(
+      loading: () {},
+      data: (data, message) async {
+        if (data.isEmpty) {
+          emit(ExpenseState.noData(message: "No data"));
+          return;
+        }
+        emit(ExpenseState.data(data: data, message: message));
+      },
+      error: (err, errorMessage, data) {
+        if (data != null && data.isNotEmpty) {
+          emit(ExpenseState.errorWithData(
+              data: data, err: err, errMessage: errorMessage));
+          return;
+        }
+        emit(ExpenseState.error(errMessage: errorMessage, err: err));
+      },
+    );
   }
 }

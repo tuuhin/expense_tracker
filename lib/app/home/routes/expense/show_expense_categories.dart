@@ -1,11 +1,9 @@
-import 'package:expense_tracker/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../context/context.dart';
-import '../../../../context/ui_event/ui_event_cubit.dart';
 import '../../../../domain/models/models.dart';
-import '../../../widgets/errors/base_error.dart';
+import '../../../widgets/base_error.dart';
 import '../../../widgets/widgets.dart';
 import '../routes.dart';
 import './categories.dart';
@@ -22,12 +20,11 @@ class _ShowExpenseCategoriesState extends State<ShowExpenseCategories> {
         isScrollControlled: true,
         context: context,
         builder: (context) => Padding(
-          padding: MediaQuery.of(context).viewInsets,
-          child: const CreateCategory(),
-        ),
+            padding: MediaQuery.of(context).viewInsets,
+            child: const CreateCategory()),
       );
 
-  Future<void> _onRefresh() async => showDialog(
+  Future<void> _onRefresh() async => await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Refresh'),
@@ -64,29 +61,20 @@ class _ShowExpenseCategoriesState extends State<ShowExpenseCategories> {
           bloc: context.read<ExpenseCategoriesCubit>().uiEvent,
           listener: (context, state) => state.whenOrNull(
             showDialog: (message, content, _) => showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(message),
-                content: content != null ? Text(content) : null,
-                actions: [
-                  TextButton(
-                      onPressed: Navigator.of(context).pop,
-                      child: const Text('OK got it!'))
-                ],
-              ),
-            ),
+                context: context,
+                builder: (context) =>
+                    UiEventDialog(title: message, content: content)),
             showSnackBar: (message, _) => ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(message))),
           ),
           child: CustomScrollView(
             slivers: [
               const SliverAppBar(pinned: true, title: Text('Categories')),
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(
-                      'Categories help you to organize the your expense data ',
-                      textAlign: TextAlign.center),
+              SliverToBoxAdapter(
+                child: Text(
+                  'Categories help you to organize the your expense data ',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.caption,
                 ),
               ),
               SliverPadding(

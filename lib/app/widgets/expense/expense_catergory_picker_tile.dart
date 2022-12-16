@@ -1,7 +1,8 @@
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/domain/models/expense/expense_categories_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../context/context.dart';
+import '../../../domain/models/models.dart';
 
 class ExpenseCategoryPickerTile extends StatefulWidget {
   final ExpenseCategoriesModel category;
@@ -16,33 +17,39 @@ class ExpenseCategoryPickerTile extends StatefulWidget {
 }
 
 class _ExpenseCategoryPickerState extends State<ExpenseCategoryPickerTile> {
-  late ExpenseCubit _incomeCubit;
+  late Notifier<ExpenseCategoriesModel> _notifier;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _incomeCubit = BlocProvider.of<ExpenseCubit>(context);
+    _notifier = BlocProvider.of<ExpenseCubit>(context).notifier;
   }
 
-  void onCheck(bool? check) =>
-      setState(() => _incomeCubit.notifier.checkCategory(widget.category));
+  void onCheck(bool? check) => setState(() => _notifier.check(widget.category));
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).colorScheme.primary,
-      child: CheckboxListTile(
-        value: _incomeCubit.notifier.categoryInList(widget.category),
-        onChanged: onCheck,
-        title: Text(widget.category.title,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600)),
-        subtitle: widget.category.desc != null
-            ? Text(
-                widget.category.desc!,
-                style: const TextStyle(
-                    color: Colors.white60, fontWeight: FontWeight.w400),
-              )
-            : null,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              width: 2, color: Theme.of(context).colorScheme.primary),
+        ),
+        child: CheckboxListTile(
+          value: _notifier.isThere(widget.category),
+          onChanged: onCheck,
+          title: Text(widget.category.title,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: widget.category.desc != null
+              ? Text(
+                  widget.category.desc!,
+                  style: const TextStyle(fontWeight: FontWeight.w400),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                )
+              : null,
+        ),
       ),
     );
   }

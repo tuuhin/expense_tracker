@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../context/context.dart';
 import '../../../../domain/models/models.dart';
-import '../../../../utils/resource.dart';
 
 class CreateCategory extends StatefulWidget {
   const CreateCategory({Key? key}) : super(key: key);
@@ -66,7 +65,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                       : null,
               decoration: const InputDecoration(
                 hintText: 'Title',
-                helperText: 'Maximum 50 characters alowed',
+                helperText: 'Category Title',
               ),
             ),
             const SizedBox(height: 10),
@@ -78,7 +77,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                   : null,
               decoration: const InputDecoration(
                 hintText: 'Description',
-                helperText: 'Maximum 250 characters alowed',
+                helperText: 'Category Description',
               ),
             ),
             const SizedBox(height: 10),

@@ -1,19 +1,19 @@
 part of 'expense_cubit.dart';
 
-@immutable
-abstract class ExpenseState {}
+@freezed
+class ExpenseState with _$ExpenseState {
+  factory ExpenseState.loading() = _Loading;
+  factory ExpenseState.data(
+      {required List<ExpenseModel> data, String? message}) = _Data;
 
-class ExpensesLoading extends ExpenseState {}
+  factory ExpenseState.error(
+      {required String errMessage, required Object err}) = _Error;
 
-class ExpenseLoadSuccess extends ExpenseState {
-  final List<ExpenseModel>? data;
-  final String? message;
-  ExpenseLoadSuccess({this.data, this.message});
-}
+  factory ExpenseState.noData({String? message}) = _NoData;
 
-class ExpenseLoadFailed extends ExpenseState {
-  final List<ExpenseModel>? data;
-  final String errMessage;
-  final StackTrace? stackTrace;
-  ExpenseLoadFailed({this.data, this.stackTrace, required this.errMessage});
+  factory ExpenseState.errorWithData({
+    required List<ExpenseModel> data,
+    required String errMessage,
+    required Object err,
+  }) = _ErrorWithData;
 }

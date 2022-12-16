@@ -1,14 +1,23 @@
 import 'dart:io';
-import 'package:expense_tracker/app/home/routes/routes.dart';
-import 'package:expense_tracker/app/widgets/widgets.dart';
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/domain/models/models.dart';
-import 'package:expense_tracker/main.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../app/home/routes/routes.dart';
+import '../../../../app/widgets/widgets.dart';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
+import '../../../../main.dart';
+
 class CreateExpense extends StatefulWidget {
-  const CreateExpense({Key? key}) : super(key: key);
+  final ExpenseModel? expense;
+  final bool isUpdate;
+  const CreateExpense({
+    super.key,
+    this.expense,
+    this.isUpdate = false,
+  }) : assert(isUpdate ? expense != null : true);
 
   @override
   State<CreateExpense> createState() => _CreateExpenseState();
@@ -19,37 +28,40 @@ class _CreateExpenseState extends State<CreateExpense> {
   late TextEditingController _desc;
   late TextEditingController _amount;
 
-  late BudgetCubit _budgetCubit;
-  late ExpenseCubit _expenseCubit;
-
   BudgetModel? _selectedBudget;
   File? receipt;
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   void _addExpense() async {
-    if (_title.text.isEmpty) {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedBudget != null &&
+        _selectedBudget!.amount - _selectedBudget!.amountUsed <
+            double.parse(_amount.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Expense entry must have a title')));
+        const SnackBar(
+          content: Text("This amount is too much for this budget"),
+        ),
+      );
       return;
     }
-    if (_amount.text.isEmpty || num.tryParse(_amount.text) == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Amount is invalid')));
-      return;
-    }
-    if (_selectedBudget == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Pick a budgte ')));
-      return;
-    }
-    logger.fine('ok');
-    await _expenseCubit.addExpense(
-      _title.text,
-      double.parse(_amount.text),
-      desc: _desc.text.isEmpty ? null : _desc.text,
-      categories: _expenseCubit.notifier.sources,
-      receipt: receipt,
-      budget: _selectedBudget!,
-    );
+
+    await context.read<ExpenseCubit>().addExpense(
+          CreateExpenseModel(
+            title: _title.text,
+            amount: double.parse(_amount.text),
+            budgetId: _selectedBudget!.id,
+            categoryIds: context
+                .read<ExpenseCubit>()
+                .notifier
+                .selected
+                .map((e) => e.id)
+                .toList(),
+            desc: _desc.text.isEmpty ? null : _desc.text,
+            path: receipt?.path,
+          ),
+        );
     logger.fine('DOne');
   }
 
@@ -72,12 +84,16 @@ class _CreateExpenseState extends State<CreateExpense> {
   @override
   void initState() {
     super.initState();
-    _budgetCubit = BlocProvider.of<BudgetCubit>(context);
-    _expenseCubit = BlocProvider.of<ExpenseCubit>(context);
 
     _title = TextEditingController();
     _desc = TextEditingController();
     _amount = TextEditingController();
+
+    if (widget.isUpdate == true && widget.expense != null) {
+      _title.text = widget.expense!.title;
+      _desc.text = widget.expense?.desc ?? '';
+      _amount.text = widget.expense?.amount.toString() ?? '0';
+    }
   }
 
   @override
@@ -88,20 +104,18 @@ class _CreateExpenseState extends State<CreateExpense> {
     super.dispose();
   }
 
-  Widget get _pickImage => InkWell(
+  Widget _pickImage() => InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: _imagePicker,
         child: Container(
           width: 150,
-          height: 120,
+          height: 150,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(width: 1, color: Colors.grey)),
           child: receipt != null
-              ? InteractiveViewer(
-                  child: Image.file(receipt!,
-                      alignment: Alignment.center, semanticLabel: 'receipt'),
-                )
+              ? Image.file(receipt!,
+                  alignment: Alignment.center, semanticLabel: 'receipt')
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -121,107 +135,156 @@ class _CreateExpenseState extends State<CreateExpense> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Expenses')),
+      appBar: AppBar(
+          title: Text(widget.isUpdate ? 'Update Expense ' : 'Add Expenses')),
       resizeToAvoidBottomInset: false,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Column(children: [
-          const Divider(),
-          TextField(
-            controller: _title,
-            keyboardType: TextInputType.text,
-            decoration: const InputDecoration(
-              helperText: 'Maximum of 50 lines allowed',
-              hintText: 'Title',
+      body:
+          BlocListener<UiEventCubit<ExpenseModel>, UiEventState<ExpenseModel>>(
+        bloc: context.read<ExpenseCubit>().uiEvent,
+        listener: (context, state) => state.whenOrNull(
+          showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+            ..removeCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(message)),
             ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _desc,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              helperText: 'max 250 words allowed',
-              hintText: 'Description',
-            ),
-          ),
-          const ListTile(
-            dense: true,
-            title: Text('Receipt and Amount Infomation'),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _pickImage,
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _amount,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(hintText: 'Amount'),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField(
-                        value: _selectedBudget,
-                        isExpanded: true,
-                        hint: const Text('Pick a Budget'),
-                        items: _budgetCubit.budgets
-                            .map<DropdownMenuItem<BudgetModel>>(
-                              (BudgetModel budget) => DropdownMenuItem(
-                                value: budget,
-                                child: Text(budget.title),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (BudgetModel? model) {
-                          // isBudgetPicked = true;
-                          logger.fine(model);
-                          setState(() => _selectedBudget = model);
-                        },
-                      ),
-                    ],
+          showDialog: (message, content, data) => showDialog(
+              context: context,
+              builder: (context) =>
+                  UiEventDialog(title: message, content: content)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                const Divider(),
+                TextFormField(
+                  validator: (value) => value != null && value.isEmpty
+                      ? "Cannot have a empty title"
+                      : null,
+                  controller: _title,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  maxLength: 50,
+                  keyboardType: TextInputType.text,
+                  decoration: const InputDecoration(
+                    helperText: 'Maximum 50 characters ',
+                    hintText: 'Title',
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _desc,
+                  maxLines: 3,
+                  maxLength: 250,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  decoration: const InputDecoration(
+                    helperText: 'Maximum 250 characters',
+                    hintText: 'Description',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _pickImage(),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          StatefulBuilder(
+                            builder: (context, changeState) =>
+                                DropdownButtonFormField(
+                              validator: (value) => value == null
+                                  ? "A bugdet need to added"
+                                  : null,
+                              value: _selectedBudget,
+                              isExpanded: true,
+                              hint: const Text('Pick a Budget'),
+                              borderRadius: BorderRadius.circular(10),
+                              alignment: Alignment.center,
+                              decoration:
+                                  const InputDecoration(helperText: "Budget"),
+                              items: context
+                                  .read<BudgetCubit>()
+                                  .cachedBudget()
+                                  .map<DropdownMenuItem<BudgetModel>>(
+                                    (BudgetModel budget) => DropdownMenuItem(
+                                      value: budget,
+                                      child: Text(
+                                        budget.title.toUpperCase(),
+                                        style: _selectedBudget == budget
+                                            ? Theme.of(context)
+                                                .textTheme
+                                                .subtitle1
+                                            : Theme.of(context)
+                                                .textTheme
+                                                .caption
+                                                ?.copyWith(fontSize: 14),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (BudgetModel? budget) {
+                                // isBudgetPicked = true;
+                                logger.fine(budget);
+                                changeState(() => _selectedBudget = budget);
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            validator: (value) =>
+                                value != null && double.tryParse(value) == null
+                                    ? "Cannot have a non numeric value"
+                                    : null,
+                            controller: _amount,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              hintText: 'Amount',
+                              helperText: 'Amount cannot be zero',
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ListTile(
+                    onTap: _addCategoriesTag,
+                    trailing: const Icon(Icons.add),
+                    title: const Text('Pick your categories')),
+                const Expanded(child: ExpenseCategoryGrid())
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          ListTile(
-              onTap: _addCategoriesTag,
-              dense: true,
-              trailing: const Icon(Icons.add),
-              title: const Text('Pick your categories')),
-          const Expanded(child: ExpenseCategoryGrid())
-        ]),
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  fixedSize: Size(size.width, 50),
-                ),
-                onPressed: _addExpenseCategories,
-                child: const Text(
-                  'Add Categories',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                )),
-            const Divider(),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  fixedSize: Size(size.width, 50),
-                ),
-                onPressed: _addExpense,
-                child: const Text('Add Expenses'))
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              OutlinedButton(
+                  style:
+                      OutlinedButton.styleFrom(fixedSize: Size(size.width, 50)),
+                  onPressed: _addExpenseCategories,
+                  child: const Text('Add Categories',
+                      style: TextStyle(fontWeight: FontWeight.w600))),
+              const Divider(),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      fixedSize: Size(size.width, 50)),
+                  onPressed: _addExpense,
+                  child: const Text('Add Expenses'))
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 }

@@ -18,9 +18,9 @@ class IncomeCubit extends Cubit<IncomeState> {
 
   final Notifier<IncomeSourceModel> notifier = Notifier<IncomeSourceModel>();
 
-  final UiEventCubit<IncomeCubit> _uiEvent = UiEventCubit<IncomeCubit>();
+  final UiEventCubit<IncomeModel> _uiEvent = UiEventCubit<IncomeModel>();
 
-  UiEventCubit<IncomeCubit> get uiEvent => _uiEvent;
+  UiEventCubit<IncomeModel> get uiEvent => _uiEvent;
 
   final GlobalKey<SliverAnimatedListState> _key =
       GlobalKey<SliverAnimatedListState>();

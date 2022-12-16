@@ -1,3 +1,6 @@
+import 'package:dio/dio.dart';
+import 'package:expense_tracker/main.dart';
+
 import '../../domain/repositories/repositories.dart';
 import '../dto/dto.dart';
 import '../entity/entity.dart';
@@ -78,6 +81,9 @@ class ExpenseRepoImpl implements ExpenseRespository {
         return Resource.data(data: null, message: "Not found");
       }
       return Resource.data(data: ExpenseDto.fromEntity(entity).toModel());
+    } on DioError catch (e) {
+      logger.fine(e.response?.data);
+      return Resource.error(err: e, errorMessage: "Dioerror");
     } catch (e) {
       return Resource.error(err: e, errorMessage: "Error");
     }

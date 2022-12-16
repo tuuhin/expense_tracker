@@ -11,3 +11,4 @@ export './expense/expense_categories_entity.dart';
 export './expense/expense_entity.dart';
 
 export './budget/budget_entity.dart';
+export './goals/goals_entity.dart';

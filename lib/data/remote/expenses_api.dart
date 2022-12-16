@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 
 import './remote.dart';
-import '../../domain/models/models.dart';
 import '../dto/dto.dart';
 
 class ExpensesApi extends ResourceClient {

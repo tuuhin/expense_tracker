@@ -12,23 +12,18 @@ class ViewExpenseReceipt extends StatelessWidget {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Interactive View Mode',
-          style: Theme.of(context)
-              .appBarTheme
-              .titleTextStyle
-              ?.copyWith(fontStyle: FontStyle.italic),
-        ),
+        title: const Text('Receipt'),
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(10.0),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Hero(
               tag: UniqueKey(),
               child: InteractiveViewer.builder(
                 builder: (context, viewport) => CachedNetworkImage(
+                  alignment: Alignment.center,
                   placeholder: (context, url) => Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).brightness == Brightness.light

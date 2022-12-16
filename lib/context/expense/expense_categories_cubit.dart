@@ -2,10 +2,10 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../context.dart';
+import '../../utils/resource.dart';
 import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
-import '../../utils/resource.dart';
-import '../ui_event/ui_event_cubit.dart';
 
 part 'expense_categories_state.dart';
 
@@ -67,8 +67,8 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
         if (state is! _Success && data != null) {
           _uiEventCubit.showDialog(
             "Refresh and try again ",
-            secondary:
-                "The category is created but could not be shown because the rest categories aren't load properly",
+            content:
+                "The category titled ${category.title} created.Refresh to see reuslts",
           );
           return;
         }
@@ -81,20 +81,18 @@ class ExpenseCategoriesCubit extends Cubit<ExpenseCategoryState> {
         _uiEventCubit.showSnackBar("Added new Category ${data.title}");
       },
       error: (err, errorMessage, data) => _uiEventCubit.showDialog(
-        "Cannot add category ${category.title}. ",
-        secondary: "Error Occured :$errorMessage ",
-      ),
+          "Adding category ${category.title} failed ",
+          content: "Error Occured :$errorMessage "),
     );
   }
 
   Future<void> getCategories() async {
     emit(ExpenseCategoryState.loading());
 
-    Resource<List<ExpenseCategoriesModel>> budgets =
+    Resource<List<ExpenseCategoriesModel>> categoies =
         await _repo.getCategories();
 
-    budgets.when(
-      loading: () {},
+    categoies.whenOrNull(
       data: (data, message) async {
         if (data.isEmpty) {
           emit(ExpenseCategoryState.noData(message: "No data"));

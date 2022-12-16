@@ -16,7 +16,6 @@ class ExpenseCategories extends StatefulWidget {
 
 class _ExpenseCategoriesState extends State<ExpenseCategories> {
   void _postCallback(Duration _) async {
-    // logger.fine("called");
     final GlobalKey<SliverAnimatedListState> key =
         context.read<ExpenseCategoriesCubit>().key;
 
