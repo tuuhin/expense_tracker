@@ -1,4 +1,6 @@
+import 'package:expense_tracker/main.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:hive/hive.dart';
 
 import '../dto/dto.dart';
 import '../entity/entity.dart';
@@ -56,7 +58,7 @@ class IncomesRepoImpl implements IncomeRepostiory {
       await sourceStore.addSource(dto.toEntity());
       IncomeSourceEntity? entity = sourceStore.getEntityById(dto.toEntity());
       if (entity == null) {
-        return Resource.data(data: null, message: "Not found");
+        throw HiveError("entry not found");
       }
       return Resource.data(data: IncomeSourceDto.fromEntity(entity).toModel());
     } catch (e) {
@@ -102,7 +104,14 @@ class IncomesRepoImpl implements IncomeRepostiory {
             .toList(),
       );
     } catch (e) {
-      return Resource.error(err: e, errorMessage: "Unknown error");
+      return Resource.error(
+        err: e,
+        errorMessage: "Unknown error",
+        data: incomeStore
+            .getIncomes()
+            .map((e) => IncomeDto.fromEntity(e).toModel())
+            .toList(),
+      );
     }
   }
 
@@ -111,7 +120,9 @@ class IncomesRepoImpl implements IncomeRepostiory {
     try {
       Iterable<IncomeSourceDto> sources = await api.getSources();
       sourceStore.deleteAll();
+      logger.fine("removed all");
       sourceStore.addSources(sources.map((e) => e.toEntity()).toList());
+      logger.fine("adding");
       return Resource.data(
         data: sourceStore
             .getSources()
@@ -119,7 +130,14 @@ class IncomesRepoImpl implements IncomeRepostiory {
             .toList(),
       );
     } catch (e) {
-      return Resource.error(err: e, errorMessage: "Unknown error");
+      return Resource.error(
+        err: e,
+        errorMessage: "Unknown error",
+        data: sourceStore
+            .getSources()
+            .map((e) => IncomeSourceDto.fromEntity(e).toModel())
+            .toList(),
+      );
     }
   }
 }

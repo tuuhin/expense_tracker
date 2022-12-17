@@ -6,7 +6,6 @@ import '../../../../context/context.dart';
 import '../../../../domain/models/models.dart';
 import '../../../widgets/widgets.dart';
 import '../routes.dart';
-import 'income_source_picker.dart';
 
 class CreateIncome extends StatefulWidget {
   final IncomeModel? income;
@@ -26,7 +25,11 @@ class _CreateIncomeState extends State<CreateIncome> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void _selectSources() => showModalBottomSheet(
-      context: context, builder: (context) => const IncomeSourcePicker());
+        context: context,
+        builder: (context) => IncomeSourcePicker(
+          sources: context.read<IncomeCubit>().sources,
+        ),
+      );
 
   void _showBottomSheet() => showModalBottomSheet(
         isScrollControlled: true,
@@ -79,7 +82,7 @@ class _CreateIncomeState extends State<CreateIncome> {
       appBar: AppBar(
         title: const Text('Add Income'),
       ),
-      body: BlocListener<UiEventCubit<IncomeCubit>, UiEventState<IncomeCubit>>(
+      body: BlocListener<UiEventCubit<IncomeModel>, UiEventState<IncomeModel>>(
         bloc: context.read<IncomeCubit>().uiEvent,
         listener: (context, state) => state.whenOrNull(
           showSnackBar: (message, data) => ScaffoldMessenger.of(context)

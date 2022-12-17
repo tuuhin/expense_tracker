@@ -8,7 +8,6 @@ import '../../../../app/home/routes/routes.dart';
 import '../../../../app/widgets/widgets.dart';
 import '../../../../context/context.dart';
 import '../../../../domain/models/models.dart';
-import '../../../../main.dart';
 
 class CreateExpense extends StatefulWidget {
   final ExpenseModel? expense;
@@ -62,7 +61,6 @@ class _CreateExpenseState extends State<CreateExpense> {
             path: receipt?.path,
           ),
         );
-    logger.fine('DOne');
   }
 
   void _addExpenseCategories() => showModalBottomSheet(
@@ -73,7 +71,11 @@ class _CreateExpenseState extends State<CreateExpense> {
           child: const CreateCategory()));
 
   void _addCategoriesTag() => showModalBottomSheet(
-      context: context, builder: (context) => const ExpenseCategoryPicker());
+        context: context,
+        builder: (context) => ExpenseCategoryPicker(
+          categories: context.read<ExpenseCubit>().categories,
+        ),
+      );
 
   void _imagePicker() => showModalBottomSheet(
         context: context,
@@ -142,11 +144,10 @@ class _CreateExpenseState extends State<CreateExpense> {
           BlocListener<UiEventCubit<ExpenseModel>, UiEventState<ExpenseModel>>(
         bloc: context.read<ExpenseCubit>().uiEvent,
         listener: (context, state) => state.whenOrNull(
-          showSnackBar: (message, data) => ScaffoldMessenger.of(context)
-            ..removeCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text(message)),
-            ),
+          showSnackBar: (message, data) =>
+              ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          ),
           showDialog: (message, content, data) => showDialog(
               context: context,
               builder: (context) =>
@@ -228,7 +229,6 @@ class _CreateExpenseState extends State<CreateExpense> {
                                   .toList(),
                               onChanged: (BudgetModel? budget) {
                                 // isBudgetPicked = true;
-                                logger.fine(budget);
                                 changeState(() => _selectedBudget = budget);
                               },
                             ),

@@ -1,4 +1,5 @@
 import 'package:expense_tracker/app/widgets/ui_event_dialog_error.dart';
+import 'package:expense_tracker/domain/models/income/income_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -54,7 +55,7 @@ class _ShowIncomesState extends State<ShowIncomes> {
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child:
-            BlocListener<UiEventCubit<IncomeCubit>, UiEventState<IncomeCubit>>(
+            BlocListener<UiEventCubit<IncomeModel>, UiEventState<IncomeModel>>(
           bloc: context.read<IncomeCubit>().uiEvent,
           listener: (context, state) => state.whenOrNull(
             showSnackBar: (message, data) => ScaffoldMessenger.of(context)

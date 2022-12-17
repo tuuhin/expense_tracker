@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../context/context.dart';
 import '../../../../domain/models/models.dart';
-import '../../../widgets/base_error.dart';
 import '../../../widgets/widgets.dart';
 import '../routes.dart';
 import './categories.dart';

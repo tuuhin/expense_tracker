@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:expense_tracker/main.dart';
 
-import '../../domain/repositories/repositories.dart';
 import '../dto/dto.dart';
 import '../entity/entity.dart';
 import '../local/storage.dart';
 import '../remote/remote.dart';
 import '../../utils/resource.dart';
 import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
 class ExpenseRepoImpl implements ExpenseRespository {
   final ExpensesApi api;
@@ -35,7 +35,14 @@ class ExpenseRepoImpl implements ExpenseRespository {
             .toList(),
       );
     } catch (e) {
-      return Resource.error(err: e, errorMessage: "Unknown error");
+      return Resource.error(
+        err: e,
+        errorMessage: "Unknown error",
+        data: categoryStore
+            .getCategories()
+            .map((e) => ExpenseCategoryDto.fromEntity(e).toModel())
+            .toList(),
+      );
     }
   }
 
@@ -127,7 +134,14 @@ class ExpenseRepoImpl implements ExpenseRespository {
             .toList(),
       );
     } catch (e) {
-      return Resource.error(err: e, errorMessage: "Unknown error");
+      return Resource.error(
+        err: e,
+        errorMessage: "Unknown error",
+        data: expenseStore
+            .getExpenses()
+            .map((e) => ExpenseDto.fromEntity(e).toModel())
+            .toList(),
+      );
     }
   }
 }

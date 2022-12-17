@@ -12,10 +12,11 @@ class ExpenseStorage {
   Future<void> addExpense(ExpenseEntity entity) async =>
       await expenses!.put(entity.id, entity);
 
-  Future<void> addExpenses(List<ExpenseEntity> enitites) async =>
-      await expenses!.putAll(
-        enitites.asMap().map((key, entity) => MapEntry(entity.id, entity)),
-      );
+  Future<void> addExpenses(List<ExpenseEntity> enitites) async {
+    await expenses!.putAll(
+        enitites.asMap().map((key, entity) => MapEntry(entity.id, entity)));
+    expenses!.flush();
+  }
 
   Iterable<ExpenseEntity> getExpenses() => expenses!.values.toList().reversed;
 
@@ -28,5 +29,6 @@ class ExpenseStorage {
   Future<void> deleteExpense(ExpenseEntity entity) async =>
       await expenses!.delete(entity.id);
 
-  Future<void> deleteAll() async => await expenses!.clear();
+  Future<void> deleteAll() async =>
+      expenses!.keys.map((e) async => await expenses!.delete(e));
 }
