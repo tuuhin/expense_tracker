@@ -1,9 +1,11 @@
 import 'package:expense_tracker/domain/models/models.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:expense_tracker/utils/resource.dart';
 
-@immutable
 abstract class NotificationRepository {
-  Future<NotificationModel> getNotification();
+  Future<Resource<NotificationModel>> getNotification();
 
-  Future<NotificationModel> getMoreNotification({int? offset, int? limit});
+  Future<Resource<NotificationModel>> getMoreNotification({
+    required int offset,
+    int? limit,
+  });
 }

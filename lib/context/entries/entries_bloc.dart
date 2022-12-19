@@ -67,12 +67,19 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
           await _repository.getMoreEntries(offset: _offset, limit: 5);
 
       entries.whenOrNull(
-        data: (data, message) {
+        data: (data, message) async {
           _nextURL = data.nextURL;
           if (_nextURL != null) {
             _offset = _offsetFromString(_nextURL!) ?? 1;
           }
           emit(EntriesState.data(data: _entries..addAll(data.entries)));
+
+          for (final EntriesDataModel entry in data.entries) {
+            await Future.delayed(
+              const Duration(milliseconds: 100),
+              () => _key.currentState?.insertItem(_entries.indexOf(entry)),
+            );
+          }
         },
         error: (err, errorMessage, data) {
           emit(EntriesState.errorLoadMore(data: _entries, error: errorMessage));

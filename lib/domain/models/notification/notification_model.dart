@@ -7,6 +7,7 @@ part 'notification_model.freezed.dart';
 @freezed
 class NotificationModel with _$NotificationModel {
   factory NotificationModel({
+    required int count,
     String? previous,
     String? next,
     required List<NotificationDataModel> data,
@@ -19,5 +20,6 @@ class NotificationDataModel with _$NotificationDataModel {
     required String title,
     required DateTime createdAt,
     required NotificationStatus type,
+    required NotificationSignalModel signal,
   }) = _NotificationDataModel;
 }

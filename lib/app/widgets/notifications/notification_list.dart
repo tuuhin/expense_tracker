@@ -3,30 +3,48 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../context/context.dart';
 import '../../../domain/models/models.dart';
-import '../../../utils/date_formaters.dart';
+import '../widgets.dart';
 
-class NotificationList extends StatelessWidget {
+class NotificationList extends StatefulWidget {
   final List<NotificationDataModel> data;
   const NotificationList({Key? key, required this.data}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => SliverAnimatedList(
-        key: context.read<NotificationBloc>().key,
-        itemBuilder: (context, index, animation) {
-          final NotificationDataModel model = data[index];
-          final Animation<Offset> offset = Tween<Offset>(
-                  begin: const Offset(-1, 0), end: Offset.zero)
-              .animate(
-                  CurvedAnimation(parent: animation, curve: Curves.bounceIn));
-          return SlideTransition(
-            position: offset,
-            child: Card(
-              child: ListTile(
-                title: Text(model.title),
-                subtitle: Text(toDate(model.createdAt)),
-              ),
-            ),
-          );
-        },
+  State<NotificationList> createState() => _NotificationListState();
+}
+
+class _NotificationListState extends State<NotificationList> {
+  void _addItems(Duration _) async {
+    final GlobalKey<SliverAnimatedListState> key =
+        context.read<NotificationBloc>().key;
+
+    for (int i = 0; i < widget.data.length; i++) {
+      await Future.delayed(
+        const Duration(milliseconds: 100),
+        () => key.currentState?.insertItem(i),
       );
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback(_addItems);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverPadding(
+      padding: const EdgeInsets.all(8.0),
+      sliver: SliverAnimatedList(
+        key: context.read<NotificationBloc>().key,
+        itemBuilder: (context, index, animation) => SizeTransition(
+          sizeFactor: animation,
+          child: NotificationCard(
+            data: widget.data[index],
+          ),
+        ),
+      ),
+    );
+  }
 }

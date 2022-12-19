@@ -1,11 +1,8 @@
-import 'package:expense_tracker/app/widgets/home/planning_cards.dart';
-import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../context/context.dart';
-import '../../widgets/notifications/notification_data_more.dart';
-import '../../widgets/notifications/notifications_data.dart';
+import '../../widgets/widgets.dart';
 
 class MainTab extends StatefulWidget {
   const MainTab({Key? key}) : super(key: key);
@@ -55,10 +52,10 @@ class _MainTabState extends State<MainTab> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      child: Scrollbar(
-        controller: _controller,
+    return Scrollbar(
+      controller: _controller,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: CustomScrollView(
           controller: _controller,
           slivers: [
@@ -66,15 +63,14 @@ class _MainTabState extends State<MainTab> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Overview',
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Overview',
                         style: Theme.of(context)
                             .textTheme
-                            .headline5!
+                            .headline6!
                             .copyWith(fontWeight: FontWeight.w700)),
                   ),
-                  const SizedBox(height: 10),
                   SizedBox(
                     height: size.height * .3,
                     child: const Padding(
@@ -85,31 +81,7 @@ class _MainTabState extends State<MainTab> {
                 ],
               ),
             ),
-            SliverToBoxAdapter(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Planning',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline6!
-                            .copyWith(fontWeight: FontWeight.w600)),
-                  ),
-                  PlanningCards(),
-                ],
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Text('Notifications',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6!
-                      .copyWith(fontWeight: FontWeight.w600)),
-            ),
-            NotificationsData(),
-            NotificationsDataLoadMore()
+            const SliverToBoxAdapter(child: PlanningCards()),
           ],
         ),
       ),

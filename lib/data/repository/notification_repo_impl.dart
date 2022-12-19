@@ -1,25 +1,37 @@
-import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
-import '../../domain/models/models.dart';
-import '../../domain/repositories/notification_repo.dart';
 import '../dto/dto.dart';
-import '../remote/clients/plans_client.dart';
+import '../remote/remote.dart';
+import '../../utils/resource.dart';
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
-class NotificationRepoImpl extends PlansClient
-    implements NotificationRepository {
+class NotificationRepoImpl implements NotificationRepository {
+  final NotificationApi api;
+
+  NotificationRepoImpl({required this.api});
+
   @override
-  Future<NotificationModel> getNotification() async {
-    Response response = await dio.get('/notification');
-
-    return NotificationDto.fromJson(response.data).toModel();
+  Future<Resource<NotificationModel>> getMoreNotification(
+      {required int offset, int? limit}) async {
+    try {
+      NotificationDto dto =
+          await api.getMoreNotification(offset: offset, limit: limit ?? 5);
+      return Resource.data(data: dto.toModel());
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: "unknown error occured");
+    }
   }
 
   @override
-  Future<NotificationModel> getMoreNotification(
-      {int? offset, int? limit}) async {
-    Response response = await dio.get('/notification',
-        queryParameters: <String, int?>{'offset': offset, 'limit': limit});
-
-    return NotificationDto.fromJson(response.data).toModel();
+  Future<Resource<NotificationModel>> getNotification() async {
+    try {
+      NotificationDto dto = await api.getNotification();
+      return Resource.data(data: dto.toModel());
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: "unknown error occured");
+    }
   }
 }
