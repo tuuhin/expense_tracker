@@ -5,10 +5,10 @@ import 'package:logging/logging.dart';
 
 import './context/context.dart';
 import './data/local/local_storage.dart';
-import './app/app.dart';
 import './utils/palette.dart';
 
 import 'providers.dart';
+import 'router.dart';
 
 final logger = Logger('App Logger');
 
@@ -33,12 +33,14 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => MaterialApp.router(
         title: 'Expense Tracker',
         debugShowCheckedModeBanner: false,
         themeMode: context.watch<ThemeCubit>().themeMode,
         theme: lightTheme,
         darkTheme: darkTheme,
-        home: const App(),
+        routerDelegate: router.routerDelegate,
+        routeInformationParser: router.routeInformationParser,
+        routeInformationProvider: router.routeInformationProvider,
       );
 }

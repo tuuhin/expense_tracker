@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../widgets/tab_info.dart';
+import '../../context/context.dart';
 import '../widgets/widgets.dart';
-import 'tabs/entries.dart';
-import 'tabs/screen_home.dart';
-import 'routes/user/users_options_route.dart';
+
+import './tabs/tabs.dart';
+
+class TabInfo {
+  final Widget tab;
+  final Widget icon;
+  final String label;
+  const TabInfo({required this.icon, required this.tab, required this.label});
+}
 
 class Home extends StatefulWidget {
-  final AnimationController controller;
-  const Home({Key? key, required this.controller}) : super(key: key);
+  const Home({Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
@@ -20,32 +27,23 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   int _currentTab = 0;
 
-  final List<TabInfo> _tabInfo = [
+  final List<TabInfo> _tabInfo = const [
     TabInfo(
-      icon: const Icon(Icons.home_outlined),
-      tab: const MainTab(),
+      icon: Icon(Icons.home_outlined),
+      tab: MainTab(),
       label: 'Home',
     ),
     TabInfo(
-      icon: const Icon(Icons.folder_copy),
-      tab: const EntriesTab(),
+      icon: Icon(Icons.folder_copy),
+      tab: EntriesTab(),
       label: 'Entries',
+    ),
+    TabInfo(
+      icon: Icon(Icons.notifications),
+      tab: NotificationTab(),
+      label: "Notifications",
     )
   ];
-
-  void _openMenu() {
-    if (widget.controller.status == AnimationStatus.completed) {
-      widget.controller.reverse();
-    } else {
-      widget.controller.forward();
-    }
-  }
-
-  void _animateTabs(int tabNo) {
-    if (!(widget.controller.status == AnimationStatus.completed)) {
-      _tabController.animateTo(tabNo);
-    }
-  }
 
   @override
   void initState() {
@@ -54,13 +52,25 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context.read<EntriesBloc>().init();
+    context.read<NotificationBloc>().init();
+    context.read<BaseInformationCubit>().getBaseOverView();
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
 
-  void _openProfile() => Navigator.of(context)
-      .push(MaterialPageRoute(builder: (context) => const UserOptionsRoute()));
+  void _openProfile() => context.push('/settings');
+
+  void _tabViewOnTap(int index) {
+    _tabController.animateTo(index);
+    setState(() => _currentTab = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +78,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       appBar: AppBar(
         backgroundColor: Theme.of(context).cardColor,
         leading: IconButton(
-          onPressed: _openMenu,
-          icon: const FaIcon(FontAwesomeIcons.alignLeft),
-        ),
+            onPressed: () {}, icon: const FaIcon(FontAwesomeIcons.alignLeft)),
         actions: [
           IconButton(
             onPressed: _openProfile,
@@ -78,19 +86,15 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               borderRadius: BorderRadius.circular(5),
               child: const Hero(
                 tag: 'profile_image',
-                child: AsyncUserProfileImage(),
+                child: AsyncProfileImage(),
               ),
             ),
           )
         ],
       ),
-
       body: Stack(
         children: [
-          SizedBox.expand(
-              child: CustomPaint(
-            foregroundPainter: BackGroundDesign(context),
-          )),
+          const HomeBackground(),
           TabBarView(
               physics: const NeverScrollableScrollPhysics(),
               controller: _tabController,
@@ -98,37 +102,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               children: _tabInfo.map((e) => e.tab).toList()),
         ],
       ),
-
-      // bottomNavigationBar: BottomAppBar(
-      //     color: Colors.white,
-      //     shape: const CircularNotchedRectangle(),
-      //     notchMargin: 5,
-      //     child: SizedBox(
-      //       height: 60,
-      //       child: Row(
-      //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-      //         children: [
-      //           IconButton(
-      //               onPressed: () => _animateTabs(0),
-      //               icon: const Icon(Icons.home)),
-      //           IconButton(
-      //               onPressed: () => _animateTabs(1),
-      //               icon: const Icon(Icons.note)),
-      //           const SizedBox(width: 20),
-      //         ],
-      //       ),
-      //     )),
-
       bottomNavigationBar: BottomNavigationBar(
         elevation: 2,
-        onTap: (index) {
-          _animateTabs(index);
-          setState(() => _currentTab = index);
-        },
+        onTap: _tabViewOnTap,
         selectedFontSize: Theme.of(context).textTheme.bodyText1!.fontSize ?? 20,
         currentIndex: _currentTab,
         unselectedFontSize:
-            Theme.of(context).textTheme.bodyText2!.fontSize ?? 16,
+            Theme.of(context).textTheme.bodyText2?.fontSize ?? 16,
         selectedIconTheme: const IconThemeData(size: 26),
         unselectedIconTheme: const IconThemeData(size: 22),
         selectedItemColor: Theme.of(context).colorScheme.primary,
@@ -142,21 +122,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             .map(
               (key, tab) => MapEntry(
                 key,
-                BottomNavigationBarItem(
-                  icon: tab.icon,
-                  label: tab.label,
-                ),
+                BottomNavigationBarItem(icon: tab.icon, label: tab.label),
               ),
             )
             .values
             .toList(),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      // floatingActionButtonAnimator:,
-      floatingActionButton: FloatingActionButton(
-        foregroundColor: Colors.white,
-        onPressed: _openMenu,
-        child: const Icon(Icons.add),
       ),
     );
   }

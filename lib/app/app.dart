@@ -4,16 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../context/context.dart';
 import './auth/auth_loading_page.dart';
 import './auth/auth_tabs_wrapper.dart';
-import './home/drawer.dart';
+import './home/home.dart';
 
-class App extends StatefulWidget {
+class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
 
-  @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
@@ -35,7 +30,7 @@ class _AppState extends State<App> {
       ),
       builder: (context, state) => state.maybeWhen(
         orElse: () => const AuthTabWrapper(),
-        loggedIn: () => const CustomDrawer(),
+        loggedIn: () => const Home(),
         checkState: () => const AuthLoadingScreen(),
       ),
     );
