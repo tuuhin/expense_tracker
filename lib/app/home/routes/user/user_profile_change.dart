@@ -4,16 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../domain/models/auth/user_profile_model.dart';
-import '../../../../domain/repositories/user_profile_repository.dart';
 import '../../../../main.dart';
-import '../../../../utils/resource.dart';
-import '../../../../utils/validators.dart';
-import '../../../widgets/user/change_profile_header.dart';
-import '../../../../utils/date_formaters.dart';
+import '../../../../utils/utils.dart';
+import '../../../widgets/widgets.dart';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
 
 class ChangeUserProfile extends StatefulWidget {
-  const ChangeUserProfile({Key? key}) : super(key: key);
+  final UserProfileModel? profile;
+  const ChangeUserProfile({Key? key, this.profile}) : super(key: key);
 
   @override
   State<ChangeUserProfile> createState() => _ChangeUserProfileState();
@@ -24,19 +23,19 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
   late TextEditingController _lastName;
   late TextEditingController _email;
   late TextEditingController _phoneNumber;
+  late String? _imageURL;
+  late DateTime? _createdAt;
+  late DateTime? _updatedAt;
 
-  String? _imageURL;
   File? _file;
-  DateTime? _createdAt;
-  DateTime? _updatedAt;
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void _pickImage(ImageSource source) async {
     try {
       XFile? file = await ImagePicker().pickImage(source: source);
       if (file == null) return;
-      setState(() {
-        _file = File(file.path);
-      });
+      setState(() => _file = File(file.path));
     } on PlatformException {
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
@@ -56,105 +55,42 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
 
   void _imagePickerSheet() async => await showModalBottomSheet(
         context: context,
-        builder: (context) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  selected: true,
-                  onTap: () => _pickImage(ImageSource.camera),
-                  title: const Text('Camera'),
-                  leading: const Icon(Icons.camera_alt_outlined)),
-              const Divider(height: 1),
-              ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  selected: true,
-                  onTap: () => _pickImage(ImageSource.gallery),
-                  title: const Text('Gallery'),
-                  leading: const Icon(Icons.image)),
-              const Divider(height: 1),
-              ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  selected: true,
-                  onTap: _clearImage,
-                  title: const Text('Remove Image'),
-                  leading: const Icon(Icons.hide_image_outlined))
-            ],
-          ),
+        builder: (context) => ImagePickerModal(
+          camera: () => _pickImage(ImageSource.camera),
+          gallery: () => _pickImage(ImageSource.gallery),
+          clear: _clearImage,
         ),
       );
 
   void _updateProfile() async {
-    // FocusScope.of(context).requestFocus(FocusNode());
-    if (_firstName.text.isEmpty || _lastName.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Some fields are missing')),
-      );
-      return;
-    }
-    if (_email.text.isNotEmpty && validateEmail(_email.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Email!')),
-      );
-      return;
-    }
-    if (_phoneNumber.text.isNotEmpty &&
-        int.tryParse(_phoneNumber.text) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Phone number')),
-      );
+    if (!_formKey.currentState!.validate()) return;
 
-      return;
-    }
-    Resource<UserProfileModel> update = await context
-        .read<UserProfileRepository>()
-        .updateProfile(UserProfileModel(
+    await context.read<ProfileCubit>().updateProfile(
+          UserProfileModel(
             firstName: _firstName.text,
             lastName: _lastName.text,
             updatedAt: DateTime.now(),
             photoURL: _file?.path,
             email: _email.text.isEmpty ? null : _email.text,
-            phoneNumber: _phoneNumber.text.isEmpty
-                ? null
-                : int.parse(_phoneNumber.text)));
-
-    update.maybeWhen(
-      orElse: () {},
-      data: (data, message) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(message ?? 'Done')));
-      },
-      error: (err, errorMessage, data) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(errorMessage)));
-      },
-    );
+            phoneNumber:
+                _phoneNumber.text.isEmpty ? null : int.parse(_phoneNumber.text),
+          ),
+        );
   }
 
   @override
   void initState() {
     super.initState();
-    _firstName = TextEditingController();
-    _lastName = TextEditingController();
-    _email = TextEditingController();
-    _phoneNumber = TextEditingController();
+    _firstName = TextEditingController(text: widget.profile?.firstName ?? '');
+    _lastName = TextEditingController(text: widget.profile?.lastName ?? '');
+    _email = TextEditingController(text: widget.profile?.email ?? '');
+    _phoneNumber = TextEditingController(
+        text: widget.profile?.phoneNumber?.toString() ?? '');
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      UserProfileModel? profile =
-          await context.read<UserProfileRepository>().getProfile();
-      logger.fine("called");
-      setState(() {
-        _firstName.text = profile?.firstName ?? '';
-        _lastName.text = profile?.lastName ?? '';
-        _email.text = profile?.email ?? '';
-        _phoneNumber.text = profile?.phoneNumber?.toString() ?? '';
-        _imageURL = profile?.photoURL;
-        _createdAt = profile?.createdAt;
-        _updatedAt = profile?.updatedAt;
-      });
-    });
+    _imageURL = widget.profile?.photoURL;
+    _createdAt = widget.profile?.createdAt;
+    _updatedAt = widget.profile?.updatedAt;
+    // });
   }
 
   @override
@@ -170,122 +106,91 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      appBar: AppBar(),
       resizeToAvoidBottomInset: false,
-      body: CustomScrollView(
-        slivers: [
-          const SliverAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _imagePickerSheet,
-                    child: ChangeProfileHeader(
-                      imageURL: _imageURL,
-                      file: _file,
-                    ),
-                  ),
-                  const SizedBox(height: kTextTabBarHeight * .5),
-                  if (_createdAt != null)
-                    Text.rich(
-                      TextSpan(
-                        text: "Last Updated on: ",
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        children: [
-                          TextSpan(
-                              text: "${_updatedAt?.toSimpleDate()}",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w400))
-                        ],
-                      ),
-                    ),
-                  if (_updatedAt != null)
-                    Text.rich(
-                      TextSpan(
-                        text: "Created on: ",
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        children: [
-                          TextSpan(
-                              text: "${_createdAt?.toSimpleDate()}",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w400))
-                        ],
-                      ),
-                    ),
-                ],
+      body: BlocListener<ProfileCubit, ProfileState>(
+        listener: (context, state) => state.whenOrNull(
+          successful: (message) => ScaffoldMessenger.of(context)
+            ..removeCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(message)),
+            ),
+          requesting: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Updating your profile"))),
+          unSuccessful: (err, message) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message))),
+        ),
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Text(
+                  "Complete your profile",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline5
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
-          SliverFillRemaining(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-              decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(10),
-                      topLeft: Radius.circular(10))),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Personal Information',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                  const Divider(),
-                  TextField(
-                    controller: _firstName,
-                    decoration: const InputDecoration(
-                      label: Text('First Name'),
-                      prefixIcon: Icon(Icons.person_outline),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: _imagePickerSheet,
+                      child:
+                          ChangeProfileHeader(imageURL: _imageURL, file: _file),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _lastName,
-                    decoration: const InputDecoration(
-                        label: Text('Last  Name'),
-                        prefixIcon: Icon(Icons.person_outline)),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                        label: Text('Email'),
-                        prefixIcon: Icon(Icons.email_outlined)),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _phoneNumber,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        label: Text('Phone number'),
-                        prefixIcon: Icon(Icons.phone_android_rounded)),
-                  ),
-                  const Spacer(),
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  //   child: ElevatedButton(
-                  //     style: ElevatedButton.styleFrom(
-                  //         fixedSize: Size(size.width, 50),
-                  //         backgroundColor:
-                  //             Theme.of(context).colorScheme.secondary),
-                  //     onPressed: _updateProfile,
-                  //     child: Text('Update',
-                  //         style: Theme.of(context)
-                  //             .textTheme
-                  //             .subtitle1!
-                  //             .copyWith(color: Colors.white)),
-                  //   ),
-                  // ),
-                ],
+                    const SizedBox(height: kTextTabBarHeight * .5),
+                    if (_createdAt != null)
+                      Text.rich(
+                        TextSpan(
+                          text: "Last Updated on: ",
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          children: [
+                            TextSpan(
+                                text: "${_updatedAt?.toSimpleDate()}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w400))
+                          ],
+                        ),
+                      ),
+                    if (_updatedAt != null)
+                      Text.rich(
+                        TextSpan(
+                          text: "Created on: ",
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          children: [
+                            TextSpan(
+                                text: "${_createdAt?.toSimpleDate()}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w400))
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+            SliverFillRemaining(
+              child: Form(
+                key: _formKey,
+                child: UserProfileForm(
+                  firstName: _firstName,
+                  lastName: _lastName,
+                  email: _email,
+                  phoneNumber: _phoneNumber,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
           color: Theme.of(context).cardColor,

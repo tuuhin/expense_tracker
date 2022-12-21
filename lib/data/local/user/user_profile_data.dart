@@ -2,19 +2,28 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../entity/entity.dart';
 
-class UserProfileData {
+class UserProfileDao {
   static late final Box<UserProfileEntity>? _profile;
-  static Future init() async {
+  static Future<void> init() async {
     _profile = await Hive.openBox<UserProfileEntity>('user-profile');
   }
 
-  Future<void> addUserProfile(UserProfileEntity user) async =>
-      await _profile!.put('profile', user);
+  Future<void> setProfile(UserProfileEntity user) async {
+    await _profile!.put('profile', user);
+    await _profile!.flush();
+  }
 
-  Future<void> updateUserProfile(UserProfileEntity user) async =>
-      await _profile!.put('profile', user);
+  Future<void> updateProfile(UserProfileEntity user) async {
+    await _profile!.put('profile', user);
+    await _profile!.flush();
+  }
 
-  Future<UserProfileEntity?> getUserProfile() async => _profile?.get('profile');
+  Stream<UserProfileEntity?> streamData() async* {
+    yield* Stream.value(_profile?.get('profile'));
+    yield* _profile!.watch(key: 'profile').map((box) => box.value);
+  }
 
-  Future<void> removeUserProfile() async => await _profile?.delete('profile');
+  UserProfileEntity? getProfile() => _profile!.get('profile');
+
+  Future<void> removeProfile() async => await _profile!.delete('profile');
 }

@@ -47,4 +47,12 @@ class UserBaseOverviewDto {
           monthlyExpense: model.monthlyExpense,
           totalExpense: model.totalExpense,
           monthlyIncome: model.monthlyIncome);
+
+  factory UserBaseOverviewDto.fromEntity(UserBaseDataEntity entity) =>
+      UserBaseOverviewDto(
+        totalIncome: entity.totalExpense,
+        monthlyExpense: entity.monthlyExpense,
+        totalExpense: entity.totalExpense,
+        monthlyIncome: entity.monthlyIncome,
+      );
 }

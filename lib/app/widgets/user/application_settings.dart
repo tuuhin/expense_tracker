@@ -1,9 +1,18 @@
-import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 
-class ApplicationSettings extends StatelessWidget {
+class ApplicationSettings extends StatefulWidget {
   const ApplicationSettings({Key? key}) : super(key: key);
+
+  @override
+  State<ApplicationSettings> createState() => _ApplicationSettingsState();
+}
+
+class _ApplicationSettingsState extends State<ApplicationSettings> {
+  void _showIncomes() => context.push('/income');
+  void _showSources() => context.push('/sources');
+  void _showCategories() => context.push('/categories');
+  void _showExpenses() => context.push('/expenes');
 
   @override
   Widget build(BuildContext context) {
@@ -15,40 +24,29 @@ class ApplicationSettings extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const ListTile(dense: true, title: Text('Application')),
-              const Divider(
-                height: 1,
-                color: Colors.grey,
-              ),
+              const ListTile(title: Text('Application')),
+              const Divider(height: 1, color: Colors.grey),
               ListTile(
-                onTap: () => Navigator.of(context).push(
-                  appRouteBuilder(const ShowIncomes()),
-                ),
+                onTap: _showIncomes,
                 title: const Text('Income'),
-                leading: const FaIcon(FontAwesomeIcons.moneyBillWave),
+                leading: Image.asset("assets/icons/profits.png"),
               ),
               // const Divider(),
               ListTile(
-                onTap: () => Navigator.of(context).push(
-                  appRouteBuilder(const ShowExpenses()),
-                ),
+                onTap: _showExpenses,
                 title: const Text('Expense'),
-                leading: const FaIcon(FontAwesomeIcons.moneyCheck),
+                leading: Image.asset("assets/icons/expenses.png"),
               ),
-
               ListTile(
-                  onTap: () => Navigator.of(context).push(
-                        appRouteBuilder(const ShowIncomeSources()),
-                      ),
-                  title: const Text('Source'),
-                  leading: const FaIcon(FontAwesomeIcons.productHunt)),
-
+                onTap: _showSources,
+                title: const Text('Source'),
+                leading: Image.asset("assets/icons/block.png"),
+              ),
               ListTile(
-                  onTap: () => Navigator.of(context).push(
-                        appRouteBuilder(const ShowExpenseCategories()),
-                      ),
-                  title: const Text('Categories'),
-                  leading: const FaIcon(FontAwesomeIcons.buyNLarge)),
+                onTap: _showCategories,
+                title: const Text('Categories'),
+                leading: Image.asset("assets/icons/category.png"),
+              ),
             ],
           ),
         ),

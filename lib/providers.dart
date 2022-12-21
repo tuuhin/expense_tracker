@@ -27,11 +27,21 @@ class ProvidersWrapper extends StatelessWidget {
               profileData: context.read<ProfileRepository>(),
             ),
           ),
+          RepositoryProvider<UserBaseDataRepository>(
+            create: (context) => UserBaseDataRepoImpl(
+              dao: UserBaseData(),
+              api: BaseInfoApi(),
+            ),
+          ),
           RepositoryProvider<NotificationRepository>(
-            create: (context) => NotificationRepoImpl(api: NotificationApi()),
+            create: (context) => NotificationRepoImpl(
+              api: NotificationApi(),
+            ),
           ),
           RepositoryProvider<EntriesRepository>(
-            create: (context) => EntriesRepositoryImpl(api: EntriesApi()),
+            create: (context) => EntriesRepositoryImpl(
+              api: EntriesApi(),
+            ),
           ),
           RepositoryProvider<IncomeRepostiory>(
             create: (context) => IncomesRepoImpl(
@@ -68,6 +78,10 @@ class ProvidersWrapper extends StatelessWidget {
                   AuthenticationCubit(context.read<AuthRespository>())
                     ..checkAuthState(),
             ),
+            BlocProvider<ProfileCubit>(
+              create: (context) =>
+                  ProfileCubit(context.read<ProfileRepository>()),
+            ),
             BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
             BlocProvider<IncomeSourceCubit>(
                 create: (context) =>
@@ -85,7 +99,8 @@ class ProvidersWrapper extends StatelessWidget {
                 create: (context) =>
                     BudgetCubit(context.read<BudgetRepository>())),
             BlocProvider<BaseInformationCubit>(
-                create: (context) => BaseInformationCubit()),
+                create: (context) => BaseInformationCubit(
+                    context.read<UserBaseDataRepository>())),
             BlocProvider<GoalsBloc>(
                 create: (context) =>
                     GoalsBloc(context.read<GoalsRepository>())),

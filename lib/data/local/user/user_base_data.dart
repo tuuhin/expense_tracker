@@ -1,5 +1,6 @@
-import 'package:expense_tracker/data/entity/user/user_base_data_entity.dart';
 import 'package:hive/hive.dart';
+
+import '../../entity/entity.dart';
 
 class UserBaseData {
   static Box<UserBaseDataEntity>? _baseData;
@@ -8,7 +9,7 @@ class UserBaseData {
   }
 
   Future<void> updateBaseData(UserBaseDataEntity data) async =>
-      await _baseData?.put('base-data', data);
+      await _baseData!.put('base-data', data);
 
   Future<UserBaseDataEntity?> getUserBaseData() async =>
       _baseData?.get('base-data');

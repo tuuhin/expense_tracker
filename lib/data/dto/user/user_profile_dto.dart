@@ -46,7 +46,8 @@ class UserProfileDto {
       lastName: lastName,
       photoURL: photoURL,
       createdAt: createdAt,
-      updatedAt: updatedAt);
+      updatedAt: updatedAt,
+      email: email,);
 
   factory UserProfileDto.fromModel(UserProfileModel model) => UserProfileDto(
       phoneNumber: model.phoneNumber,

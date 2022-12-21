@@ -11,7 +11,7 @@ class UserProfileEntity extends HiveObject {
   int? phoneNumber;
 
   @HiveField(2)
-  String? firstName;
+  String firstName;
 
   @HiveField(3)
   String? lastName;
@@ -25,12 +25,16 @@ class UserProfileEntity extends HiveObject {
   @HiveField(6)
   DateTime updatedAt;
 
+  @HiveField(7)
+  final String? email;
+
   UserProfileEntity({
     this.id,
     this.phoneNumber,
-    this.firstName,
+    required this.firstName,
     this.lastName,
     this.photoURL,
+    this.email,
     required this.createdAt,
     required this.updatedAt,
   });

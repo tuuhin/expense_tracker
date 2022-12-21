@@ -17,13 +17,10 @@ class UserOptionsRoute extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
               child: SizedBox(
-                  height: size.height * .4,
-                  child: const AsyncUserProfileImage())),
+                  height: size.height * .4, child: const AsyncProfileImage())),
           const SliverToBoxAdapter(child: ApplicationSettings()),
           const SliverToBoxAdapter(child: AccountSettings()),
-          const SliverToBoxAdapter(
-            child: ThemeSettings(),
-          )
+          const SliverToBoxAdapter(child: ThemeSettings())
         ],
       ),
     );

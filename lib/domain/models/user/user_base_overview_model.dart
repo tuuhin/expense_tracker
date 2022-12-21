@@ -14,5 +14,10 @@ class UserBaseOverViewModel with _$UserBaseOverViewModel {
     required double monthlyExpense,
   }) = _UserBaseOverViewModel;
 
-  List get toList => [totalIncome, totalExpense, monthlyIncome, monthlyExpense];
+  Map<String, double> get toMap => {
+        "Total Income": totalIncome,
+        "Total Expense": totalExpense,
+        "Monthly Income": monthlyIncome,
+        "Monthly Expense": monthlyExpense
+      };
 }

@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ChangeProfileHeader extends StatelessWidget {
@@ -19,7 +19,7 @@ class ChangeProfileHeader extends StatelessWidget {
     final Size size = MediaQuery.of(context).size;
     return Stack(
       clipBehavior: Clip.none,
-      alignment: Alignment.center,
+      alignment: Alignment.bottomRight,
       children: [
         if (imageURL == null && file?.path == null)
           Container(
@@ -39,6 +39,9 @@ class ChangeProfileHeader extends StatelessWidget {
               height: size.height * .2,
               width: size.height * .2,
               fit: BoxFit.cover,
+              errorWidget: (context, url, error) => Container(
+                color: Colors.black26,
+              ),
             ),
           ),
         if (file?.path != null)
@@ -53,8 +56,6 @@ class ChangeProfileHeader extends StatelessWidget {
             ),
           ),
         Positioned(
-          bottom: -2,
-          right: 12,
           child: Container(
             padding: const EdgeInsets.all(10.0),
             decoration: BoxDecoration(
@@ -63,6 +64,7 @@ class ChangeProfileHeader extends StatelessWidget {
               border: Border.all(
                   color: Theme.of(context).scaffoldBackgroundColor, width: 4),
             ),
+            child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
           ),
         ),
       ],
