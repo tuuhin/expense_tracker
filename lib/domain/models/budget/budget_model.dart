@@ -8,6 +8,7 @@ class BudgetModel with _$BudgetModel {
     required int id,
     required String title,
     String? desc,
+    double? amountLeft,
     required DateTime start,
     required DateTime end,
     required double amount,

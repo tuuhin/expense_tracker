@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../context/context.dart';
-import '../../../../utils/app_images.dart';
-import '../../../widgets/loading/list_loading_shimmer.dart';
-import '../../../widgets/widgets.dart';
-import '../routes.dart';
 import './budgets.dart';
+import '../../../widgets/widgets.dart';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
 
 class ShowBudget extends StatefulWidget {
   const ShowBudget({Key? key}) : super(key: key);
@@ -16,17 +15,16 @@ class ShowBudget extends StatefulWidget {
 }
 
 class _ShowBudgetState extends State<ShowBudget> {
-  late BudgetCubit _budgetCubit;
-
-  void _addShowBudget() =>
-      Navigator.of(context).push(appRouteBuilder(const CreateBudget()));
+  late ScrollController _controller;
 
   @override
   void initState() {
     super.initState();
-    _budgetCubit = BlocProvider.of<BudgetCubit>(context);
-    _budgetCubit.getBudgetInfo();
+    _controller = ScrollController();
+    context.read<BudgetCubit>().getBudgetInfo();
   }
+
+  void _addShowBudget() => context.push('/create-budget');
 
   Future<void> _refreshData() async {
     showDialog(
@@ -39,7 +37,7 @@ class _ShowBudgetState extends State<ShowBudget> {
               onPressed: Navigator.of(context).pop,
               child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () async => await context
+            onPressed: () => context
                 .read<BudgetCubit>()
                 .getBudgetInfo()
                 .then(Navigator.of(context).pop),
@@ -51,67 +49,75 @@ class _ShowBudgetState extends State<ShowBudget> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(title: const Text('Budgets')),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              sliver: SliverToBoxAdapter(
-                child: Text(
-                    'A budget hepls you to track the expenses ,it mainly acts as a limit that u cannot cross.',
-                    style: Theme.of(context).textTheme.caption),
-              ),
+      appBar: AppBar(title: const Text('Your Budgets')),
+      extendBody: true,
+      body: BlocListener<UiEventCubit<BudgetModel>, UiEventState<BudgetModel>>(
+        bloc: context.read<BudgetCubit>().uievent,
+        listener: (context, state) => state.whenOrNull(
+          showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message))),
+          showDialog: (message, content, data) => showDialog(
+            context: context,
+            builder: (context) =>
+                UiEventDialog(title: message, content: content),
+          ),
+        ),
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          child: Scrollbar(
+            controller: _controller,
+            child: CustomScrollView(
+              controller: _controller,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  sliver: SliverToBoxAdapter(
+                    child: Text(
+                      'A budget hepls you to track the expenses ,it mainly acts as a limit that you cannot cross.',
+                      style: Theme.of(context).textTheme.bodyText2,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.all(8.0),
+                  sliver: BlocConsumer<BudgetCubit, BudgetState>(
+                    listener: (context, state) => state.whenOrNull(
+                      error: (_, message) => ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(message))),
+                      noData: (message) => ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(message))),
+                      errorWithData: (_, message, __) =>
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(SnackBar(content: Text(message))),
+                    ),
+                    builder: (context, state) => state.when(
+                      loading: () => const LoadingShimmer(),
+                      data: (data, message) => Budgets(models: data),
+                      error: (error, message) => const SliverFillRemaining(
+                          child: Center(child: Text('error'))),
+                      noData: (message) =>
+                          SliverFillRemaining(child: NoDataWidget.budget()),
+                      errorWithData: (error, message, data) =>
+                          Budgets(models: data),
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                    child: SizedBox(height: kTextTabBarHeight + 10))
+              ],
             ),
-            SliverPadding(
-              padding: const EdgeInsets.all(8.0),
-              sliver: BlocConsumer<BudgetCubit, BudgetState>(
-                buildWhen: (previous, current) => previous != current,
-                listenWhen: (previous, current) => current is BudgetLoadFailed,
-                listener: (context, state) {
-                  if (state is BudgetLoadFailed && state.data != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.errMessage)),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is BudgetLoadSuccess) {
-                    if (state.data.isNotEmpty) {
-                      return Budgets(models: state.data);
-                    }
-                    return SliverFillRemaining(
-                      child: Center(
-                        child: EmptyList(
-                          title: 'Oh! no I have no imcomes',
-                          subtitle:
-                              'You should definitly start earning some money',
-                          image: noMoneyImage,
-                        ),
-                      ),
-                    );
-                  }
-                  if (state is BudgetLoadFailed) {
-                    if (state.data != null) {
-                      return Budgets(models: state.data!);
-                    }
-                    return SliverFillRemaining(
-                      child: Container(
-                          height: 200,
-                          color: Colors.red,
-                          child: Text("ERROR OCCURED ")),
-                    );
-                  } else {
-                    return const ListLoadingShimmer();
-                  }
-                },
-              ),
-            ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(

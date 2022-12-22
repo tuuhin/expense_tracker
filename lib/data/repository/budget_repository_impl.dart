@@ -127,4 +127,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
       return Resource.error(err: e, errorMessage: "Unknown error occured");
     }
   }
+
+  @override
+  List<BudgetModel> cachedBudget() =>
+      cache.getBudget().map((e) => BudgetDto.fromEntity(e).toModel()).toList();
 }

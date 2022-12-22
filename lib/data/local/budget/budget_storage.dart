@@ -1,7 +1,6 @@
-import 'package:expense_tracker/data/dto/budget/budget_dto.dart';
-import 'package:expense_tracker/data/entity/entity.dart';
-import 'package:expense_tracker/domain/models/budget/budget_model.dart';
 import 'package:hive/hive.dart';
+
+import '../../entity/entity.dart';
 
 class BudgetStorage {
   static Box<BudgetEntity>? budget;
@@ -10,26 +9,22 @@ class BudgetStorage {
     budget = await Hive.openBox<BudgetEntity>('budget');
   }
 
-  Future<void> addBudget(BudgetModel budgetModel) async => await budget!.add(
-        BudgetDto.fromModel(budgetModel).toEntity(),
-      );
+  Future<void> addBudget(BudgetEntity entity) async =>
+      await budget!.put(entity.id, entity);
 
-  Future<void> addBudgets(List<BudgetModel> budgetModels) async =>
-      await budget!.addAll(
-        budgetModels.map(
-          (BudgetModel model) => BudgetDto.fromModel(model).toEntity(),
-        ),
-      );
+  Future<void> addBudgets(List<BudgetEntity> entites) async => await budget!
+      .putAll(entites.asMap().map((key, value) => MapEntry(value.id, value)));
 
-  static List<BudgetModel> getBudget() => budget!.values
-      .map((BudgetEntity e) => BudgetDto.fromEntity(e).toModel())
-      .toList();
+  Iterable<BudgetEntity> getBudget() => budget!.values.toList()
+    ..sort((e1, e2) => e2.issedAt.compareTo(e1.issedAt));
 
-  Future<void> deleteBudget(BudgetModel budgetModel) async {
-    int index =
-        getBudget().indexWhere((element) => element.id == budgetModel.id);
-    await budget!.deleteAt(index);
-  }
+  BudgetEntity? getBudgetById(BudgetEntity entity) => budget?.get(entity.id);
+
+  Future<void> updateBudget(BudgetEntity entity) async =>
+      await budget?.put(entity.id, entity);
+
+  Future<void> deleteBudget(BudgetEntity entity) async =>
+      await budget!.delete(entity.id);
 
   Future<void> deleteAllBudget() async => await budget!.clear();
 }

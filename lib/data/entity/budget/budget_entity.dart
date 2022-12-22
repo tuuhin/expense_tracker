@@ -30,10 +30,14 @@ class BudgetEntity extends HiveObject {
   @HiveField(8)
   final bool hasExpired;
 
+  @HiveField(9)
+  final double? amountLeft;
+
   BudgetEntity({
     required this.id,
     required this.title,
     this.desc,
+    this.amountLeft,
     required this.statedFrom,
     required this.tillDate,
     required this.amount,

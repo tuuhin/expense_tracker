@@ -1,23 +1,24 @@
 part of 'budget_cubit.dart';
 
-@immutable
-abstract class BudgetState {}
+@freezed
+class BudgetState with _$BudgetState {
+  factory BudgetState.loading() = _Loading;
 
-class BudgetLoad extends BudgetState {}
+  factory BudgetState.data({
+    required List<BudgetModel> data,
+    String? message,
+  }) = _Data;
 
-class BudgetLoadSuccess extends BudgetState {
-  final List<BudgetModel> data;
-  final String? message;
-  BudgetLoadSuccess({required this.data, this.message});
-}
+  factory BudgetState.error({
+    required Object error,
+    required String message,
+  }) = _Error;
 
-class BudgetLoadFailed extends BudgetState {
-  final String errMessage;
-  final StackTrace? stackTrace;
-  final List<BudgetModel>? data;
-  BudgetLoadFailed({
-    required this.errMessage,
-    this.stackTrace,
-    this.data,
-  });
+  factory BudgetState.errorWithData({
+    required Object error,
+    required String message,
+    required List<BudgetModel> data,
+  }) = _ErrorWithData;
+
+  factory BudgetState.noData({required String message}) = _NoData;
 }

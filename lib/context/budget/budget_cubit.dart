@@ -1,89 +1,115 @@
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../data/dto/details_dto.dart';
-import '../../data/local/budget/budget_storage.dart';
-import '../../data/remote/budget_api.dart';
-import '../../domain/models/models.dart';
-import '../../main.dart';
 import '../../utils/resource.dart';
+import '../../context/context.dart';
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
 part 'budget_state.dart';
+part 'budget_cubit.freezed.dart';
 
 class BudgetCubit extends Cubit<BudgetState> {
-  BudgetCubit() : super(BudgetLoad());
+  BudgetCubit(this._repo) : super(BudgetState.loading());
 
-  final BudgetStorage _storage = BudgetStorage();
+  final BudgetRepository _repo;
 
-  final BudgetApi _api = BudgetApi();
-  final GlobalKey<SliverAnimatedListState> _listState =
+  final GlobalKey<SliverAnimatedListState> _key =
       GlobalKey<SliverAnimatedListState>();
 
-  List<BudgetModel> _budgets = BudgetStorage.getBudget();
+  final UiEventCubit<BudgetModel> _uiEvent = UiEventCubit<BudgetModel>();
 
-  List<BudgetModel> get budgets => _budgets;
+  GlobalKey<SliverAnimatedListState> get key => _key;
 
-  GlobalKey<SliverAnimatedListState> get key => _listState;
+  UiEventCubit<BudgetModel> get uievent => _uiEvent;
 
-  Future<Resource<BudgetModel?>> createBudget(String title, double amount,
-      {required DateTime from, required DateTime to, String? desc}) async {
-    try {
-      BudgetModel newBudget = await _api.createBudget(title, amount,
-          from: from, to: to, desc: desc);
-      // adding to the database
-      _storage.addBudget(newBudget);
-      // Adding to the referneces
-      _budgets = [newBudget, ..._budgets];
+  List<BudgetModel> cachedBudget() => _repo.cachedBudget();
 
-      _listState.currentState?.insertItem(0);
+  Future<void> addBudget(CreateBudgetModel budget) async {
+    Resource<BudgetModel?> newBudget = await _repo.createBudget(budget);
 
-      return Resource.data(data: newBudget);
-    } on DioError catch (dio) {
-      return Resource.error(
-          err: dio,
-          errorMessage: dio.response?.statusMessage ??
-              "Something related to dio occured ");
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-      return Resource.error(err: e, errorMessage: "Something unusal occured ");
-    }
+    newBudget.whenOrNull(
+        data: (data, message) {
+          if (state is! _Data && data != null) {
+            _uiEvent.showDialog("Refresh",
+                content:
+                    "Your budget has been created all you need to do id to refresh");
+            return;
+          }
+          List<BudgetModel> newSet = (state as _Data).data.toList()..add(data!);
+
+          emit(BudgetState.data(data: newSet, message: "New budget added"));
+          _key.currentState?.insertItem(newSet.length - 1);
+          _uiEvent.showSnackBar(
+              "Your budget titled ${budget.title} has been created.");
+        },
+        error: (err, errorMessage, data) => _uiEvent
+            .showDialog("Failed to add your budget", content: errorMessage));
+  }
+
+  Future<void> deleteBudget(BudgetModel budget,
+      {required Widget widget}) async {
+    Resource<void> res = await _repo.deleteBudget(budget);
+    res.whenOrNull(
+      data: (data, message) {
+        if (state is! _Data) {
+          _uiEvent.showSnackBar(
+              "Your budget titled ${budget.title} has been deleted refresh to see changes");
+          return;
+        }
+
+        int index = (state as _Data).data.indexOf(budget);
+        _key.currentState?.removeItem(
+          index,
+          (context, animation) =>
+              SizeTransition(sizeFactor: animation, child: widget),
+        );
+        List<BudgetModel> newData = (state as _Data).data.toList()
+          ..remove(budget);
+
+        emit(BudgetState.data(data: newData));
+        _uiEvent.showSnackBar(
+            "Your budget titled ${budget.title} has been deleted");
+      },
+      error: (err, errorMessage, data) => _uiEvent.showDialog(
+          "Failed to delete budget titled : ${budget.title}",
+          content: errorMessage),
+    );
+  }
+
+  Future<void> updateBudget(BudgetModel budget) async {
+    Resource<BudgetModel?> update = await _repo.updateBudget(budget);
+
+    update.whenOrNull(
+      data: (data, message) => _uiEvent
+          .showSnackBar(message ?? "Updated budget: ${data?.title ?? ''}"),
+      error: (err, errorMessage, data) => _uiEvent
+          .showDialog("Cannot update your budget", content: errorMessage),
+    );
   }
 
   Future<void> getBudgetInfo() async {
-    emit(BudgetLoad());
-    try {
-      List<BudgetModel> refreshedBudget = await _api.getBudget();
+    emit(BudgetState.loading());
 
-      logger.info('Invalidating cache for budget ');
-      await _storage.deleteAllBudget();
-      await _storage.addBudgets(refreshedBudget);
+    Resource<List<BudgetModel>> budgets = await _repo.getBudget();
 
-      _budgets = BudgetStorage.getBudget();
-      emit(BudgetLoadSuccess(data: _budgets));
-    } on DioError catch (err) {
-      emit(
-        BudgetLoadFailed(
-          errMessage: ErrorDetialsDto.fromJson(
-                      (err.response?.data as Map<String, dynamic>))
-                  .details ??
-              "Something related to dio occered ",
-          data: _budgets,
-        ),
-      );
-    } catch (e, stk) {
-      debugPrintStack(stackTrace: stk);
-
-      emit(BudgetLoadFailed(
-          errMessage: "Something unusual occured loading from cache ",
-          data: _budgets));
-    } finally {
-      for (final element in _budgets) {
-        await Future.delayed(
-          const Duration(milliseconds: 100),
-          () => _listState.currentState?.insertItem(_budgets.indexOf(element)),
-        );
-      }
-    }
+    budgets.whenOrNull(
+      data: (data, message) async {
+        if (data.isEmpty) {
+          emit(BudgetState.noData(message: "No data"));
+          return;
+        }
+        emit(BudgetState.data(data: data, message: message));
+      },
+      error: (err, errorMessage, data) {
+        if (data != null && data.isNotEmpty) {
+          emit(BudgetState.errorWithData(
+              error: err, message: errorMessage, data: data));
+          return;
+        }
+        emit(BudgetState.error(error: err, message: errorMessage));
+      },
+    );
   }
 }

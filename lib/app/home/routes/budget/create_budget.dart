@@ -1,24 +1,21 @@
-import 'package:expense_tracker/context/budget/budget_cubit.dart';
-import 'package:expense_tracker/utils/date_formaters.dart';
-import 'package:expense_tracker/utils/resource.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-const String budget =
-    'A budget helps create financial stability. By tracking expenses and following a plan,a budget puts a person on stronger financial footing for both the day-to-day and the long term.';
-
-const String budgetWarning =
-    'A budget acts as a long term promise , a lifespan of a less than 5 days  is very low.';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
+import '../../../../utils/date_formaters.dart';
 
 class CreateBudget extends StatefulWidget {
-  const CreateBudget({Key? key}) : super(key: key);
+  final BudgetModel? budget;
+  final bool isUpdate;
+  const CreateBudget({super.key, this.budget, this.isUpdate = false})
+      : assert(isUpdate ? budget != null : true);
 
   @override
   State<CreateBudget> createState() => _CreateBudgetState();
 }
 
 class _CreateBudgetState extends State<CreateBudget> {
-  late BudgetCubit _budgetCubit;
   late TextEditingController _title;
   late TextEditingController _desc;
   late TextEditingController _amount;
@@ -31,12 +28,25 @@ class _CreateBudgetState extends State<CreateBudget> {
   @override
   void initState() {
     super.initState();
-    _budgetCubit = BlocProvider.of<BudgetCubit>(context);
+
     _title = TextEditingController();
     _desc = TextEditingController();
     _amount = TextEditingController();
     _from = DateTime.now();
     _to = DateTime.now().add(const Duration(days: 10));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (widget.isUpdate && widget.budget != null) {
+      _title.text = widget.budget!.title;
+      _desc.text = widget.budget?.desc ?? '';
+      _amount.text = widget.budget!.amount.toString();
+      _from = widget.budget!.start;
+      _to = widget.budget!.end;
+    }
   }
 
   @override
@@ -47,24 +57,33 @@ class _CreateBudgetState extends State<CreateBudget> {
     super.dispose();
   }
 
+  void _updateBudget() {
+    if (!_forms.currentState!.validate()) return;
+
+    context.read<BudgetCubit>().updateBudget(
+          widget.budget!.copyWith(
+            title: _title.text,
+            desc: _desc.text.isEmpty ? null : _desc.text,
+            start: _from,
+            end: _to,
+            amount: double.parse(_amount.text),
+          ),
+        );
+  }
+
   void _createBudget() async {
     if (_forms.currentState!.validate()) {
       _isPopAllowed = false;
 
-      Resource newBudget = await _budgetCubit.createBudget(
-          _title.text, double.parse(_amount.text),
-          from: _from, to: _to, desc: _desc.text.isEmpty ? null : _desc.text);
-
-      newBudget.when(loading: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Creating new Budget ${_title.text}')));
-      }, data: (data, message) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(message ?? 'Successfully created your budget')));
-      }, error: (err, message, data) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(message)));
-      });
+      context.read<BudgetCubit>().addBudget(
+            CreateBudgetModel(
+              title: _title.text,
+              desc: _desc.text.isEmpty ? null : _desc.text,
+              start: _from,
+              end: _to,
+              amount: double.parse(_amount.text),
+            ),
+          );
 
       _isPopAllowed = true;
     }
@@ -75,9 +94,10 @@ class _CreateBudgetState extends State<CreateBudget> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          content: Text('Creating your budget please wait '),
+          content: const Text('Creating your budget please wait '),
           actions: [
-            TextButton(onPressed: Navigator.of(context).pop, child: Text('OK'))
+            TextButton(
+                onPressed: Navigator.of(context).pop, child: const Text('OK'))
           ],
         ),
       );
@@ -99,15 +119,19 @@ class _CreateBudgetState extends State<CreateBudget> {
     DateTime? toDateTime = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 10)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 100)),
+      firstDate: DateTime.now().subtract(const Duration(days: 200)),
+      lastDate: DateTime.now().add(const Duration(days: 200)),
     );
     if (toDateTime == null) return;
     if (toDateTime.compareTo(DateTime.now().add(const Duration(days: 5))) ==
         -1) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text(budgetWarning)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'A budget acts as a long term promise , a lifespan of a less than 5 days  is very low.'),
+          ),
+        );
       }
       return;
     }
@@ -118,9 +142,13 @@ class _CreateBudgetState extends State<CreateBudget> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Budget')),
+      appBar: AppBar(
+        title: widget.isUpdate
+            ? const Text('Update Budget')
+            : const Text('Create Budget'),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(8.0),
         child: Form(
           onWillPop: _allowPop,
           key: _forms,
@@ -133,64 +161,75 @@ class _CreateBudgetState extends State<CreateBudget> {
                         ? 'Minimum 5 chars are reqired'
                         : null,
                 controller: _title,
-                keyboardType: TextInputType.text,
+                maxLength: 50,
+                keyboardType: TextInputType.name,
                 decoration: const InputDecoration(
                     helperText: 'Maximum of 50 lines allowed',
                     hintText: 'Title'),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _desc,
+                maxLength: 250,
                 maxLines: 3,
+                keyboardType: TextInputType.text,
                 decoration: const InputDecoration(
                     helperText: 'Maximum 250 words allowed',
                     hintText: 'Description'),
               ),
-              ListTile(
-                trailing: const Icon(Icons.date_range),
-                onTap: _pickFromDate,
-                leading: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('From', style: TextStyle(color: Colors.white)),
-                  ),
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      trailing: const Text("FROM",
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      onTap: _pickFromDate,
+                      leading: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child:
+                            const Icon(Icons.date_range, color: Colors.white),
+                      ),
+                      title: Text(toSimpleDate(_from)),
+                    ),
+                    const Divider(height: 4),
+                    ListTile(
+                      onTap: _pickToDate,
+                      trailing: const Text("TO",
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child:
+                            const Icon(Icons.date_range, color: Colors.white),
+                      ),
+                      title: Text(toSimpleDate(_to)),
+                    ),
+                  ],
                 ),
-                title: Text(toSimpleDate(_from)),
-              ),
-              ListTile(
-                onTap: _pickToDate,
-                trailing: const Icon(Icons.date_range),
-                leading: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('To', style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-                title: Text(toSimpleDate(_to)),
               ),
               TextFormField(
                 validator: (value) => value != null && value.isEmpty
-                    ? 'Please provide a value'
+                    ? 'Amount should be greater than 0.0'
                     : value != null && double.tryParse(value) == null
-                        ? 'Please provide a amount not a cunch of characters'
+                        ? 'Please provide a amount not a bunch of characters'
                         : null,
                 controller: _amount,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(hintText: 'Amount'),
               ),
               const Divider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(budget, style: Theme.of(context).textTheme.caption),
-              ),
             ],
           ),
         ),
@@ -202,8 +241,10 @@ class _CreateBudgetState extends State<CreateBudget> {
             style: ElevatedButton.styleFrom(
                 fixedSize: Size(size.width, 50),
                 backgroundColor: Theme.of(context).colorScheme.secondary),
-            onPressed: _createBudget,
-            child: const Text('Add Budget'),
+            onPressed: widget.isUpdate ? _updateBudget : _createBudget,
+            child: widget.isUpdate
+                ? const Text('Update Budget')
+                : const Text('Create Budget'),
           ),
         ),
       ),

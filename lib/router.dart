@@ -1,10 +1,11 @@
-import 'package:expense_tracker/app/app.dart';
 import 'package:go_router/go_router.dart';
 
 import '../domain/models/models.dart';
 import '../app/home/routes/routes.dart';
+import '../app/app.dart';
 
 final router = GoRouter(
+  initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const App()),
     GoRoute(
@@ -17,10 +18,10 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/create-income',
-      builder: (context, state) => CreateIncome(),
+      builder: (context, state) => const CreateIncome(),
     ),
     GoRoute(
-      path: '/update-income',
+      path: '/update-income/:income_id',
       builder: (context, state) =>
           CreateIncome(isUpdate: true, income: state.extra as IncomeModel),
     ),
@@ -34,10 +35,10 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/create-expense',
-      builder: (context, state) => CreateExpense(),
+      builder: (context, state) => const CreateExpense(),
     ),
     GoRoute(
-      path: '/update-expense',
+      path: '/update-expense/:expense_id',
       builder: (context, state) =>
           CreateExpense(expense: state.extra as ExpenseModel, isUpdate: true),
     ),
@@ -54,7 +55,7 @@ final router = GoRouter(
       builder: (context, state) => const CreateBudget(),
     ),
     GoRoute(
-      path: '/update-budget',
+      path: '/update-budget/:budget_id',
       builder: (context, state) =>
           CreateBudget(budget: state.extra as BudgetModel, isUpdate: true),
     ),
@@ -67,7 +68,7 @@ final router = GoRouter(
       builder: (context, state) => const CreateGoals(),
     ),
     GoRoute(
-      path: '/update-goals',
+      path: '/update-goals/:goal_id',
       builder: (context, state) =>
           CreateGoals(isUpdate: true, goal: state.extra as GoalsModel),
     ),
@@ -77,7 +78,8 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/change-profile',
-      builder: (context, state) => const ChangeUserProfile(),
+      builder: (context, state) =>
+          ChangeUserProfile(profile: state.extra as UserProfileModel?),
     )
   ],
 );

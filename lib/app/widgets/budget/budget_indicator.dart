@@ -1,16 +1,13 @@
+import 'package:expense_tracker/main.dart';
 import 'package:flutter/material.dart';
 
+import '../../../domain/models/models.dart';
 import '../widgets.dart';
 
 class BudgetIndicator extends StatefulWidget {
-  final double total;
-  final double used;
+  final BudgetModel budget;
 
-  const BudgetIndicator({
-    Key? key,
-    required this.total,
-    required this.used,
-  }) : super(key: key);
+  const BudgetIndicator({Key? key, required this.budget}) : super(key: key);
 
   @override
   State<BudgetIndicator> createState() => _BudgetIndicatorState();
@@ -18,35 +15,47 @@ class BudgetIndicator extends StatefulWidget {
 
 class _BudgetIndicatorState extends State<BudgetIndicator>
     with SingleTickerProviderStateMixin {
-  late AnimationController controller;
+  late AnimationController _controller;
+
   late Animation<double> _amount;
   late Animation<double> _graph;
   late Animation<double> _scale;
 
-  double get _chartFillAngle => widget.used / widget.total * 360;
-
-  double get _amountPercentage => (widget.used / widget.total) * 100;
+  double get ratio => widget.budget.amountUsed / widget.budget.amount;
 
   @override
   void initState() {
     super.initState();
 
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    _amount = Tween<double>(begin: 0, end: _amountPercentage).animate(
-      CurvedAnimation(parent: controller, curve: Curves.decelerate),
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    logger.fine(ratio);
+
+    _amount = Tween<double>(begin: 0, end: ratio * 100).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.decelerate),
     );
     _scale = Tween<double>(begin: 0.0, end: 1).animate(
-      CurvedAnimation(parent: controller, curve: Curves.bounceOut),
+      CurvedAnimation(parent: _controller, curve: Curves.bounceOut),
     );
 
-    _graph = Tween<double>(begin: 0.0, end: _chartFillAngle).animate(
-        CurvedAnimation(
-            parent: controller,
-            curve: const Interval(0.4, 1, curve: Curves.easeIn)));
-    controller.forward();
+    _graph = Tween<double>(begin: 0.0, end: ratio * 360).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.4, 1, curve: Curves.easeIn),
+      ),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -58,18 +67,23 @@ class _BudgetIndicatorState extends State<BudgetIndicator>
         fit: StackFit.loose,
         children: [
           AnimatedBuilder(
-            animation: controller,
+            animation: _controller,
             builder: (context, _) => Transform.scale(
               scale: _scale.value,
-              child: Text("${_amount.value.toStringAsFixed(1)}%",
-                  style: Theme.of(context).textTheme.headline6),
+              child: Text(
+                "${(_amount.value).toStringAsFixed(1)}%",
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle1
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           AnimatedBuilder(
-            animation: controller,
+            animation: _controller,
             builder: (context, _) => CustomPaint(
               size: Size.infinite,
-              painter: BudgetChart(
+              foregroundPainter: BudgetChart(
                 trackWidth: 12,
                 width: 12,
                 startAngle: 0,
