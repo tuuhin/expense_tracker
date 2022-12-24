@@ -1,5 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../domain/models/models.dart';
 import '../../../utils/date_formaters.dart';
@@ -7,10 +7,7 @@ import '../widgets.dart';
 
 class GoalsCard extends StatelessWidget {
   final GoalsModel goal;
-  const GoalsCard({
-    Key? key,
-    required this.goal,
-  }) : super(key: key);
+  const GoalsCard({Key? key, required this.goal}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,40 +33,71 @@ class GoalsCard extends StatelessWidget {
             ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (goal.imageUrl != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: CachedNetworkImage(
-                        imageUrl: goal.imageUrl!,
-                        height: 150,
-                        width: 150,
-                        fit: BoxFit.cover),
-                  ),
-                const VerticalDivider(),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text.rich(
-                          TextSpan(
-                            text: "Price: ",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            children: [TextSpan(text: goal.price.toString())],
-                          ),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (goal.imageUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                          imageUrl: goal.imageUrl!,
+                          height: 150,
+                          width: 150,
+                          fit: BoxFit.cover),
+                    )
+                  else
+                    Container(
+                      height: 180,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.black12,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'No Image',
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black12),
                         ),
                       ),
-                      Container(
-                        height: 120,
-                        color: Colors.red,
-                      )
-                    ],
+                    ),
+                  const VerticalDivider(),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        GoalCompletionIndicator(goal: goal),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              color: Colors.black12,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all()),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text.rich(TextSpan(
+                                  text: "Collected Amount: ",
+                                  children: [
+                                    TextSpan(text: '${goal.collected}')
+                                  ])),
+                              const Divider(),
+                              Text.rich(TextSpan(
+                                  text: "Total Price: ",
+                                  children: [TextSpan(text: '${goal.price}')]))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const Divider(),

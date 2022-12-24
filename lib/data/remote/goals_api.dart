@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../dto/dto.dart';
-import 'remote.dart';
+import './remote.dart';
 
 class GoalsClient extends PlansClient {
   Future<List<GoalsDto>> getGoals() async {
@@ -9,9 +9,9 @@ class GoalsClient extends PlansClient {
     return (resp.data as List).map((e) => GoalsDto.fromJson(e)).toList();
   }
 
-  Future<GoalsDto> addGoal(GoalsDto goal) async {
+  Future<GoalsDto> addGoal(CreateGoalDto goal) async {
     Response resp = await dio.post(
-      '/goals',
+      '/create-goal',
       data: FormData.fromMap(
         {
           ...goal.toJson(),
@@ -39,7 +39,6 @@ class GoalsClient extends PlansClient {
     return GoalsDto.fromJson(resp.data);
   }
 
-  Future deleteGoal(GoalsDto goal) async {
-    await dio.delete('/goals/${goal.id}');
-  }
+  Future<void> deleteGoal(GoalsDto goal) async =>
+      await dio.delete('/goals/${goal.id}');
 }

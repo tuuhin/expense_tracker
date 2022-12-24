@@ -48,6 +48,8 @@ export './notifications/notification_card.dart';
 
 export './goals/goal_card_head_tile.dart';
 export './goals/goals_card.dart';
+export './goals/goal_completion_indicator.dart';
+export './goals/goal_chart.dart';
 
 export './loading_shimmer.dart';
 export './no_data_widget.dart';
@@ -55,3 +57,4 @@ export './paginator_extra.dart';
 export './ui_event_dialog_error.dart';
 export './base_error.dart';
 export 'user/image_picker_modal.dart';
+export './drop_image_shadow.dart';

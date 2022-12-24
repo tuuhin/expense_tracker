@@ -4,11 +4,21 @@ part of 'goals_bloc.dart';
 class GoalsState with _$GoalsState {
   factory GoalsState.loading() = _Loading;
 
-  factory GoalsState.success(
-      {required List<GoalsModel> data, String? message}) = _Success;
+  factory GoalsState.data({
+    required List<GoalsModel> data,
+    String? message,
+  }) = _Data;
 
-  factory GoalsState.error({required String message, List<GoalsModel>? data}) =
-      _Error;
+  factory GoalsState.error({
+    required Object error,
+    required String message,
+  }) = _Error;
 
-  factory GoalsState.blank() = _Blank;
+  factory GoalsState.errorWithData({
+    required Object error,
+    required String message,
+    required List<GoalsModel> data,
+  }) = _ErrorWithData;
+
+  factory GoalsState.noData({required String message}) = _NoData;
 }

@@ -6,6 +6,12 @@ class GoalsEvent with _$GoalsEvent {
 
   factory GoalsEvent.refresh() = _Refresh;
 
-  factory GoalsEvent.addGoal() = _AddGoal;
-  factory GoalsEvent.deleteGoal() = _DeleteGoal;
+  factory GoalsEvent.addGoal(CreateGoalModel goal) = _AddGoal;
+
+  factory GoalsEvent.deleteGoal(
+    GoalsModel goal, {
+    required Widget widget,
+  }) = _DeleteGoal;
+
+  factory GoalsEvent.updateGoal(GoalsModel goal) = _UpdateGoal;
 }

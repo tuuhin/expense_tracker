@@ -9,14 +9,20 @@ class GoalsDao {
     _goals = await Hive.openBox<GoalsEntity>('goals');
   }
 
-  Future<void> addGoal(GoalsEntity goal) async => await _goals?.add(goal);
+  Future<void> addGoal(GoalsEntity goal) async =>
+      await _goals!.put(goal.id, goal);
 
-  Future<void> addGoalsList(List<GoalsEntity> goals) async =>
-      await _goals!.addAll(goals);
+  Future<void> addGoals(List<GoalsEntity> goals) async => await _goals!
+      .putAll(goals.asMap().map((key, goal) => MapEntry(goal.id, goal)));
 
-  List<GoalsEntity> getGoals() => _goals!.values.toList();
+  Iterable<GoalsEntity> getGoals() => _goals!.values;
 
-  Future<void> deleteGoal(GoalsEntity goal) async => _goals!.deleteAt(goal.id);
+  Future<void> updateGoal(GoalsEntity goal) async =>
+      await _goals!.put(goal.id, goal);
+
+  GoalsEntity? getGoalById(GoalsEntity goal) => _goals!.get(goal.id);
+
+  Future<void> deleteGoal(GoalsEntity goal) async => _goals!.delete(goal.id);
 
   Future<void> deleteAll() async => await _goals!.clear();
 }

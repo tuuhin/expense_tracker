@@ -19,6 +19,7 @@ class GoalsDto {
   DateTime createdAt;
   @JsonKey(name: "updated_at")
   DateTime updatedAt;
+  @JsonKey(name: "price")
   double price;
   @JsonKey(name: "image")
   String? imageUrl;
@@ -39,6 +40,8 @@ class GoalsDto {
 
   factory GoalsDto.fromJson(Map<String, dynamic> json) =>
       _$GoalsDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GoalsDtoToJson(this);
 
   factory GoalsDto.fromModel(GoalsModel model) => GoalsDto(
         id: model.id,
@@ -63,8 +66,6 @@ class GoalsDto {
         accomplished: entity.accomplished,
         imageUrl: entity.image,
       );
-
-  Map<String, dynamic> toJson() => _$GoalsDtoToJson(this);
 
   GoalsModel toModel() => GoalsModel(
         id: id,

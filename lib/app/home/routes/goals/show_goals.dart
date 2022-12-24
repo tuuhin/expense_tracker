@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../context/goals/goals_bloc.dart';
-import '../routes.dart';
+import '../../../../context/context.dart';
+import '../../../../domain/models/models.dart';
+import '../../../widgets/widgets.dart';
 import 'goals_list.dart';
 
 class ShowGoals extends StatefulWidget {
@@ -19,11 +21,6 @@ class _ShowGoalsState extends State<ShowGoals> {
   void initState() {
     super.initState();
     _controller = ScrollController();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
     context.read<GoalsBloc>().fetchGoals();
   }
 
@@ -33,33 +30,68 @@ class _ShowGoalsState extends State<ShowGoals> {
     super.dispose();
   }
 
-  void _addGoal() =>
-      Navigator.of(context).push(appRouteBuilder(const CreateGoals()));
+  Future<void> _onRefresh() async => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Refresh Incomes'),
+          content: const Text('You can refresh your incomes'),
+          actions: [
+            TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text('cancel')),
+            ElevatedButton(
+              onPressed: () => context
+                  .read<GoalsBloc>()
+                  .refreshGoals()
+                  .then(Navigator.of(context).pop),
+              child: const Text('Refresh'),
+            )
+          ],
+        ),
+      );
+
+  void _addGoal() => context.push('/create-goals');
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Scrollbar(
-        controller: _controller,
-        child: CustomScrollView(
-          controller: _controller,
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              title: const Text('Goals'),
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text('Goals'),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      ),
+      body: BlocListener<UiEventCubit<GoalsModel>, UiEventState<GoalsModel>>(
+        bloc: context.read<GoalsBloc>().uiEvent,
+        listener: (context, state) => state.whenOrNull(
+          showSnackBar: (message, data) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message))),
+          showDialog: (message, content, data) => showDialog(
+              context: context,
+              builder: (context) =>
+                  UiEventDialog(title: message, content: content)),
+        ),
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: Scrollbar(
+            controller: _controller,
+            child: CustomScrollView(
+              controller: _controller,
+              slivers: [
+                BlocConsumer<GoalsBloc, GoalsState>(
+                  listener: (context, state) => state.whenOrNull(),
+                  builder: (context, state) => state.when(
+                    loading: () => const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    data: (data, message) => GoalsList(goals: data),
+                    error: (message, data) => const SliverFillRemaining(),
+                    noData: (message) => const SliverFillRemaining(),
+                    errorWithData: (error, message, data) =>
+                        GoalsList(goals: data),
+                  ),
+                )
+              ],
             ),
-            BlocBuilder<GoalsBloc, GoalsState>(
-              builder: (context, state) => state.when(
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                success: (data, message) => GoalsList(goals: data),
-                error: (message, data) => SliverFillRemaining(),
-                blank: () => SliverFillRemaining(),
-              ),
-            )
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(
