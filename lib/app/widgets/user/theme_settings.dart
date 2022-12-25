@@ -1,7 +1,8 @@
-import 'package:expense_tracker/context/context.dart';
-import 'package:expense_tracker/domain/enums/theme_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../context/context.dart';
+import '../../../data/local/storage.dart';
 
 class ThemeSettings extends StatefulWidget {
   const ThemeSettings({Key? key}) : super(key: key);
@@ -11,65 +12,67 @@ class ThemeSettings extends StatefulWidget {
 }
 
 class _ThemeSettingsState extends State<ThemeSettings> {
-  late ThemeCubit _themeCubit;
-  @override
-  void didChangeDependencies() {
-    _themeCubit = BlocProvider.of<ThemeCubit>(context, listen: true);
-    super.didChangeDependencies();
-  }
+  late ThemeCubit _theme;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              const ListTile(
-                minVerticalPadding: 0,
-                dense: true,
-                title: Text('Theme'),
-              ),
-              const Divider(),
-              RadioListTile<ThemeEnum>(
-                title: const Text('Light'),
-                value: ThemeEnum.light,
-                groupValue: _themeCubit.themeEnum,
-                dense: true,
-                onChanged: (ThemeEnum? mode) {
-                  if (mode != null) {
-                    _themeCubit.changeTheme(mode);
-                  }
-                },
-              ),
-              RadioListTile<ThemeEnum>(
-                dense: true,
-                title: const Text('Dark'),
-                value: ThemeEnum.dark,
-                groupValue: _themeCubit.themeEnum,
-                onChanged: (ThemeEnum? value) {
-                  if (value != null) {
-                    _themeCubit.changeTheme(value);
-                  }
-                },
-              ),
-              RadioListTile<ThemeEnum>(
-                dense: true,
-                title: const Text('System'),
-                value: ThemeEnum.system,
-                groupValue: _themeCubit.themeEnum,
-                onChanged: (ThemeEnum? value) {
-                  if (value != null) {
-                    _themeCubit.changeTheme(value);
-                  }
-                },
-              ),
-            ],
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _theme = context.read<ThemeCubit>();
+  }
+
+  void onChange(ThemeEnum? mode) => _theme.changeTheme(mode);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.all(4),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text(
+                      "Theme",
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const Divider(),
+                RadioListTile<ThemeEnum>(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('Light',
+                      style: Theme.of(context).textTheme.subtitle1),
+                  value: ThemeEnum.light,
+                  groupValue: _theme.themeEnum,
+                  dense: true,
+                  onChanged: onChange,
+                ),
+                RadioListTile<ThemeEnum>(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('Dark',
+                      style: Theme.of(context).textTheme.subtitle1),
+                  value: ThemeEnum.dark,
+                  groupValue: _theme.themeEnum,
+                  onChanged: onChange,
+                ),
+                RadioListTile<ThemeEnum>(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('System',
+                      style: Theme.of(context).textTheme.subtitle1),
+                  value: ThemeEnum.system,
+                  groupValue: _theme.themeEnum,
+                  onChanged: onChange,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
 }

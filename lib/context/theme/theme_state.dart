@@ -1,10 +1,8 @@
 part of 'theme_cubit.dart';
 
-@immutable
-abstract class ThemeState {}
-
-class ThemeLight extends ThemeState {}
-
-class ThemeDark extends ThemeState {}
-
-class ThemeSystem extends ThemeState {}
+@freezed
+class ThemeState with _$ThemeState {
+  factory ThemeState.light() = _Light;
+  factory ThemeState.dark() = _Dark;
+  factory ThemeState.system() = _System;
+}

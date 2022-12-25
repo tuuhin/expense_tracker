@@ -1,12 +1,12 @@
+import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:logging/logging.dart';
 
 import './context/context.dart';
-import './data/local/local_storage.dart';
 import './utils/palette.dart';
 
+import 'data/local/storage.dart';
 import 'providers.dart';
 import 'router.dart';
 
@@ -20,6 +20,7 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  await ThemePreferences.init();
   await dotenv.load(fileName: '.env');
   await LocalStorage().init();
 

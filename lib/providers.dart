@@ -82,7 +82,8 @@ class ProvidersWrapper extends StatelessWidget {
               create: (context) =>
                   ProfileCubit(context.read<ProfileRepository>()),
             ),
-            BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
+            BlocProvider<ThemeCubit>(
+                create: (context) => ThemeCubit(ThemePreferences())),
             BlocProvider<IncomeSourceCubit>(
                 create: (context) =>
                     IncomeSourceCubit(context.read<IncomeRepostiory>())),
