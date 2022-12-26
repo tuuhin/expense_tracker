@@ -22,11 +22,13 @@ export './budget/create_budget_dto.dart';
 
 export 'auth/tokens_dto.dart';
 
-export './user/user_base_overview_dto.dart';
+export 'user/base_overview_dto.dart';
 export './user/user_profile_dto.dart';
 export './user/change_password_dto.dart';
 
 export './details_dto.dart';
 
 export './notification/notification_dto.dart';
+
 export './goals/goals_dto.dart';
+export './goals/create_goal_dto.dart';

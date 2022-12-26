@@ -19,15 +19,17 @@ class _PlanningCardsState extends State<PlanningCards> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text('Planning',
-              style: Theme.of(context)
-                  .textTheme
-                  .headline6!
-                  .copyWith(fontWeight: FontWeight.w600)),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Planning',
+                style: Theme.of(context)
+                    .textTheme
+                    .headline6!
+                    .copyWith(fontWeight: FontWeight.w600)),
+          ),
         ),
-        const SizedBox(height: 4),
         SizedBox(
           height: size.height * .2,
           child: Row(
@@ -39,6 +41,7 @@ class _PlanningCardsState extends State<PlanningCards> {
                 child: Card(
                   child: InkWell(
                     onTap: _budgetPage,
+                    borderRadius: BorderRadius.circular(10),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -46,8 +49,13 @@ class _PlanningCardsState extends State<PlanningCards> {
                         Image.asset('assets/flaticons/credit-limit.png',
                             scale: 1.5),
                         const SizedBox(height: 10),
-                        Text('Budget',
-                            style: Theme.of(context).textTheme.subtitle1)
+                        Text(
+                          'Budget',
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        )
                       ],
                     ),
                   ),
@@ -59,6 +67,7 @@ class _PlanningCardsState extends State<PlanningCards> {
                 height: double.maxFinite,
                 child: Card(
                   child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
                     onTap: _goalPage,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -67,7 +76,10 @@ class _PlanningCardsState extends State<PlanningCards> {
                         Image.asset('assets/flaticons/target.png', scale: 1.5),
                         const SizedBox(height: 10),
                         Text('Goals',
-                            style: Theme.of(context).textTheme.subtitle1)
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                ?.copyWith(fontWeight: FontWeight.w600))
                       ],
                     ),
                   ),

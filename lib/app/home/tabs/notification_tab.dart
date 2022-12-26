@@ -1,4 +1,3 @@
-import 'package:expense_tracker/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -91,16 +90,21 @@ class _NotificationTabState extends State<NotificationTab> {
             ),
             BlocBuilder<NotificationBloc, NotificationState>(
               builder: (context, state) => state.when(
-                loading: () => const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator())),
+                loading: () => const LoadingShimmer(),
                 data: (data) => NotificationList(data: data),
-                error: (err, message) =>
-                    SliverToBoxAdapter(child: Text(message)),
+                error: (err, message) => NotificationsError(
+                  onRefresh: context.read<NotificationBloc>().refresh,
+                ),
                 loadmore: (data) => NotificationList(data: data),
                 errorLoadMore: (err, message, data) =>
                     NotificationList(data: data),
                 end: (message, data) => NotificationList(data: data),
-                noData: (message) => SliverToBoxAdapter(child: Text(message)),
+                noData: (message) => SliverNoDataWidget(
+                  image: Image.asset('assets/icons/notification.png'),
+                  text: 'No notification found',
+                  helper:
+                      'Seems its a new account, otherwise refresh to load your notifications',
+                ),
               ),
             ),
             BlocBuilder<NotificationBloc, NotificationState>(

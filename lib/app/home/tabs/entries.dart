@@ -93,8 +93,14 @@ class _EntriesTabState extends State<EntriesTab> {
             BlocConsumer<EntriesBloc, EntriesState>(
               listener: (context, state) => state.whenOrNull(),
               builder: (context, state) => state.when(
-                  noData: (message) =>
-                      SliverFillRemaining(child: NoDataWidget.entries()),
+                  noData: (message) => SliverNoDataWidget(
+                        image: Image.asset(
+                          'assets/flaticons/category.png',
+                        ),
+                        text: 'No entries found',
+                        helper:
+                            'Seems its a new account, otherwise refresh to load your enytries',
+                      ),
                   loading: () => const LoadingShimmer(),
                   data: (data) => EntriesList(data: data),
                   error: (error) => EntriesError(

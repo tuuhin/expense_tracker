@@ -29,7 +29,7 @@ class UserProfileForm extends StatelessWidget {
           children: [
             const Text('Personal Information',
                 style: TextStyle(fontWeight: FontWeight.w700)),
-            const Divider(),
+            const SizedBox(height: 20),
             TextFormField(
               validator: (value) => value != null && value.isEmpty
                   ? "Cannot attach a blank field"

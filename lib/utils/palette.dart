@@ -1,29 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// [https://www.canva.com/colors/color-palettes/summer-splash/]
-class SummerSplash {
-  static const Color navyBlue = Color(0xff05445e);
-  static const Color blueGrotto = Color(0xff189ab4);
-  static const Color blueGreen = Color(0xff75e6da);
-  static const Color babyBlue = Color(0xffd4f1f4);
-}
-
-/// [https://www.canva.com/colors/color-palettes/mermaid-lagoon/]
-class MermaidLagoon {
-  static const Color midnightBlue = Color(0xff145da0);
-  static const Color darkBlue = Color(0xff0c2d48);
-  static const Color blue = Color(0xff2e8bc0);
-  static const Color babyBlue = Color(0xffb1d4e0);
-}
-
-/// [https://www.canva.com/colors/color-palettes/everything-nice/]
-class EverythingNice {
-  static const Color purple = Color(0xff603f8b);
-  static const Color aqua = Color(0xffb4fee7);
-  static const Color violet = Color(0xffa16ae8);
-  static const Color fuchsia = Color(0xfffd49a0);
-}
+import 'color_palettes.dart';
 
 const Color secondary = MermaidLagoon.darkBlue;
 const Color primary = MermaidLagoon.midnightBlue;
@@ -41,7 +19,7 @@ ThemeData lightTheme = ThemeData(
   colorScheme: const ColorScheme.light()
       .copyWith(primary: primary, secondary: secondary),
   appBarTheme: const AppBarTheme(
-      titleTextStyle: TextStyle(color: Colors.black),
+      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
@@ -70,9 +48,7 @@ ThemeData lightTheme = ThemeData(
   ),
   checkboxTheme: CheckboxThemeData(
     materialTapTargetSize: MaterialTapTargetSize.padded,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
   ),
   chipTheme: ChipThemeData(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -86,35 +62,45 @@ ThemeData lightTheme = ThemeData(
     ),
   ),
   outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      side: const BorderSide(width: 1, color: primary),
-      borderRadius: BorderRadius.circular(10),
-    ),
-  )),
-  buttonTheme: const ButtonThemeData(buttonColor: secondary),
-  inputDecorationTheme: InputDecorationTheme(
-    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-    suffixIconColor: Colors.black87,
-    prefixIconColor: secondary,
-    focusedBorder: OutlineInputBorder(
-      borderSide: const BorderSide(width: 1),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    border: OutlineInputBorder(
-      borderSide: const BorderSide(width: 1),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderSide: const BorderSide(width: 1),
-      borderRadius: BorderRadius.circular(10),
+    style: OutlinedButton.styleFrom(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(width: 1, color: primary),
+        borderRadius: BorderRadius.circular(10),
+      ),
     ),
   ),
+  buttonTheme: const ButtonThemeData(buttonColor: secondary),
+  inputDecorationTheme: InputDecorationTheme(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      suffixIconColor: Colors.black87,
+      prefixIconColor: secondary,
+      floatingLabelStyle:
+          const TextStyle(fontWeight: FontWeight.w600, color: secondary),
+      labelStyle: const TextStyle(fontWeight: FontWeight.w400),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(width: 1, color: Colors.black87),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      border: OutlineInputBorder(
+        borderSide: const BorderSide(width: 1, color: Colors.black45),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(width: 1, color: Colors.black45),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(width: 1, color: secondary),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(width: 1.25, color: secondary),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      errorStyle: const TextStyle(color: secondary)),
   dialogTheme: DialogTheme(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
   ),
 );
 
@@ -161,7 +147,7 @@ ThemeData darkTheme = ThemeData(
   checkboxTheme: CheckboxThemeData(
     materialTapTargetSize: MaterialTapTargetSize.padded,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(5),
     ),
   ),
   chipTheme: ChipThemeData(

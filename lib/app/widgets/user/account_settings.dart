@@ -1,7 +1,7 @@
-import 'package:expense_tracker/app/home/routes/routes.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import "package:go_router/go_router.dart";
 
 class AccountSettings extends StatefulWidget {
   const AccountSettings({Key? key}) : super(key: key);
@@ -19,9 +19,6 @@ class _AccountSettingsState extends State<AccountSettings> {
       ..pop()
       ..pop();
   }
-
-  void _changePasswordRoute() =>
-      Navigator.of(context).push(appRouteBuilder(const ChangePasswordRoute()));
 
   void _logoutDialog() async => showDialog(
         context: context,
@@ -42,38 +39,54 @@ class _AccountSettingsState extends State<AccountSettings> {
         ),
       );
 
+  void _changeProfile() => context.push(
+        "/change-profile",
+        extra: context.read<ProfileCubit>().cahcedData(),
+      );
+
+  void _changePassword() => context.push("/change-password");
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Column(
-            children: [
-              const ListTile(
-                minVerticalPadding: 0,
-                dense: true,
-                title: Text('Account'),
-              ),
-              const Divider(),
-              ListTile(
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const ChangeUserProfile())),
-                leading: const Icon(Icons.person_outline_outlined),
-                title: const Text('Change profile'),
-              ),
-              ListTile(
-                onTap: _changePasswordRoute,
-                leading: const Icon(Icons.visibility),
-                title: const Text('Change password'),
-              ),
-              ListTile(
-                onTap: _logoutDialog,
-                leading: const Icon(Icons.logout_outlined),
-                title: const Text('Logout'),
-              ),
-            ],
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Account",
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  onTap: _changeProfile,
+                  leading: Image.asset("assets/icons/user.png"),
+                  title: const Text('Change profile'),
+                ),
+                ListTile(
+                  onTap: _changePassword,
+                  leading: Image.asset("assets/icons/key-chain.png"),
+                  title: const Text('Change password'),
+                ),
+                ListTile(
+                  onTap: _logoutDialog,
+                  leading: Image.asset("assets/icons/shutdown.png"),
+                  title: const Text('Logout'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -7,7 +7,8 @@ import '../../../context/context.dart';
 import '../../../domain/models/models.dart';
 
 class AsyncProfileImage extends StatelessWidget {
-  const AsyncProfileImage({super.key});
+  final Image? image;
+  const AsyncProfileImage({super.key, this.image});
 
   @override
   Widget build(BuildContext context) => StreamBuilder(
@@ -36,7 +37,7 @@ class AsyncProfileImage extends StatelessWidget {
               child: Container(
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(color: Colors.black12),
-                child: const FaIcon(FontAwesomeIcons.user),
+                child: image ?? const FaIcon(FontAwesomeIcons.user),
               ),
             );
           }

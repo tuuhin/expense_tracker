@@ -27,8 +27,8 @@ class _NotificationListState extends State<NotificationList> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback(_addItems);
   }
 
