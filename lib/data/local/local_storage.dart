@@ -1,6 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../domain/enums/theme_enum.dart';
 import '../entity/entity.dart';
 import './storage.dart';
 
@@ -9,7 +8,6 @@ class LocalStorage {
     await Hive.initFlutter();
     Hive
       ..registerAdapter(UserProfileEntityAdapter())
-      ..registerAdapter(ThemeEnumAdapter())
       ..registerAdapter(ExpenseEntityAdapter())
       ..registerAdapter(CategoryEntityAdapter())
       ..registerAdapter(IncomeEntityAdapter())
@@ -19,7 +17,6 @@ class LocalStorage {
       ..registerAdapter(GoalsEntityAdapter());
 
     await UserProfileDao.init();
-    await UserThemePreferences.init();
     await CategoriesStorage.init();
     await IncomeSourceStorage.init();
     await IncomeStorage.init();

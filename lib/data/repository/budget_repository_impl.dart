@@ -21,7 +21,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     try {
       BudgetDto dto = await api.createBudget(CreateBudgetDto.fromModel(budget));
       await cache.addBudget(dto.toEntity());
-      BudgetEntity? entity = cache.getBudgetById(dto.toEntity());
+      BudgetEntity? entity = await cache.getBudgetById(dto.toEntity());
       if (entity == null) return Resource.data(data: null);
       return Resource.data(
           data: BudgetDto.fromEntity(entity).toModel(),
@@ -46,11 +46,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
   Future<Resource<List<BudgetModel>>> getBudget() async {
     try {
       List<BudgetDto> dtos = await api.getBudget();
-      await cache.deleteAllBudget();
+      await cache.deleteAll();
       await cache.addBudgets(dtos.map((e) => e.toEntity()).toList());
       return Resource.data(
-        data: cache
-            .getBudget()
+        data: (await cache.getBudget())
             .map((e) => BudgetDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -63,8 +62,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
                     .details ??
                 "Something related to dio occered "
             : "Some dio error happened",
-        data: cache
-            .getBudget()
+        data: (await cache.getBudget())
             .map((e) => BudgetDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -73,8 +71,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
       return Resource.error(
         err: e,
         errorMessage: "Unknown Error Occured",
-        data: cache
-            .getBudget()
+        data: (await cache.getBudget())
             .map((e) => BudgetDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -108,7 +105,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     try {
       BudgetDto dto = await api.updateBudget(BudgetDto.fromModel(budget));
       await cache.updateBudget(dto.toEntity());
-      BudgetEntity? entity = cache.getBudgetById(dto.toEntity());
+      BudgetEntity? entity = await cache.getBudgetById(dto.toEntity());
       if (entity == null) return Resource.data(data: null, message: "Null");
       return Resource.data(
           data: BudgetDto.fromEntity(entity).toModel(),
@@ -129,6 +126,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   }
 
   @override
-  List<BudgetModel> cachedBudget() =>
-      cache.getBudget().map((e) => BudgetDto.fromEntity(e).toModel()).toList();
+  Future<List<BudgetModel>> cachedBudget() async => (await cache.getBudget())
+      .map((e) => BudgetDto.fromEntity(e).toModel())
+      .toList();
 }

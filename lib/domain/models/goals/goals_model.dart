@@ -16,3 +16,14 @@ class GoalsModel with _$GoalsModel {
     String? imageUrl,
   }) = _GoalsModel;
 }
+
+@freezed
+class CreateGoalModel with _$CreateGoalModel {
+  factory CreateGoalModel({
+    required String title,
+    required double collected,
+    required double price,
+    String? desc,
+    String? imageUrl,
+  }) = _CreateGoalModel;
+}

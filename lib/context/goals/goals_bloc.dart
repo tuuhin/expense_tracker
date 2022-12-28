@@ -24,93 +24,98 @@ class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
 
   GoalsBloc(this._repo) : super(_Loading()) {
     on<_GetData>((event, emit) async {
+      emit(GoalsState.loading());
       Resource<List<GoalsModel>> goals = await _repo.getGoals();
 
       goals.whenOrNull(
-        data: (data, message) {
-          if (data.isEmpty) {
-            emit(GoalsState.noData(message: "No data"));
-            return;
-          }
-          emit(GoalsState.data(data: data, message: message));
-        },
-        error: (err, errorMessage, data) {
-          if (data != null && data.isNotEmpty) {
-            emit(GoalsState.errorWithData(
-                error: err, message: errorMessage, data: data));
-            return;
-          }
-          emit(GoalsState.error(error: err, message: errorMessage));
-        },
+        data: (data, message) => (data.isEmpty)
+            ? emit(GoalsState.noData(message: "No data found"))
+            : emit(GoalsState.data(data: data, message: message)),
+        error: (err, errorMessage, data) => (data != null && data.isNotEmpty)
+            ? emit(GoalsState.errorWithData(
+                error: err, message: errorMessage, data: data))
+            : emit(GoalsState.error(error: err, message: errorMessage)),
       );
     });
-    on<_Refresh>((event, emit) {
-      emit(GoalsState.loading());
-      add(_GetData());
-    });
+    on<_Refresh>((event, emit) => add(_GetData()));
 
     on<_AddGoal>((event, emit) async {
       Resource<GoalsModel?> createGoal = await _repo.addGoal(event.goal);
 
       createGoal.whenOrNull(
-        data: (data, message) {
-          if (state is! _Data && data != null) {
-            _uiEvent.showDialog(
-              "Refresh and try again ",
+        data: (data, message) => state.maybeWhen(
+          orElse: () => _uiEvent.showDialog("Refresh and try again ",
               content:
-                  "The goal titled ${event.goal.title} created. Refresh to see reuslts",
-            );
-            return;
-          }
-
-          List<GoalsModel> newSet = (state as _$_Data).data.toList()
-            ..add(data!);
-
-          emit(GoalsState.data(data: newSet, message: message));
-
-          key.currentState?.insertItem(0);
-
-          _uiEvent.showSnackBar("Added new goal ${data.title}");
-        },
+                  "The goal titled ${event.goal.title} created. Refresh to see reuslts"),
+          noData: (message) => data != null
+              ? emit(GoalsState.data(data: [data], message: message))
+              : null,
+          data: (prevData, _) {
+            if (data == null) return;
+            List<GoalsModel> newSet = prevData.toList()..add(data);
+            emit(GoalsState.data(data: newSet));
+            key.currentState?.insertItem(newSet.length - 1);
+            _uiEvent.showSnackBar("Added new goal ${data.title}");
+          },
+        ),
         error: (err, errorMessage, data) => _uiEvent.showDialog(
-            "Cannot add goal ${event.goal.title}. ",
-            content: "Error Occured :$errorMessage "),
+            "Cannot add goal ${event.goal.title}.",
+            content: "Error Occured :$errorMessage"),
       );
     });
 
     on<_DeleteGoal>((event, emit) async {
-      Resource<void> delete = await _repo.removeGoal(event.goal);
-      delete.whenOrNull(
-        data: (data, message) {
-          if (state is! _Data) {
+      Resource<void> response = await _repo.removeGoal(event.goal);
+
+      response.whenOrNull(
+        data: (_, message) => state.maybeWhen(
+          orElse: () => _uiEvent.showDialog("Refresh and try again ",
+              content:
+                  "The goal titled ${event.goal.title} removed. Refresh to see reuslts"),
+          data: (prevData, _) {
+            int index = prevData.indexOf(event.goal);
+            _key.currentState?.removeItem(
+              index,
+              (context, animation) =>
+                  SizeTransition(sizeFactor: animation, child: event.widget),
+            );
+            List<GoalsModel> newData = prevData.toList()..remove(event.goal);
+
+            if (newData.isEmpty) {
+              emit(GoalsState.noData(message: message ?? "No budgets found"));
+              return;
+            }
+            emit(GoalsState.data(data: newData, message: message));
+
             _uiEvent.showSnackBar(
-                "Your goal has been removed please refresh to see results");
-            return;
-          }
-          int index = (state as _Data).data.indexOf(event.goal);
-          _key.currentState?.removeItem(
-            index,
-            (context, animation) =>
-                SizeTransition(sizeFactor: animation, child: event.widget),
-          );
-
-          List<GoalsModel> newSet = (state as _Data).data.toList()
-            ..removeAt(index);
-
-          emit(GoalsState.data(data: newSet, message: message));
-
-          _uiEvent.showSnackBar("Removed goal ${event.goal.title}");
-          return;
-        },
-        error: (err, errorMessage, data) => _uiEvent.showSnackBar(
-            "Cannot delete goal ${event.goal.title}. Error Occured :$errorMessage"),
+                "Your budget titled ${event.goal.title} has been deleted");
+          },
+        ),
+        error: (err, errorMessage, _) => _uiEvent.showDialog(
+            "Failed to delete budget titled : ${event.goal.title}",
+            content: errorMessage),
       );
     });
     on<_UpdateGoal>((event, emit) async {
       Resource<GoalsModel?> update = await _repo.updateGoal(event.goal);
+
       update.whenOrNull(
-        data: (data, message) {},
-        error: (err, errorMessage, data) {},
+        data: (data, message) => state.maybeWhen(
+          orElse: () => _uiEvent.showDialog("Refresh and try again ",
+              content:
+                  "The goal titled ${event.goal.title} updated. Refresh to see reuslts"),
+          data: (prevData, _) {
+            if (data == null) return;
+            List<GoalsModel> newSet = prevData.toList()
+              ..removeWhere((item) => item.id == event.goal.id)
+              ..add(data);
+
+            emit(GoalsState.data(data: newSet));
+            _uiEvent.showSnackBar("Goal: ${data.title} has been updated.");
+          },
+        ),
+        error: (err, errorMessage, data) =>
+            _uiEvent.showSnackBar("Cannot update goal ${event.goal.title}"),
       );
     });
   }
@@ -119,10 +124,10 @@ class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
 
   Future<void> refreshGoals() async => add(_Refresh());
 
-  Future<void> createGoal(CreateGoalModel goal) async => add(_AddGoal(goal));
+  void createGoal(CreateGoalModel goal) => add(_AddGoal(goal));
 
   Future<void> removeGoal(GoalsModel goal, {required Widget widget}) async =>
       add(_DeleteGoal(goal, widget: widget));
 
-  Future<void> updateGoal(GoalsModel goal) async => add(_UpdateGoal(goal));
+  void updateGoal(GoalsModel goal) => add(_UpdateGoal(goal));
 }

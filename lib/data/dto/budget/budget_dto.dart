@@ -25,11 +25,14 @@ class BudgetDto {
   final DateTime issedAt;
   @JsonKey(name: "has_expired")
   final bool hasExpired;
+  @JsonKey(name: "amount_left")
+  final double? amountLeft;
 
   BudgetDto({
     required this.id,
     required this.title,
     this.desc,
+    this.amountLeft,
     required this.start,
     required this.end,
     required this.amount,
@@ -45,6 +48,7 @@ class BudgetDto {
 
   factory BudgetDto.fromModel(BudgetModel model) => BudgetDto(
         id: model.id,
+        amountLeft: model.amountLeft,
         title: model.title,
         desc: model.desc,
         start: model.start,
@@ -65,19 +69,20 @@ class BudgetDto {
         amountUsed: entity.amountUsed,
         issedAt: entity.issedAt,
         hasExpired: entity.hasExpired,
+        amountLeft: entity.amountLeft,
       );
 
   BudgetModel toModel() => BudgetModel(
-        id: id,
-        title: title,
-        desc: desc,
-        start: start,
-        end: end,
-        amount: amount,
-        amountUsed: amountUsed,
-        issedAt: issedAt,
-        hasExpired: hasExpired,
-      );
+      id: id,
+      title: title,
+      desc: desc,
+      start: start,
+      end: end,
+      amount: amount,
+      amountUsed: amountUsed,
+      issedAt: issedAt,
+      hasExpired: hasExpired,
+      amountLeft: amountLeft);
 
   BudgetEntity toEntity() => BudgetEntity(
         id: id,
@@ -89,5 +94,6 @@ class BudgetDto {
         amountUsed: amountUsed,
         issedAt: issedAt,
         hasExpired: hasExpired,
+        amountLeft: amountLeft,
       );
 }

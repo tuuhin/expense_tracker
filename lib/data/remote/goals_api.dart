@@ -25,7 +25,7 @@ class GoalsClient extends PlansClient {
   }
 
   Future<GoalsDto> updateGoal(GoalsDto goal) async {
-    Response resp = await dio.post(
+    Response resp = await dio.put(
       '/goals/${goal.id}',
       data: FormData.fromMap(
         {

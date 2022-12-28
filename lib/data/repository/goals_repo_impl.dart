@@ -23,14 +23,13 @@ class GoalsRepositoryImpl implements GoalsRepository {
 
       await dao.addGoal(dto.toEntity());
 
-      GoalsEntity? entity = dao.getGoalById(dto.toEntity());
+      GoalsEntity? entity = await dao.getGoalById(dto.toEntity());
       if (entity == null) {
         return Resource.data(data: null);
       }
       return Resource.data(
           data: GoalsDto.fromEntity(entity).toModel(), message: "Goal added");
     } on DioError catch (dio) {
-      logger.fine(dio.response?.data);
       return Resource.error(
         err: dio,
         errorMessage: dio.type == DioErrorType.response
@@ -53,8 +52,7 @@ class GoalsRepositoryImpl implements GoalsRepository {
       await dao.deleteAll();
       await dao.addGoals(goals.map((e) => e.toEntity()).toList());
       return Resource.data(
-          data: dao
-              .getGoals()
+          data: (await dao.getGoals())
               .map((e) => GoalsDto.fromEntity(e).toModel())
               .toList(),
           message: "Successfully fetched data");
@@ -67,8 +65,7 @@ class GoalsRepositoryImpl implements GoalsRepository {
                     .details ??
                 "Something related to dio occered "
             : "Some dio error happened",
-        data: dao
-            .getGoals()
+        data: (await dao.getGoals())
             .map((e) => GoalsDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -77,8 +74,7 @@ class GoalsRepositoryImpl implements GoalsRepository {
       return Resource.error(
         err: e,
         errorMessage: "Unknown Error Occured",
-        data: dao
-            .getGoals()
+        data: (await dao.getGoals())
             .map((e) => GoalsDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -103,10 +99,9 @@ class GoalsRepositoryImpl implements GoalsRepository {
 
       await dao.updateGoal(dto.toEntity());
 
-      GoalsEntity? entity = dao.getGoalById(dto.toEntity());
-      if (entity == null) {
-        return Resource.data(data: null);
-      }
+      GoalsEntity? entity = await dao.getGoalById(dto.toEntity());
+      if (entity == null) return Resource.data(data: null);
+
       return Resource.data(
           data: GoalsDto.fromEntity(entity).toModel(), message: "Goal added");
     } on DioError catch (dio) {
