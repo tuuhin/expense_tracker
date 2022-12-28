@@ -29,12 +29,6 @@ class _BudgetIndicatorState extends State<BudgetIndicator>
 
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 900));
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    logger.fine(ratio);
 
     _amount = Tween<double>(begin: 0, end: ratio * 100).animate(
       CurvedAnimation(parent: _controller, curve: Curves.decelerate),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets.dart';
 import '../../../domain/models/models.dart';
-import 'goal_chart.dart';
 
 class GoalCompletionIndicator extends StatefulWidget {
   final GoalsModel goal;
@@ -15,11 +15,11 @@ class GoalCompletionIndicator extends StatefulWidget {
 
 class _GoalCompletionIndicatorState extends State<GoalCompletionIndicator>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late final AnimationController _controller;
 
   late Animation<double> _amount;
   late Animation<double> _graph;
-  late Animation<double> _scale;
+  late final Animation<double> _scale;
 
   double get ratio => widget.goal.collected / widget.goal.price > 1
       ? 1
@@ -52,8 +52,28 @@ class _GoalCompletionIndicatorState extends State<GoalCompletionIndicator>
         curve: const Interval(0.4, 1, curve: Curves.easeIn),
       ),
     );
-
     _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant GoalCompletionIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    bool isChangeNeeded = oldWidget.goal.collected != widget.goal.collected ||
+        oldWidget.goal.price != widget.goal.price;
+    if (isChangeNeeded) {
+      _amount = Tween<double>(begin: 0, end: ratio * 100).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.decelerate),
+      );
+
+      _graph = Tween<double>(begin: 0.0, end: ratio * 270).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.4, 1, curve: Curves.easeIn),
+        ),
+      );
+      _controller.reset();
+      _controller.forward();
+    }
   }
 
   @override

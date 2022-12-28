@@ -59,8 +59,7 @@ class _ShowBudgetCardState extends State<ShowBudgetCard> {
             Row(
               children: [
                 Flexible(flex: 3, child: BudgetIndicator(budget: widget.model)),
-                Flexible(
-                    flex: 5, child: BudgetAmountData(budgetInfo: widget.model))
+                Flexible(flex: 5, child: BudgetAmountData(budget: widget.model))
               ],
             ),
             if (widget.model.desc?.isNotEmpty == true) ...[

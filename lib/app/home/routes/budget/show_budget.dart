@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../routes.dart';
 import './budgets.dart';
 import '../../../widgets/widgets.dart';
 import '../../../../context/context.dart';
@@ -26,6 +27,14 @@ class _ShowBudgetState extends State<ShowBudget> {
 
   void _addShowBudget() => context.push('/create-budget');
 
+  void _refreshBudget() async {
+    await context.read<BudgetCubit>().getBudgetInfo();
+    if (mounted) {
+      Navigator.of(context)
+          .popUntil((route) => route.settings.name == "/budgets");
+    }
+  }
+
   Future<void> _refreshData() async {
     showDialog(
       context: context,
@@ -37,10 +46,7 @@ class _ShowBudgetState extends State<ShowBudget> {
               onPressed: Navigator.of(context).pop,
               child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () => context
-                .read<BudgetCubit>()
-                .getBudgetInfo()
-                .then(Navigator.of(context).pop),
+            onPressed: _refreshBudget,
             child: const Text('Refresh'),
           )
         ],
@@ -79,14 +85,11 @@ class _ShowBudgetState extends State<ShowBudget> {
               controller: _controller,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  sliver: SliverToBoxAdapter(
-                    child: Text(
-                      'A budget hepls you to track the expenses ,it mainly acts as a limit that you cannot cross.',
-                      style: Theme.of(context).textTheme.bodyText2,
-                      textAlign: TextAlign.center,
-                    ),
+                SliverPersistentHeader(
+                  delegate: RouteHelperPersistanceHeader(
+                    text:
+                        'A budget hepls you to track the expenses ,it mainly acts as a limit that you cannot cross.',
+                    style: Theme.of(context).textTheme.bodyText2,
                   ),
                 ),
                 SliverPadding(
@@ -94,8 +97,6 @@ class _ShowBudgetState extends State<ShowBudget> {
                   sliver: BlocConsumer<BudgetCubit, BudgetState>(
                     listener: (context, state) => state.whenOrNull(
                       error: (_, message) => ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(message))),
-                      noData: (message) => ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(message))),
                       errorWithData: (_, message, __) =>
                           ScaffoldMessenger.of(context)
@@ -106,8 +107,7 @@ class _ShowBudgetState extends State<ShowBudget> {
                       data: (data, message) => Budgets(models: data),
                       error: (error, message) => const SliverFillRemaining(
                           child: Center(child: Text('error'))),
-                      noData: (message) =>
-                          SliverFillRemaining(child: NoDataWidget.budget()),
+                      noData: (message) => NoDataWidget.budget(),
                       errorWithData: (error, message, data) =>
                           Budgets(models: data),
                     ),

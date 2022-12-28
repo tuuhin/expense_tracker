@@ -1,20 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../context/context.dart';
-import '../../../../domain/models/models.dart';
 import '../../../widgets/widgets.dart';
+import '../../../../domain/models/models.dart';
 
 class CreateGoals extends StatefulWidget {
   final GoalsModel? goal;
   final bool isUpdate;
-  const CreateGoals({
-    super.key,
-    this.goal,
-    this.isUpdate = false,
-  }) : assert(isUpdate ? goal != null : true);
+  const CreateGoals({super.key, this.goal, this.isUpdate = false})
+      : assert(isUpdate ? goal != null : true);
 
   @override
   State<CreateGoals> createState() => _CreateGoalsState();
@@ -26,33 +25,54 @@ class _CreateGoalsState extends State<CreateGoals> {
   late TextEditingController _price;
   late TextEditingController _collected;
 
-  File? _receipt;
+  File? _file;
+  String? _imageURL;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _pickImage() => showModalBottomSheet(
+  void _pickImage(ImageSource source) async {
+    try {
+      XFile? file = await ImagePicker().pickImage(source: source);
+      if (file == null) return;
+      setState(() => _file = File(file.path));
+    } on PlatformException {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+            const SnackBar(content: Text("Platform exception occured")));
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+    }
+  }
+
+  void _clearImage() =>
+      setState(() => _imageURL != null ? _imageURL = null : _file = null);
+
+  void _imagePickerSheet() async => await showModalBottomSheet(
         context: context,
-        builder: (context) =>
-            ReceiptPicker(setFile: (file) => setState(() => _receipt = file)),
+        builder: (context) => ImagePickerModal(
+          camera: () => _pickImage(ImageSource.camera),
+          gallery: () => _pickImage(ImageSource.gallery),
+          clear: _clearImage,
+        ),
       );
 
   @override
   void initState() {
     super.initState();
     _title = TextEditingController(
-        text: widget.isUpdate && widget.goal != null ? widget.goal?.title : '');
+      text: widget.isUpdate ? widget.goal?.title : null,
+    );
     _desc = TextEditingController(
-        text: widget.isUpdate && widget.goal != null ? widget.goal?.desc : '');
+      text: widget.isUpdate ? widget.goal?.desc : null,
+    );
     _price = TextEditingController(
-      text: widget.isUpdate && widget.goal != null
-          ? widget.goal!.price.toString()
-          : '',
+      text: widget.isUpdate ? widget.goal?.price.toString() : null,
     );
     _collected = TextEditingController(
-      text: widget.isUpdate && widget.goal != null
-          ? widget.goal!.collected.toString()
-          : '',
+      text: widget.isUpdate ? widget.goal?.collected.toString() : null,
     );
+    _imageURL = widget.isUpdate ? widget.goal?.imageUrl : null;
   }
 
   @override
@@ -61,26 +81,25 @@ class _CreateGoalsState extends State<CreateGoals> {
     _desc.dispose();
     _price.dispose();
     _collected.dispose();
-
     super.dispose();
   }
 
   void _updateGoal() async {
     if (!_formKey.currentState!.validate()) return;
-    if (widget.isUpdate && widget.goal != null) {
-      context.read<GoalsBloc>().updateGoal(
-            widget.goal!.copyWith(
-              title: _title.text,
-              desc: _desc.text.isEmpty ? null : _desc.text,
-              collected: double.parse(_collected.text),
-              price: double.parse(_price.text),
-              imageUrl: _receipt?.path,
-            ),
-          );
-    }
+
+    context.read<GoalsBloc>().updateGoal(
+          widget.goal!.copyWith(
+            title: _title.text,
+            desc: _desc.text.isEmpty ? null : _desc.text,
+            collected: double.parse(_collected.text),
+            price: double.parse(_price.text),
+            imageUrl: _file?.path,
+          ),
+        );
+    Navigator.of(context).popUntil((route) => route.settings.name == '/goals');
   }
 
-  void _addGoal() async {
+  void _addGoal() {
     if (!_formKey.currentState!.validate()) return;
     context.read<GoalsBloc>().createGoal(
           CreateGoalModel(
@@ -88,11 +107,10 @@ class _CreateGoalsState extends State<CreateGoals> {
             desc: _desc.text.isEmpty ? null : _desc.text,
             collected: double.parse(_collected.text),
             price: double.parse(_price.text),
-            imageUrl: _receipt?.path,
+            imageUrl: _file?.path,
           ),
         );
-    Navigator.of(context)
-        .popUntil((route) => route.settings.name == '/goals' ? true : false);
+    Navigator.of(context).popUntil((route) => route.settings.name == '/goals');
   }
 
   @override
@@ -122,98 +140,17 @@ class _CreateGoalsState extends State<CreateGoals> {
                 SizedBox.square(
                   dimension: size.width * .4,
                   child: GestureDetector(
-                    onTap: _pickImage,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: _receipt != null
-                          ? DropImageShadow(
-                              scale: 1,
-                              borderRadius: 10,
-                              offset: const Offset(10, 10),
-                              blurRadius: 10,
-                              image: Image.file(_receipt!, fit: BoxFit.fill),
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.black26, width: 2),
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.black12,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.camera, color: Colors.black26),
-                                  Text(
-                                    'Add Image',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black26),
-                                  )
-                                ],
-                              ),
-                            ),
-                    ),
+                    onTap: _imagePickerSheet,
+                    child: GoalImagePicker(imageURL: _imageURL, file: _file),
                   ),
                 ),
                 const Divider(),
-                TextFormField(
-                  validator: (value) => value != null && value.isEmpty
-                      ? "Enter some title"
-                      : null,
-                  controller: _title,
-                  keyboardType: TextInputType.name,
-                  decoration: const InputDecoration(
-                    hintText: 'Someday I will get that',
-                    labelText: 'Title',
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: _desc,
-                  maxLines: 4,
-                  keyboardType: TextInputType.text,
-                  decoration: const InputDecoration(
-                    hintText: 'This is my only wish.I will someday have that',
-                    hintStyle: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      letterSpacing: 0.125,
-                    ),
-                    labelText: 'Goal Description',
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  validator: (value) => value != null && value.isEmpty
-                      ? 'Enter some price'
-                      : value != null && double.tryParse(value) == null
-                          ? 'ENter valid number not characters'
-                          : null,
-                  controller: _price,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Actual Price',
-                    hintText: "500",
-                    prefixIcon: Icon(Icons.money),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: _collected,
-                  validator: (value) =>
-                      value != null && double.tryParse(value) == null
-                          ? "Enter valid number not characters"
-                          : null,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    fillColor: Colors.black12,
-                    hintText: "100",
-                    labelText: 'Collected Amount',
-                    prefixIcon: Icon(Icons.money),
-                  ),
-                ),
+                CreateGoalForm(
+                  title: _title,
+                  desc: _desc,
+                  price: _price,
+                  collected: _collected,
+                )
               ],
             ),
           ),

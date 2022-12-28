@@ -196,41 +196,10 @@ class _CreateExpenseState extends State<CreateExpense> {
                           const SizedBox(height: 10),
                           StatefulBuilder(
                             builder: (context, changeState) =>
-                                DropdownButtonFormField(
-                              validator: (value) => value == null
-                                  ? "A bugdet need to added"
-                                  : null,
-                              value: _selectedBudget,
-                              isExpanded: true,
-                              hint: const Text('Pick a Budget'),
-                              borderRadius: BorderRadius.circular(10),
-                              alignment: Alignment.center,
-                              decoration:
-                                  const InputDecoration(helperText: "Budget"),
-                              items: context
-                                  .read<BudgetCubit>()
-                                  .cachedBudget()
-                                  .map<DropdownMenuItem<BudgetModel>>(
-                                    (BudgetModel budget) => DropdownMenuItem(
-                                      value: budget,
-                                      child: Text(
-                                        budget.title.toUpperCase(),
-                                        style: _selectedBudget == budget
-                                            ? Theme.of(context)
-                                                .textTheme
-                                                .subtitle1
-                                            : Theme.of(context)
-                                                .textTheme
-                                                .caption
-                                                ?.copyWith(fontSize: 14),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (BudgetModel? budget) {
-                                // isBudgetPicked = true;
-                                changeState(() => _selectedBudget = budget);
-                              },
+                                ExpenseBudgetPicker(
+                              selectedBudget: _selectedBudget,
+                              onChange: (budget) =>
+                                  changeState(() => _selectedBudget = budget),
                             ),
                           ),
                           const SizedBox(height: 4),

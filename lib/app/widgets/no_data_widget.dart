@@ -35,32 +35,37 @@ class NoDataWidget extends StatelessWidget {
         image: Image.asset('assets/flaticons/no-money.png'),
       );
 
-  factory NoDataWidget.entries() => NoDataWidget(
-        title: "No entries present",
-        subtitle:
-            "No entries found seems like you dont added any expense or incomes",
-        image: Image.asset('assets/flaticons/piggy-bank.png'),
+  factory NoDataWidget.goals() => NoDataWidget(
+        title: "No Goal found",
+        subtitle: "No goal found.Start by creating a goal",
+        image: Image.asset('assets/flaticons/graph.png'),
       );
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            image,
-            const SizedBox(height: 10),
-            Text(title, style: Theme.of(context).textTheme.subtitle1),
-            const SizedBox(height: 10),
-            if (subtitle != null)
-              Text(
-                subtitle!,
-                style: Theme.of(context).textTheme.caption,
-                textAlign: TextAlign.center,
-              )
-          ],
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              image,
+              Text(title,
+                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                      fontWeight: FontWeight.bold, letterSpacing: -0.25)),
+              if (subtitle != null)
+                SizedBox(
+                  width: 300,
+                  child: Text(
+                    subtitle!,
+                    style: Theme.of(context).textTheme.caption,
+                    textAlign: TextAlign.center,
+                  ),
+                )
+            ],
+          ),
         ),
       ),
     );

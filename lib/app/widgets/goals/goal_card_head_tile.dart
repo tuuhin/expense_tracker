@@ -44,21 +44,27 @@ class _GoalCardHeadTileState extends State<GoalCardHeadTile> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.goal.title,
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.goal.title,
                   style: Theme.of(context)
                       .textTheme
                       .subtitle1
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(toDate(widget.goal.createdAt),
-                  style: Theme.of(context)
-                      .textTheme
-                      .caption
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-            ],
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(toDate(widget.goal.createdAt),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+              ],
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,

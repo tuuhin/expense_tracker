@@ -7,10 +7,7 @@ import '../../../widgets/goals/goals_card.dart';
 
 class GoalsList extends StatefulWidget {
   final List<GoalsModel> goals;
-  const GoalsList({
-    Key? key,
-    required this.goals,
-  }) : super(key: key);
+  const GoalsList({Key? key, required this.goals}) : super(key: key);
 
   @override
   State<GoalsList> createState() => _GoalsListState();
