@@ -29,32 +29,30 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
   UiEventCubit<ExpenseModel> get uiEvent => _uiEvent;
 
-  List<ExpenseCategoriesModel> get categories => _repo.cachedCategories();
+  Future<List<ExpenseCategoriesModel>> get cahedCategories async =>
+      _repo.cachedCategories();
 
   Future<void> addExpense(CreateExpenseModel expense) async {
     Resource<ExpenseModel?> newExpense = await _repo.createExpense(expense);
 
     newExpense.whenOrNull(
-      data: (data, message) {
-        if (state is! _Data && data != null) {
-          _uiEvent.showDialog(
-            "Refresh and try again ",
-            content:
-                "The expense titled ${expense.title} created.Refresh to see reuslts",
-          );
-          return;
-        }
-
-        List<ExpenseModel> newSet = (state as _Data).data.toList()..add(data!);
-
-        emit(ExpenseState.data(data: newSet, message: message));
-
-        key.currentState?.insertItem(0);
-
-        _uiEvent.showSnackBar("Added new expense ${data.title}");
-      },
+      data: (data, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog(
+          "Refresh and try again ",
+          content: "Your icnome is createdrefresh the list to check it",
+        ),
+        noData: (_) =>
+            data != null ? emit(ExpenseState.data(data: [data])) : null,
+        data: (preData, _) {
+          List<ExpenseModel> newSet = preData.toList()..add(data!);
+          emit(ExpenseState.data(data: newSet, message: message));
+          key.currentState?.insertItem(0);
+          _uiEvent.showSnackBar(
+              message ?? "Added new income titled : ${data.title}");
+        },
+      ),
       error: (err, errorMessage, data) => _uiEvent.showDialog(
-          "Cannot add category ${expense.title}. ",
+          "Cannot add income ${expense.title}. ",
           content: "Error Occured :$errorMessage "),
     );
   }
@@ -63,59 +61,76 @@ class ExpenseCubit extends Cubit<ExpenseState> {
     ExpenseModel expense, {
     required Widget widget,
   }) async {
-    Resource<void> removedExpense = await _repo.deleteExpense(expense);
+    Resource<void> remove = await _repo.deleteExpense(expense);
 
-    removedExpense.whenOrNull(
-      data: (data, message) {
-        if (state is! _Data) {
+    remove.whenOrNull(
+      data: (_, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog(
+          "Refresh and try again",
+          content:
+              "Your expense has been removed please refresh to see results",
+        ),
+        data: (preData, _) {
+          int index = preData.indexOf(expense);
+          _key.currentState?.removeItem(
+            index,
+            (context, animation) =>
+                SizeTransition(sizeFactor: animation, child: widget),
+          );
+          List<ExpenseModel> newSet = preData.toList()..removeAt(index);
+          newSet.isEmpty
+              ? emit(ExpenseState.noData(message: "No data found"))
+              : emit(ExpenseState.data(data: newSet));
           _uiEvent.showSnackBar(
-              "Your expense has been removed please refresh to see results");
-          return;
-        }
-        int index = (state as _Data).data.indexOf(expense);
-        _key.currentState?.removeItem(
-          index,
-          (context, animation) =>
-              SizeTransition(sizeFactor: animation, child: widget),
-        );
-
-        List<ExpenseModel> newExpenseSet = (state as _Data).data.toList()
-          ..removeAt(index);
-
-        emit(ExpenseState.data(data: newExpenseSet, message: message));
-
-        _uiEvent.showSnackBar("Removed expense ${expense.title}");
-        return;
-      },
-      error: (err, errorMessage, data) => _uiEvent.showSnackBar(
-          "Cannot delete expense ${expense.title}. Error Occured :$errorMessage"),
+              message ?? "Removed income titled: ${expense.title}");
+        },
+      ),
+      error: (err, errorMessage, _) => _uiEvent.showSnackBar(
+          "Cannot delete income ${expense.title}. Error Occured :$errorMessage"),
     );
   }
 
-  Future<void> updateExpense(ExpenseModel expense) async {}
+  Future<void> updateExpense(UpdateExpenseModel expense) async {
+    Resource<ExpenseModel?> updatedExpense = await _repo.updateExpense(expense);
+
+    updatedExpense.whenOrNull(
+      data: (data, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog(
+          "Refresh and try again",
+          content:
+              "Your expense has been removed please refresh to see results",
+        ),
+        data: (prevData, _) {
+          if (data == null) return;
+
+          int index =
+              prevData.toList().indexWhere((item) => item.id == expense.id);
+          List<ExpenseModel> newSet = prevData.toList()
+            ..removeWhere((item) => item.id == expense.id)
+            ..insert(index, data);
+
+          emit(ExpenseState.data(data: newSet));
+          _uiEvent.showSnackBar("Goal: ${data.title} has been updated.");
+        },
+      ),
+      error: (err, errorMessage, data) => _uiEvent.showSnackBar(
+          "Cannot update expense ${expense.title}. Error Occured :$errorMessage"),
+    );
+  }
 
   Future<void> getExpenses() async {
     emit(ExpenseState.loading());
 
     Resource<List<ExpenseModel>> budgets = await _repo.getExpense();
 
-    budgets.when(
-      loading: () {},
-      data: (data, message) async {
-        if (data.isEmpty) {
-          emit(ExpenseState.noData(message: "No data"));
-          return;
-        }
-        emit(ExpenseState.data(data: data, message: message));
-      },
-      error: (err, errorMessage, data) {
-        if (data != null && data.isNotEmpty) {
-          emit(ExpenseState.errorWithData(
-              data: data, err: err, errMessage: errorMessage));
-          return;
-        }
-        emit(ExpenseState.error(errMessage: errorMessage, err: err));
-      },
+    budgets.whenOrNull(
+      data: (data, message) => data.isEmpty
+          ? emit(ExpenseState.noData(message: "No data"))
+          : emit(ExpenseState.data(data: data, message: message)),
+      error: (err, errorMessage, data) => data != null && data.isNotEmpty
+          ? emit(ExpenseState.errorWithData(
+              data: data, err: err, errMessage: errorMessage))
+          : emit(ExpenseState.error(errMessage: errorMessage, err: err)),
     );
   }
 }

@@ -3,25 +3,26 @@ import 'package:hive/hive.dart';
 import '../../entity/entity.dart';
 
 class ExpenseStorage {
-  static Box<ExpenseEntity>? expenses;
+  static LazyBox<ExpenseEntity>? expenses;
 
   static Future<void> init() async {
-    expenses = await Hive.openBox<ExpenseEntity>('expenses');
+    expenses = await Hive.openLazyBox<ExpenseEntity>('expenses');
   }
 
   Future<void> addExpense(ExpenseEntity entity) async =>
       await expenses!.put(entity.id, entity);
 
-  Future<void> addExpenses(List<ExpenseEntity> enitites) async {
-    await expenses!.putAll(
-        enitites.asMap().map((key, entity) => MapEntry(entity.id, entity)));
-    expenses!.flush();
-  }
+  Future<void> addExpenses(List<ExpenseEntity> enitites) async =>
+      await expenses!.putAll(
+          enitites.asMap().map((key, entity) => MapEntry(entity.id, entity)));
 
-  Iterable<ExpenseEntity> getExpenses() => expenses!.values.toList().reversed;
+  Future<Iterable<ExpenseEntity>> getExpenses() async =>
+      (await Future.wait<ExpenseEntity?>(
+              expenses!.keys.map((e) => expenses!.get(e))))
+          .whereType<ExpenseEntity>();
 
-  ExpenseEntity? getExpenseById(ExpenseEntity entity) =>
-      expenses?.get(entity.id);
+  Future<ExpenseEntity?> getExpenseById(ExpenseEntity entity) async =>
+      await expenses?.get(entity.id);
 
   Future<void> updateExpense(ExpenseEntity entity) async =>
       await expenses?.put(entity.id, entity);
@@ -29,6 +30,5 @@ class ExpenseStorage {
   Future<void> deleteExpense(ExpenseEntity entity) async =>
       await expenses!.delete(entity.id);
 
-  Future<void> deleteAll() async =>
-      expenses!.keys.map((e) async => await expenses!.delete(e));
+  Future<void> deleteAll() async => expenses!.clear();
 }

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../domain/models/models.dart';
 import '../app/home/routes/routes.dart';
 import '../app/app.dart';
+import './app/widgets/widgets.dart';
 
 final router = GoRouter(
   initialLocation: '/',
@@ -32,6 +33,12 @@ final router = GoRouter(
     GoRoute(
       path: '/expenes',
       builder: (context, state) => const ShowExpenses(),
+    ),
+    GoRoute(
+      path: '/preview/:id',
+      builder: (context, state) => ViewExpenseReceipt(
+        imageURL: state.extra as String?,
+      ),
     ),
     GoRoute(
       path: '/create-expense',

@@ -1,15 +1,18 @@
-import 'package:expense_tracker/domain/models/expense/expense_model.dart';
 import 'package:flutter/material.dart';
 
+import '../../../domain/models/models.dart';
 import '../../../utils/date_formaters.dart';
 
 class ExpenseCardTitleTile extends StatelessWidget {
   final ExpenseModel expense;
   final void Function()? onDelete;
   final void Function()? onUpdate;
-  const ExpenseCardTitleTile(
-      {Key? key, required this.expense, this.onDelete, this.onUpdate})
-      : super(key: key);
+  const ExpenseCardTitleTile({
+    Key? key,
+    required this.expense,
+    this.onDelete,
+    this.onUpdate,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

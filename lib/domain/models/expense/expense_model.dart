@@ -24,8 +24,21 @@ class CreateExpenseModel with _$CreateExpenseModel {
     required String title,
     required double amount,
     required int budgetId,
-    required List<int> categoryIds,
+    required List<ExpenseCategoriesModel> categories,
     String? desc,
     String? path,
   }) = _CreateExpenseModel;
+}
+
+@freezed
+class UpdateExpenseModel with _$UpdateExpenseModel {
+  factory UpdateExpenseModel({
+    required int id,
+    required String title,
+    required double amount,
+    required BaseBudgetModel budget,
+    required List<ExpenseCategoriesModel> categories,
+    String? desc,
+    String? path,
+  }) = _UpdateExpenseModel;
 }

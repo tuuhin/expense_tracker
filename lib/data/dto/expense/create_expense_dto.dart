@@ -36,19 +36,10 @@ class CreateExpenseDto {
         title: expense.title,
         amount: expense.amount,
         budgetId: expense.budgetId,
-        categoryIds: expense.categoryIds,
+        categoryIds: expense.categories.map((e) => e.id).toList(),
         desc: expense.desc,
         image: expense.path,
       );
 
   Map<String, dynamic> toJson() => _$CreateExpenseDtoToJson(this);
-
-  CreateExpenseModel toModel() => CreateExpenseModel(
-        title: title,
-        amount: amount,
-        budgetId: budgetId,
-        categoryIds: categoryIds,
-        desc: desc,
-        path: image,
-      );
 }

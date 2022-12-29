@@ -18,3 +18,7 @@ export './goals/create_goals.dart';
 export './goals/show_goals.dart';
 
 export './user/change_password.dart';
+export './user/user_profile_change.dart';
+export './user/users_options_route.dart';
+
+export './route_helper_persistance_header.dart';

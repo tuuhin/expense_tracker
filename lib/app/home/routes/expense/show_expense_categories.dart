@@ -89,8 +89,7 @@ class _ShowExpenseCategoriesState extends State<ShowExpenseCategories> {
                   ),
                   builder: (context, state) => state.when(
                     loading: () => const LoadingShimmer(),
-                    noData: (_) =>
-                        SliverFillRemaining(child: NoDataWidget.categories()),
+                    noData: (_) => NoDataWidget.categories(),
                     data: (data, message) =>
                         ExpenseCategories(categories: data),
                     error: (errMessage, err) => SliverFillRemaining(

@@ -3,30 +3,29 @@ import 'package:hive/hive.dart';
 import '../../entity/expense/expense_categories_entity.dart';
 
 class CategoriesStorage {
-  static Box<CategoryEntity>? categories;
+  static late final LazyBox<CategoryEntity>? _categories;
 
   static Future<void> init() async {
-    categories = await Hive.openBox<CategoryEntity>('expense_categories');
+    _categories = await Hive.openLazyBox<CategoryEntity>('expense_categories');
   }
 
   Future<void> addExpenseCategory(CategoryEntity entity) async =>
-      await categories!.put(entity.id, entity);
+      await _categories!.put(entity.id, entity);
 
-  Future<void> addExpenseCategories(List<CategoryEntity> enities) async {
-    await categories!
-        .putAll(enities.asMap().map((key, e) => MapEntry(e.id, e)));
-    await categories!.flush();
-  }
+  Future<void> addExpenseCategories(List<CategoryEntity> enities) async =>
+      await _categories!
+          .putAll(enities.asMap().map((key, e) => MapEntry(e.id, e)));
 
-  Iterable<CategoryEntity> getCategories() =>
-      categories!.values.toList().reversed;
+  Future<Iterable<CategoryEntity>> getCategories() async =>
+      (await Future.wait<CategoryEntity?>(
+              _categories!.keys.map((e) => _categories!.get(e))))
+          .whereType<CategoryEntity>();
 
-  CategoryEntity? getCategoryById(CategoryEntity entity) =>
-      categories?.get(entity.id);
+  Future<CategoryEntity?> getCategoryById(CategoryEntity entity) async =>
+      await _categories?.get(entity.id);
 
   Future<void> deleteCategory(CategoryEntity entity) async =>
-      await categories!.delete(entity.id);
+      await _categories!.delete(entity.id);
 
-  Future<void> deleteAllCategory() async =>
-      categories!.keys.map((e) async => await categories!.delete(e));
+  Future<void> deleteAllCategory() async => _categories!.clear();
 }

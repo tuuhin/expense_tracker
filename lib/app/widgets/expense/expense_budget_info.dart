@@ -19,30 +19,29 @@ class ExpenseBudgetInfo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Budget', style: Theme.of(context).textTheme.subtitle2),
-            const Divider(),
             Text(
               expense.budget.title,
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.caption,
             ),
+            const Divider(),
             Text.rich(
               TextSpan(
                 text: 'Expires on: ',
                 style: Theme.of(context).textTheme.caption,
                 children: [
                   TextSpan(
-                      text: toSimpleDate(expense.budget.start),
+                      text: toSimpleDate(expense.budget.end),
                       style: Theme.of(context).textTheme.bodyText2)
                 ],
               ),
             ),
             Text.rich(
               TextSpan(
-                text: 'Balance Left: ',
+                text: 'Total amount: ',
                 style: Theme.of(context).textTheme.caption,
                 children: [
                   TextSpan(
-                      text:
-                          '${expense.budget.amount - expense.budget.amountUsed}',
+                      text: '${expense.budget.amount}',
                       style: Theme.of(context).textTheme.bodyText2)
                 ],
               ),

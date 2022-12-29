@@ -5,8 +5,8 @@ import '../../../context/context.dart';
 import '../../../domain/models/models.dart';
 
 class ExpenseBudgetPicker extends StatelessWidget {
-  final BudgetModel? selectedBudget;
-  final ValueChanged<BudgetModel?>? onChange;
+  final BaseBudgetModel? selectedBudget;
+  final ValueChanged<BaseBudgetModel?>? onChange;
   const ExpenseBudgetPicker({
     Key? key,
     required this.onChange,
@@ -15,12 +15,11 @@ class ExpenseBudgetPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return FutureBuilder<List<BudgetModel>>(
         future: context.read<BudgetCubit>().cachedBudget(),
-        builder:
-            (BuildContext context, AsyncSnapshot<List<BudgetModel>> snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
-            return DropdownButtonFormField<BudgetModel>(
+            return DropdownButtonFormField<BaseBudgetModel>(
                 validator: (value) =>
                     value == null ? "A bugdet need to added" : null,
                 value: selectedBudget,
@@ -30,8 +29,9 @@ class ExpenseBudgetPicker extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: const InputDecoration(helperText: "Budget"),
                 items: snapshot.data!
-                    .map<DropdownMenuItem<BudgetModel>>(
-                      (BudgetModel budget) => DropdownMenuItem(
+                    .map((e) => e.toBaseModel())
+                    .map<DropdownMenuItem<BaseBudgetModel>>(
+                      (BaseBudgetModel budget) => DropdownMenuItem(
                         value: budget,
                         child: Text(
                           budget.title.toUpperCase(),

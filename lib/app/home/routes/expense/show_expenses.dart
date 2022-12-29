@@ -1,8 +1,8 @@
-import 'package:expense_tracker/domain/models/expense/expense_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:go_router/go_router.dart";
 
+import '../../../../domain/models/models.dart';
 import './expenses.dart';
 import '../../../widgets/widgets.dart';
 import '../../../../context/context.dart';
@@ -84,8 +84,7 @@ class _ShowExpensesState extends State<ShowExpenses> {
                     data: (data, _) => Expenses(expenses: data),
                     error: (errMessage, err) => SliverFillRemaining(
                         child: BaseError(message: errMessage, error: err)),
-                    noData: (_) =>
-                        SliverFillRemaining(child: NoDataWidget.expenses()),
+                    noData: (_) => NoDataWidget.expenses(),
                     errorWithData: (data, errMessage, err) =>
                         Expenses(expenses: data),
                   ),

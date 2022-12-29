@@ -1,12 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../widgets.dart';
 import '../../../context/context.dart';
 import '../../../domain/models/models.dart';
-import '../../home/routes/route_builder.dart';
-import '../widgets.dart';
 
 class ExpenseCard extends StatefulWidget {
   final ExpenseModel expense;
@@ -18,32 +17,11 @@ class ExpenseCard extends StatefulWidget {
 }
 
 class _ExpenseCardState extends State<ExpenseCard> {
-  void _interActiveMode() => Navigator.of(context).push(
-      appRouteBuilder(ViewExpenseReceipt(imageURL: widget.expense.imageURL!)));
+  void _interActiveMode() => context.push('/preview/${widget.expense.id}',
+      extra: widget.expense.imageURL);
 
-  void _update() => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text.rich(
-            TextSpan(
-              text: 'Upgrade Expenses:',
-              children: [
-                TextSpan(
-                    text: widget.expense.title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 20))
-              ],
-            ),
-          ),
-          content: const Text('It\'s good that expenses can be upgraded '),
-          actions: [
-            TextButton(
-                onPressed: Navigator.of(context).pop,
-                child: const Text('Cancel')),
-            ElevatedButton(onPressed: () {}, child: const Text('Upgrade'))
-          ],
-        ),
-      );
+  void _update() => context.push('/update-expense/${widget.expense.id}',
+      extra: widget.expense);
 
   void _delete() => showDialog(
         context: context,
@@ -100,28 +78,27 @@ class _ExpenseCardState extends State<ExpenseCard> {
               Text.rich(
                 TextSpan(text: 'Description:', children: [
                   TextSpan(
-                      text: widget.expense.desc!,
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          ?.copyWith(fontStyle: FontStyle.italic))
+                    text: widget.expense.desc!,
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        ?.copyWith(fontStyle: FontStyle.italic),
+                  ),
                 ]),
                 style: Theme.of(context)
                     .textTheme
                     .subtitle2
                     ?.copyWith(fontWeight: FontWeight.w600),
-              )
-            // Text("${expense.desc!}", style: Theme.of(context).textTheme.caption),
-            ,
+              ),
             Padding(
               padding: const EdgeInsets.all(4),
               child: Row(
                 children: [
                   if (widget.expense.imageURL != null)
-                    GestureDetector(
-                      onTap: _interActiveMode,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: GestureDetector(
+                        onTap: _interActiveMode,
                         child: CachedNetworkImage(
                           progressIndicatorBuilder: (context, url, progress) =>
                               Container(
@@ -129,8 +106,7 @@ class _ExpenseCardState extends State<ExpenseCard> {
                                 const BoxDecoration(color: Colors.black12),
                             child: Center(
                               child: CircularProgressIndicator(
-                                value: progress.progress,
-                              ),
+                                  value: progress.progress),
                             ),
                           ),
                           imageUrl: widget.expense.imageURL!,
@@ -185,21 +161,25 @@ class _ExpenseCardState extends State<ExpenseCard> {
                 ],
               ),
             ),
-            SizedBox(
-              height: 30,
-              child: ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, idx) => ExpenseChips(
-                    backgroundColor: idx % 2 != 0
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.secondary,
-                    label: widget.expense.categories[idx].title),
-                separatorBuilder: (context, index) => const VerticalDivider(),
-                itemCount: widget.expense.categories.length,
+            if (widget.expense.categories.isNotEmpty) ...[
+              const Text('Categories',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              const SizedBox(height: 2),
+              SizedBox(
+                height: 30,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, idx) => ExpenseChips(
+                      backgroundColor: idx % 2 != 0
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.secondary,
+                      label: widget.expense.categories[idx].title),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 4),
+                  itemCount: widget.expense.categories.length,
+                ),
               ),
-            ),
-            const Divider(),
+            ]
           ],
         ),
       ),

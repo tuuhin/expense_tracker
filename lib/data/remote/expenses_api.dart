@@ -27,16 +27,16 @@ class ExpensesApi extends ResourceClient {
     return ExpenseDto.fromJson(response.data);
   }
 
-  Future<ExpenseDto> updateExpense(ExpenseDto dto) async {
+  Future<ExpenseDto> updateExpense(UpdateExpenseDto dto) async {
     Response response = await dio.put(
       '/expenses/${dto.id}',
       data: FormData.fromMap(
         {
           ...dto.toJson(),
-          'receipt': dto.receipt != null
+          'receipt': dto.image != null
               ? await MultipartFile.fromFile(
-                  dto.receipt!,
-                  filename: dto.receipt,
+                  dto.image!,
+                  filename: dto.image,
                 )
               : null
         },
