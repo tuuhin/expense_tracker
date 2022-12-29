@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../context/income/income_cubit.dart';
-import '../../../domain/models/income/income_models.dart';
-import '../../../utils/date_formaters.dart';
+import '../../../context/context.dart';
+import '../../../domain/models/models.dart';
+import '../widgets.dart';
 
 class IncomeCard extends StatefulWidget {
   final IncomeModel income;
@@ -17,7 +18,7 @@ class IncomeCard extends StatefulWidget {
 }
 
 class _IncomeCardState extends State<IncomeCard> {
-  void _deleteIncome() async => showDialog(
+  void _onDelete() async => showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text.rich(
@@ -55,10 +56,13 @@ class _IncomeCardState extends State<IncomeCard> {
         ),
       );
 
+  void _onUpdate() =>
+      context.push('/update-income/${widget.income.id}', extra: widget.income);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Container(
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
@@ -72,25 +76,11 @@ class _IncomeCardState extends State<IncomeCard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ListTile(
-              contentPadding: const EdgeInsets.only(right: 10),
-              trailing: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: IconButton(
-                  onPressed: _deleteIncome,
-                  icon: Icon(Icons.delete_outline,
-                      color: Theme.of(context).colorScheme.primary),
-                ),
-              ),
-              title: Text(widget.income.title,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Text(toDate(widget.income.addedAt)),
-            ),
+            IncomeTitleTile(
+                income: widget.income,
+                onUpdate: _onUpdate,
+                onDelete: _onDelete),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Container(

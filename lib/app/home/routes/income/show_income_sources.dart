@@ -98,8 +98,7 @@ class _ShowIncomeSourcesState extends State<ShowIncomeSources> {
                     data: (data, _) => Sources(sources: data),
                     error: (errMessage, err) => SliverFillRemaining(
                         child: BaseError(message: errMessage, error: err)),
-                    noData: (message) =>
-                        SliverFillRemaining(child: NoDataWidget.sources()),
+                    noData: (message) => NoDataWidget.sources(),
                     errorWithData: (_, __, data) => Sources(sources: data),
                   ),
                 ),

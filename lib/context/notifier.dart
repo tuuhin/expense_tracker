@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
-
-import '../main.dart';
+import 'package:flutter/material.dart';
 
 class Notifier<T> extends ChangeNotifier {
   final List<T> _selected = [];
@@ -13,9 +11,13 @@ class Notifier<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addBulk(List<T> models) {
+    _selected.addAll(models);
+    notifyListeners();
+  }
+
   void clear() {
     _selected.clear();
-    logger.info('clearing');
     notifyListeners();
   }
 }

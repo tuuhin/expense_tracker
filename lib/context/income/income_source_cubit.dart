@@ -32,53 +32,53 @@ class IncomeSourceCubit extends Cubit<IncomeSourceState> {
   }) async {
     Resource<void> delete = await _repo.deleteSource(source);
     delete.whenOrNull(
-        data: (data, message) {
-          if (state is! _Success) {
-            _uiEvent.showSnackBar(
-                "Source titled: ${source.title} has been removed refresh to see changes");
-            return;
-          }
-
-          int itemIndex = (state as _Success).data.indexOf(source);
-
+      data: (data, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog("Refresh to view",
+            content:
+                "Source titled: ${source.title} has been removed refresh to see changes"),
+        data: (preData, _) {
+          int itemIndex = preData.indexOf(source);
           _key.currentState?.removeItem(
             itemIndex,
             (context, animation) =>
                 SizeTransition(sizeFactor: animation, child: widget),
           );
+          List<IncomeSourceModel> newSet = preData.toList()
+            ..removeAt(itemIndex);
 
-          List<IncomeSourceModel> newSourceSet =
-              (state as _Success).data.toList()..removeAt(itemIndex);
-
-          emit(IncomeSourceState.data(data: newSourceSet, message: message));
-
-          _uiEvent.showSnackBar("Removed category ${source.title}");
+          newSet.isEmpty
+              ? emit(IncomeSourceState.noData())
+              : emit(IncomeSourceState.data(data: newSet));
+          _uiEvent.showSnackBar("Removed source titled: ${source.title}");
         },
-        error: (err, errorMessage, data) => _uiEvent.showSnackBar(
-            "Cannot delete category ${source.title}. Error Occured :$errorMessage"));
+      ),
+      error: (err, errorMessage, data) => _uiEvent.showSnackBar(
+          "Cannot delete source titled: ${source.title}. Error Occured :$errorMessage"),
+    );
   }
 
   Future<void> addSource(CreateIncomeSourceModel source) async {
     Resource<IncomeSourceModel?> newSource = await _repo.createSource(source);
 
     newSource.whenOrNull(
-        data: (data, message) {
-          if (state is! _Success) {
-            _uiEvent.showSnackBar("Your source is added ,refresh to see them");
-            return;
-          }
-
-          List<IncomeSourceModel> newSourceSet =
-              (state as _Success).data.toList()..add(data!);
+      data: (data, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog("Refresh to view",
+            content: "Your source is added please refresh to view"),
+        noData: (_) =>
+            data != null ? emit(IncomeSourceState.data(data: [data])) : null,
+        data: (preData, _) {
+          List<IncomeSourceModel> newSourceSet = preData.toList()..add(data!);
 
           int itemIndex = newSourceSet.indexOf(data);
 
           emit(IncomeSourceState.data(data: newSourceSet));
           _key.currentState?.insertItem(itemIndex);
-          _uiEvent.showSnackBar("Source titled ${source.title} has been added");
+          _uiEvent.showSnackBar(
+              message ?? "Source titled ${source.title} has been added");
         },
-        error: (err, errorMessage, data) =>
-            _uiEvent.showSnackBar(errorMessage));
+      ),
+      error: (err, errorMessage, data) => _uiEvent.showSnackBar(errorMessage),
+    );
   }
 
   Future<void> getIncomeSources() async {
@@ -87,21 +87,13 @@ class IncomeSourceCubit extends Cubit<IncomeSourceState> {
     Resource<List<IncomeSourceModel>> sources = await _repo.getSources();
 
     sources.whenOrNull(
-      data: (data, message) {
-        if (data.isEmpty) {
-          emit(IncomeSourceState.noData(message: "No data"));
-          return;
-        }
-        emit(IncomeSourceState.data(data: data, message: message));
-      },
-      error: (err, errorMessage, data) {
-        if (data != null && data.isNotEmpty) {
-          emit(IncomeSourceState.errorWithData(
-              errMessage: errorMessage, err: err, data: data));
-          return;
-        }
-        emit(IncomeSourceState.error(errMessage: errorMessage, err: err));
-      },
+      data: (data, message) => data.isEmpty
+          ? emit(IncomeSourceState.noData(message: "No data"))
+          : emit(IncomeSourceState.data(data: data, message: message)),
+      error: (err, errorMessage, data) => data != null && data.isNotEmpty
+          ? emit(IncomeSourceState.errorWithData(
+              errMessage: errorMessage, err: err, data: data))
+          : emit(IncomeSourceState.error(errMessage: errorMessage, err: err)),
     );
   }
 }

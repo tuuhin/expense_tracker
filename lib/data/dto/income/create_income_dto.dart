@@ -26,10 +26,10 @@ class CreateIncomeDto {
       _$CreateIncomeDtoFromJson(json);
 
   factory CreateIncomeDto.fromModel(CreateIncomeModel model) => CreateIncomeDto(
-      title: model.title, amount: model.amount, sourcesId: model.sourcesId);
+        title: model.title,
+        amount: model.amount,
+        sourcesId: model.sources.map((e) => e.id).toList(),
+      );
 
   Map<String, dynamic> toJson() => _$CreateIncomeDtoToJson(this);
-
-  CreateIncomeModel toModel() => CreateIncomeModel(
-      amount: amount, sourcesId: sourcesId, title: title, desc: desc);
 }

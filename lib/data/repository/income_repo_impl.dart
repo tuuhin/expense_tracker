@@ -1,6 +1,5 @@
-import 'package:expense_tracker/main.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:hive/hive.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import '../dto/dto.dart';
 import '../entity/entity.dart';
@@ -22,30 +21,24 @@ class IncomesRepoImpl implements IncomeRepostiory {
   });
 
   @override
-  List<IncomeModel> cachedIncomes() => incomeStore
-      .getIncomes()
-      .map((e) => IncomeDto.fromEntity(e).toModel())
-      .toList();
-
-  @override
-  List<IncomeSourceModel> cachedSources() => sourceStore
-      .getSources()
-      .map((e) => IncomeSourceDto.fromEntity(e).toModel())
-      .toList();
+  Future<List<IncomeSourceModel>> cachedSources() async =>
+      (await sourceStore.getSources())
+          .map((e) => IncomeSourceDto.fromEntity(e).toModel())
+          .toList();
 
   @override
   Future<Resource<IncomeModel?>> createIncome(CreateIncomeModel income) async {
     try {
       IncomeDto dto = await api.createIncome(CreateIncomeDto.fromModel(income));
       await incomeStore.addIncome(dto.toEntity());
-      IncomeEntity? entity = incomeStore.getEntityById(dto.toEntity());
-      if (entity == null) {
-        return Resource.data(data: null, message: "Not found");
-      }
+      IncomeEntity? entity = await incomeStore.getEntityById(dto.toEntity());
+      if (entity == null) return Resource.data(data: null);
       return Resource.data(data: IncomeDto.fromEntity(entity).toModel());
+    } on DioError catch (err) {
+      return Resource.error(err: err, errorMessage: "dio error");
     } catch (e, stk) {
       debugPrintStack(stackTrace: stk);
-      return Resource.error(err: e, errorMessage: "Unknown error");
+      return Resource.error(err: e, errorMessage: "unknown error");
     }
   }
 
@@ -56,10 +49,9 @@ class IncomesRepoImpl implements IncomeRepostiory {
       IncomeSourceDto dto =
           await api.createSource(CreateSourceDto.fromModel(source));
       await sourceStore.addSource(dto.toEntity());
-      IncomeSourceEntity? entity = sourceStore.getEntityById(dto.toEntity());
-      if (entity == null) {
-        throw HiveError("entry not found");
-      }
+      IncomeSourceEntity? entity =
+          await sourceStore.getEntityById(dto.toEntity());
+      if (entity == null) return Resource.data(data: null);
       return Resource.data(data: IncomeSourceDto.fromEntity(entity).toModel());
     } catch (e) {
       return Resource.error(err: e, errorMessage: "Unknown error");
@@ -95,11 +87,10 @@ class IncomesRepoImpl implements IncomeRepostiory {
   Future<Resource<List<IncomeModel>>> getIncomes() async {
     try {
       Iterable<IncomeDto> incomes = await api.getIcomes();
-      incomeStore.deleteAll();
-      incomeStore.addIncomes(incomes.map((e) => e.toEntity()).toList());
+      await incomeStore.deleteAll();
+      await incomeStore.addIncomes(incomes.map((e) => e.toEntity()).toList());
       return Resource.data(
-        data: incomeStore
-            .getIncomes()
+        data: (await incomeStore.getIncomes())
             .map((e) => IncomeDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -107,8 +98,7 @@ class IncomesRepoImpl implements IncomeRepostiory {
       return Resource.error(
         err: e,
         errorMessage: "Unknown error",
-        data: incomeStore
-            .getIncomes()
+        data: (await incomeStore.getIncomes())
             .map((e) => IncomeDto.fromEntity(e).toModel())
             .toList(),
       );
@@ -119,25 +109,38 @@ class IncomesRepoImpl implements IncomeRepostiory {
   Future<Resource<List<IncomeSourceModel>>> getSources() async {
     try {
       Iterable<IncomeSourceDto> sources = await api.getSources();
-      sourceStore.deleteAll();
-      logger.fine("removed all");
-      sourceStore.addSources(sources.map((e) => e.toEntity()).toList());
-      logger.fine("adding");
+      await sourceStore.deleteAll();
+      await sourceStore.addSources(sources.map((e) => e.toEntity()).toList());
       return Resource.data(
-        data: sourceStore
-            .getSources()
+        data: (await sourceStore.getSources())
             .map((e) => IncomeSourceDto.fromEntity(e).toModel())
             .toList(),
       );
-    } catch (e) {
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       return Resource.error(
         err: e,
         errorMessage: "Unknown error",
-        data: sourceStore
-            .getSources()
+        data: (await sourceStore.getSources())
             .map((e) => IncomeSourceDto.fromEntity(e).toModel())
             .toList(),
       );
+    }
+  }
+
+  @override
+  Future<Resource<IncomeModel?>> updateIncome(UpdateIncomeModel income) async {
+    try {
+      IncomeDto dto = await api.updateIncome(UpdateIncomeDto.fromModel(income));
+      await incomeStore.updateIncome(dto.toEntity());
+      IncomeEntity? entity = await incomeStore.getEntityById(dto.toEntity());
+      if (entity == null) return Resource.data(data: null);
+      return Resource.data(data: IncomeDto.fromEntity(entity).toModel());
+    } on DioError catch (err) {
+      return Resource.error(err: err, errorMessage: "dio error");
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return Resource.error(err: e, errorMessage: "unknown error");
     }
   }
 }

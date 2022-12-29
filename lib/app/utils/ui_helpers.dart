@@ -1,8 +1,8 @@
-import 'package:expense_tracker/utils/date_formaters.dart';
+double ratioFromDateTime(DateTime start, DateTime end) {
+  /// Math.round(((today - start) / (end - start)) * 100) + '%';
 
-double ratioFromDateTime(DateTime from, DateTime to) {
-  int fromEpoch = from.millisecondsSinceEpoch;
-  int toEpoch = to.millisecondsSinceEpoch;
+  double percentage = (DateTime.now().difference(start).inMinutes) /
+      (end.difference(start).inMinutes);
 
-  return ((toEpoch - fromEpoch) / fromEpoch * 100);
+  return percentage <= 1 ? percentage : 1;
 }

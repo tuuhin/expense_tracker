@@ -9,7 +9,7 @@ class IncomeApi extends ResourceClient {
     return IncomeDto.fromJson(response.data);
   }
 
-  Future<IncomeDto> updateIncome(IncomeDto dto) async {
+  Future<IncomeDto> updateIncome(UpdateIncomeDto dto) async {
     Response response = await dio.put('/income/${dto.id}', data: dto.toJson());
     return IncomeDto.fromJson(response.data);
   }

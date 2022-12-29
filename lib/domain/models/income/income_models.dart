@@ -21,6 +21,17 @@ class CreateIncomeModel with _$CreateIncomeModel {
     required String title,
     required double amount,
     String? desc,
-    required List<int> sourcesId,
+    required List<IncomeSourceModel> sources,
   }) = _CreateIncomeModel;
+}
+
+@freezed
+class UpdateIncomeModel with _$UpdateIncomeModel {
+  factory UpdateIncomeModel({
+    required int id,
+    required String title,
+    required double amount,
+    String? desc,
+    required List<IncomeSourceModel> sources,
+  }) = _UpdateIncomeModel;
 }

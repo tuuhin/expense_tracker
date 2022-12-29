@@ -30,33 +30,29 @@ class IncomeCubit extends Cubit<IncomeState> {
   void addIncomeSources(IncomeSourceModel sourceModel) =>
       notifier.check(sourceModel);
 
-  List<IncomeSourceModel> get sources => _repo.cachedSources();
+  Future<List<IncomeSourceModel>> get cachedSources => _repo.cachedSources();
 
   Future<void> addIncome(CreateIncomeModel income) async {
     Resource<IncomeModel?> newIncome = await _repo.createIncome(income);
 
     newIncome.whenOrNull(
-      data: (data, message) {
-        if (state is! _Data && data != null) {
-          _uiEvent.showDialog(
-            "Refresh and try again ",
-            content:
-                "The category is created but could not be shown because the rest categories aren't load properly",
-          );
-          return;
-        }
-        List<IncomeModel> newSet = (state as _Data).data.toList()..add(data!);
-
-        int itemIndex = newSet.indexOf(data);
-
-        emit(IncomeState.data(data: newSet, message: message));
-
-        key.currentState?.insertItem(itemIndex);
-
-        _uiEvent.showSnackBar("Added new Category ${data.title}");
-      },
+      data: (data, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog(
+          "Refresh and try again ",
+          content: "Your icnome is createdrefresh the list to check it",
+        ),
+        noData: (_) =>
+            data != null ? emit(IncomeState.data(data: [data])) : null,
+        data: (preData, _) {
+          List<IncomeModel> newSet = preData.toList()..add(data!);
+          emit(IncomeState.data(data: newSet, message: message));
+          key.currentState?.insertItem(newSet.length - 1);
+          _uiEvent.showSnackBar(
+              message ?? "Added new income titled : ${data.title}");
+        },
+      ),
       error: (err, errorMessage, data) => _uiEvent.showDialog(
-          "Cannot add category ${income.title}. ",
+          "Cannot add income ${income.title}. ",
           content: "Error Occured :$errorMessage "),
     );
   }
@@ -68,28 +64,59 @@ class IncomeCubit extends Cubit<IncomeState> {
     Resource<void> remove = await _repo.deleteIncome(income);
 
     remove.whenOrNull(
-      data: (data, message) {
-        if (state is! _Data) {
+      data: (_, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog(
+          "Refresh and try again",
+          content: "Your income has been removed please refresh to see results",
+        ),
+        data: (preData, _) {
+          int index = preData.indexOf(income);
+          _key.currentState?.removeItem(
+            index,
+            (context, animation) =>
+                SizeTransition(sizeFactor: animation, child: widget),
+          );
+          List<IncomeModel> newSet = preData.toList()..removeAt(index);
+          if (newSet.isEmpty) {
+            emit(IncomeState.noData(message: "No data found"));
+            return;
+          }
+          emit(IncomeState.data(data: newSet));
           _uiEvent.showSnackBar(
-              "Your income has been removed please refresh to see results");
-          return;
-        }
-        int index = (state as _Data).data.indexOf(income);
-        _key.currentState?.removeItem(
-          index,
-          (context, animation) =>
-              SizeTransition(sizeFactor: animation, child: widget),
-        );
+              message ?? "Removed income titled: ${income.title}");
+        },
+      ),
+      error: (err, errorMessage, _) => _uiEvent.showSnackBar(
+          "Cannot delete income ${income.title}. Error Occured :$errorMessage"),
+    );
+  }
 
-        List<IncomeModel> newIncomeSet = (state as _Data).data.toList()
-          ..removeAt(index);
+  Future<void> updateIncome(UpdateIncomeModel income) async {
+    Resource<IncomeModel?> updatedExpense = await _repo.updateIncome(income);
 
-        emit(IncomeState.data(data: newIncomeSet, message: message));
+    updatedExpense.whenOrNull(
+      data: (data, message) => state.maybeWhen(
+        orElse: () => _uiEvent.showDialog(
+          "Refresh and try again",
+          content:
+              "Your expense has been removed please refresh to see results",
+        ),
+        data: (prevData, _) {
+          if (data == null) return;
 
-        _uiEvent.showSnackBar("Removed category ${income.title}");
-      },
+          int index =
+              prevData.toList().indexWhere((item) => item.id == income.id);
+
+          List<IncomeModel> newSet = prevData.toList()
+            ..removeWhere((item) => item.id == income.id)
+            ..insert(index, data);
+
+          emit(IncomeState.data(data: newSet));
+          _uiEvent.showSnackBar("Goal: ${data.title} has been updated.");
+        },
+      ),
       error: (err, errorMessage, data) => _uiEvent.showSnackBar(
-          "Cannot delete category ${income.title}. Error Occured :$errorMessage"),
+          "Cannot update expense ${income.title}. Error Occured :$errorMessage"),
     );
   }
 
@@ -99,21 +126,13 @@ class IncomeCubit extends Cubit<IncomeState> {
     Resource<List<IncomeModel>> incomes = await _repo.getIncomes();
 
     incomes.whenOrNull(
-      data: (data, message) {
-        if (data.isEmpty) {
-          emit(IncomeState.noData(message: "No data"));
-          return;
-        }
-        emit(IncomeState.data(data: data, message: message));
-      },
-      error: (err, errorMessage, data) {
-        if (data != null && data.isNotEmpty) {
-          emit(IncomeState.errorWithData(
-              errMessage: errorMessage, err: err, data: data));
-          return;
-        }
-        emit(IncomeState.error(errMessage: errorMessage, err: err));
-      },
+      data: (data, message) => (data.isEmpty)
+          ? emit(IncomeState.noData(message: "No data"))
+          : emit(IncomeState.data(data: data, message: message)),
+      error: (err, errorMessage, data) => (data != null && data.isNotEmpty)
+          ? emit(IncomeState.errorWithData(
+              errMessage: errorMessage, err: err, data: data))
+          : emit(IncomeState.error(errMessage: errorMessage, err: err)),
     );
   }
 }

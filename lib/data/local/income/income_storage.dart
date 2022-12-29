@@ -3,10 +3,10 @@ import 'package:hive/hive.dart';
 import '../../entity/entity.dart';
 
 class IncomeStorage {
-  static Box<IncomeEntity>? income;
+  static late final LazyBox<IncomeEntity>? income;
 
   static Future<void> init() async {
-    income = await Hive.openBox<IncomeEntity>('income');
+    income = await Hive.openLazyBox<IncomeEntity>('income');
   }
 
   Future<void> addIncome(IncomeEntity entity) async =>
@@ -16,14 +16,19 @@ class IncomeStorage {
       await income!.putAll(
           enitites.asMap().map((key, entity) => MapEntry(entity.id, entity)));
 
-  Iterable<IncomeEntity> getIncomes() => income!.values.toList();
+  Future<Iterable<IncomeEntity>> getIncomes() async =>
+      (await Future.wait<IncomeEntity?>(
+              income!.keys.map((e) => income!.get(e))))
+          .whereType<IncomeEntity>();
 
-  IncomeEntity? getEntityById(IncomeEntity entity) => income!.get(entity.id);
+  Future<void> updateIncome(IncomeEntity entity) async =>
+      await income!.put(entity.id, entity);
 
-  Future<void> deleteIncome(IncomeEntity entity) async {
-    await income!.delete(entity.id);
-  }
+  Future<IncomeEntity?> getEntityById(IncomeEntity entity) async =>
+      await income!.get(entity.id);
 
-  Future<void> deleteAll() async =>
-      income!.keys.map((e) async => income!.delete(e));
+  Future<void> deleteIncome(IncomeEntity entity) async =>
+      await income!.delete(entity.id);
+
+  Future<void> deleteAll() async => income!.clear();
 }

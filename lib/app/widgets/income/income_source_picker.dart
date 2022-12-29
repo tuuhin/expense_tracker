@@ -1,43 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../context/context.dart';
 import '../../../domain/models/models.dart';
 import '../widgets.dart';
 
 class IncomeSourcePicker extends StatefulWidget {
-  final List<IncomeSourceModel> sources;
-  const IncomeSourcePicker({Key? key, required this.sources}) : super(key: key);
+  const IncomeSourcePicker({Key? key}) : super(key: key);
 
   @override
   State<IncomeSourcePicker> createState() => _IncomeSourcePickerState();
 }
 
 class _IncomeSourcePickerState extends State<IncomeSourcePicker> {
-  final GlobalKey<SliverAnimatedListState> _sourcesKey =
-      GlobalKey<SliverAnimatedListState>();
-
-  void _addItems(Duration _) async {
-    for (var i = 0; i < widget.sources.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 200),
-          () => _sourcesKey.currentState?.insertItem(i));
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    WidgetsBinding.instance.addPostFrameCallback(_addItems);
+  void _createSource() {
+    Navigator.of(context).pop();
+    context.push('/sources');
   }
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          pinned: true,
-          toolbarHeight: kTextTabBarHeight * .75,
-          automaticallyImplyLeading: false,
-          title: Text(
+    final Size size = MediaQuery.of(context).size;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
             'Pick sources',
             style: Theme.of(context)
                 .textTheme
@@ -45,16 +34,67 @@ class _IncomeSourcePickerState extends State<IncomeSourcePicker> {
                 ?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.all(10),
-          sliver: SliverAnimatedList(
-            key: _sourcesKey,
-            itemBuilder: (context, index, animation) => SizeTransition(
-              sizeFactor: animation,
-              child: IncomeSourcePickerTile(source: widget.sources[index]),
-            ),
+        Expanded(
+          child: FutureBuilder<List<IncomeSourceModel>>(
+            future: context.read<IncomeCubit>().cachedSources,
+            builder: (context, snapshot) => (snapshot.hasData &&
+                    snapshot.data != null)
+                ? CustomScrollView(
+                    slivers: [
+                      (snapshot.data!.isNotEmpty)
+                          ? SliverPadding(
+                              padding: const EdgeInsets.all(8.0),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                    (context, index) => IncomeSourcePickerTile(
+                                        source: snapshot.data![index]),
+                                    childCount: snapshot.data!.length),
+                              ),
+                            )
+                          : SliverFillRemaining(
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'No sources found',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle1
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Try adding some',
+                                      style:
+                                          Theme.of(context).textTheme.caption,
+                                    )
+                                  ],
+                                ),
+                              ),
+                            )
+                    ],
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      CircularProgressIndicator(),
+                    ],
+                  ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              fixedSize: Size(size.width, 50),
+            ),
+            onPressed: _createSource,
+            child: const Text('Add Income'),
+          ),
+        )
       ],
     );
   }

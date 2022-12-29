@@ -84,8 +84,7 @@ class _ShowIncomesState extends State<ShowIncomes> {
                   ),
                   builder: (context, state) => state.when(
                     loading: () => const LoadingShimmer(),
-                    noData: (message) =>
-                        SliverFillRemaining(child: NoDataWidget.categories()),
+                    noData: (message) => NoDataWidget.categories(),
                     data: (data, message) => Incomes(incomes: data),
                     error: (errMessage, err) => SliverFillRemaining(
                         child: BaseError(message: errMessage, error: err)),
