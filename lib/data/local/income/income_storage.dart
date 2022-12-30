@@ -30,5 +30,5 @@ class IncomeStorage {
   Future<void> deleteIncome(IncomeEntity entity) async =>
       await income!.delete(entity.id);
 
-  Future<void> deleteAll() async => income!.clear();
+  Future<void> deleteAll() async => await income!.clear();
 }

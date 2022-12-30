@@ -2,8 +2,8 @@ part of 'notification_bloc.dart';
 
 @freezed
 class NotificationEvent with _$NotificationEvent {
-  const factory NotificationEvent.fetchSome() = _FetchSome;
-  const factory NotificationEvent.fetchMore() = _FetchMore;
-
-  const factory NotificationEvent.refresh() = _Refresh;
+  factory NotificationEvent.fetchSome() = _FetchSome;
+  factory NotificationEvent.fetchMore() = _FetchMore;
+  factory NotificationEvent.refresh() = _Refresh;
+  factory NotificationEvent.clear() = _Clear;
 }

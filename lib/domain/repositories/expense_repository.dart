@@ -12,4 +12,7 @@ abstract class ExpenseRespository {
   Future<Resource<ExpenseModel?>> createExpense(CreateExpenseModel expense);
   Future<Resource<void>> deleteExpense(ExpenseModel expense);
   Future<Resource<ExpenseModel?>> updateExpense(UpdateExpenseModel expense);
+
+  Future<void> clearCategoryCached();
+  Future<void> clearExpenseCached();
 }

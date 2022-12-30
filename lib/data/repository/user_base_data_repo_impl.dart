@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import '../dto/dto.dart';
 import '../entity/entity.dart';
@@ -16,31 +17,33 @@ class UserBaseDataRepoImpl implements UserBaseDataRepository {
 
   @override
   Future<Resource<UserBaseOverViewModel?>> getBaseOverView() async {
-    UserBaseDataEntity? cache = await dao.getUserBaseData();
+    UserBaseDataEntity? cache = dao.getData();
 
     try {
-      UserBaseOverviewDto dto = await api.getBaseOverView();
-      dao.updateBaseData(dto.toEntity());
-      UserBaseDataEntity? entity = await dao.getUserBaseData();
+      BaseOverviewDto dto = await api.getBaseOverView();
+
+      await dao.updateData(dto.toEntity());
+      UserBaseDataEntity? entity = dao.getData();
       if (entity == null) return Resource.data(data: null);
-      return Resource.data(
-          data: UserBaseOverviewDto.fromEntity(entity).toModel());
+      return Resource.data(data: BaseOverviewDto.fromEntity(entity).toModel());
     } on DioError catch (dio) {
       return Resource.error(
         err: dio,
         errorMessage: "DIO ERROR",
-        data: cache != null
-            ? UserBaseOverviewDto.fromEntity(cache).toModel()
-            : null,
+        data:
+            cache != null ? BaseOverviewDto.fromEntity(cache).toModel() : null,
       );
-    } catch (e) {
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       return Resource.error(
         err: e,
         errorMessage: "unknown error",
-        data: cache != null
-            ? UserBaseOverviewDto.fromEntity(cache).toModel()
-            : null,
+        data:
+            cache != null ? BaseOverviewDto.fromEntity(cache).toModel() : null,
       );
     }
   }
+
+  @override
+  Future<void> clearCache() => dao.delete();
 }

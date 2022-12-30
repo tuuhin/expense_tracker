@@ -1,5 +1,4 @@
-import 'package:bloc/bloc.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../domain/models/models.dart';
@@ -14,15 +13,22 @@ class BaseInformationCubit extends Cubit<BaseInformationState> {
 
   final UserBaseDataRepository _repo;
 
-  Future<void> getBaseOverView() async {
+  Future<void> init() async {
+    emit(BaseInformationState.loading());
     Resource<UserBaseOverViewModel?> resource = await _repo.getBaseOverView();
     resource.whenOrNull(
-      data: (data, message) {
-        if (data != null) {
-          emit(BaseInformationState.success(data: data));
-        }
-      },
-      error: (err, errorMessage, data) {},
+      data: (data, message) => (data != null)
+          ? emit(BaseInformationState.success(data: data))
+          : emit(BaseInformationState.success(
+              data: UserBaseOverViewModel.noData())),
+      error: (err, errorMessage, data) => data != null
+          ? emit(BaseInformationState.errorWithData(
+              err: err, data: data, message: errorMessage))
+          : emit(BaseInformationState.failed(err: err, message: errorMessage)),
     );
   }
+
+  Future<void> clearCache() async => _repo.clearCache();
+
+  Future<void> refresh() async => init();
 }

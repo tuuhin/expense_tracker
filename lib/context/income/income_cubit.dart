@@ -32,6 +32,11 @@ class IncomeCubit extends Cubit<IncomeState> {
 
   Future<List<IncomeSourceModel>> get cachedSources => _repo.cachedSources();
 
+  Future<void> clearCache() async {
+    await _repo.clearcachedIncomes();
+    await _repo.clearcachedSources();
+  }
+
   Future<void> addIncome(CreateIncomeModel income) async {
     Resource<IncomeModel?> newIncome = await _repo.createIncome(income);
 

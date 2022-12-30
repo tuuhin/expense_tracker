@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
 import '../dto/dto.dart';
 import '../entity/entity.dart';
 import '../remote/remote.dart';
@@ -11,48 +10,47 @@ import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
-  ProfileRepositoryImpl({required this.api, required this.profile});
-
-  @override
   final UserProfileDao profile;
 
-  @override
   final UserDataApi api;
+  ProfileRepositoryImpl({required this.api, required this.profile});
+
+  bool _isServerValidatioonDone = false;
 
   @override
-  Stream<UserProfileModel?> streamProfile() =>
-      profile.streamData().asyncMap((event) {
-        if (event == null) return null;
-        return UserProfileDto.fromEntity(event).toModel();
-      });
+  Stream<UserProfileModel?> streamProfile() async* {
+    if (!_isServerValidatioonDone) {
+      yield* Stream.value(await getProfile());
+      _isServerValidatioonDone = true;
+    }
+
+    yield* profile.streamData().asyncMap(
+          (entity) => (entity == null)
+              ? null
+              : UserProfileDto.fromEntity(entity).toModel(),
+        );
+  }
 
   @override
   UserProfileModel? cachedProfile() {
     UserProfileEntity? cache = profile.getProfile();
-    logger.fine(cache);
-    if (cache == null) return null;
-    return UserProfileDto.fromEntity(cache).toModel();
+    return (cache == null) ? null : UserProfileDto.fromEntity(cache).toModel();
   }
 
   @override
   Future<UserProfileModel?> getProfile() async {
-    UserProfileEntity? userProfile = profile.getProfile();
-    if (userProfile == null) {
-      try {
-        UserProfileDto dto = await api.getUserProfile();
-        UserProfileModel userProfile = dto.toModel();
-        await profile
-            .updateProfile(UserProfileDto.fromModel(userProfile).toEntity());
-        UserProfileEntity? updatedProfile = profile.getProfile();
-        return UserProfileDto.fromEntity(updatedProfile!).toModel();
-      } catch (e, stk) {
-        debugPrintStack(stackTrace: stk);
-        logger.shout('Error Occured');
-
-        return null;
-      }
+    try {
+      UserProfileDto dto = await api.getUserProfile();
+      UserProfileModel userProfile = dto.toModel();
+      await profile
+          .updateProfile(UserProfileDto.fromModel(userProfile).toEntity());
+      UserProfileEntity? updatedProfile = profile.getProfile();
+      if (updatedProfile == null) return null;
+      return UserProfileDto.fromEntity(updatedProfile).toModel();
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
+      return null;
     }
-    return UserProfileDto.fromEntity(userProfile).toModel();
   }
 
   @override
@@ -78,7 +76,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Resource<void>> changePassword(
       String oldPword, String newPword) async {
     try {
-      logger.fine("oke");
       await api.changePassword(
           ChangePasswordDto(oldPassword: oldPword, newPassword: newPword));
       return Resource.data(
@@ -101,8 +98,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<UserProfileModel?> setProfile(UserProfileModel model) async {
     await profile.updateProfile(UserProfileDto.fromModel(model).toEntity());
     UserProfileEntity? updatedProfile = profile.getProfile();
-    logger.fine(updatedProfile?.photoURL);
     if (updatedProfile == null) return null;
     return UserProfileDto.fromEntity(updatedProfile).toModel();
   }
+
+  @override
+  Future<void> clearCache() async => await profile.clear();
 }

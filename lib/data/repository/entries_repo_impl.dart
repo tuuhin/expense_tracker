@@ -1,8 +1,10 @@
-import '../../utils/resource.dart';
+import 'package:flutter/cupertino.dart';
+
 import '../dto/dto.dart';
-import '../remote/entries_api.dart';
-import '../../domain/repositories/repositories.dart';
+import '../remote/remote.dart';
+import '../../utils/resource.dart';
 import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
 class EntriesRepositoryImpl implements EntriesRepository {
   final EntriesApi api;
@@ -13,7 +15,8 @@ class EntriesRepositoryImpl implements EntriesRepository {
     try {
       EntriesDto dto = await api.getEntries();
       return Resource.data(data: dto.toModel());
-    } catch (e) {
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       return Resource.error(err: e, errorMessage: "Unknown error");
     }
   }
@@ -24,7 +27,8 @@ class EntriesRepositoryImpl implements EntriesRepository {
     try {
       EntriesDto dto = await api.getMoreEntries(offset: offset, limit: limit);
       return Resource.data(data: dto.toModel());
-    } catch (e) {
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       return Resource.error(err: e, errorMessage: "Unknown error");
     }
   }

@@ -106,9 +106,12 @@ class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
                   "The goal titled ${event.goal.title} updated. Refresh to see reuslts"),
           data: (prevData, _) {
             if (data == null) return;
+            int index = prevData
+                .toList()
+                .indexWhere((item) => item.id == event.goal.id);
             List<GoalsModel> newSet = prevData.toList()
-              ..removeWhere((item) => item.id == event.goal.id)
-              ..add(data);
+              ..removeAt(index)
+              ..insert(index, data);
 
             emit(GoalsState.data(data: newSet));
             _uiEvent.showSnackBar("Goal: ${data.title} has been updated.");
@@ -118,6 +121,8 @@ class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
             _uiEvent.showSnackBar("Cannot update goal ${event.goal.title}"),
       );
     });
+
+    on<_Clear>((event, emit) async => await _repo.clearCache());
   }
 
   Future<void> fetchGoals() async => add(_GetData());
@@ -130,4 +135,6 @@ class GoalsBloc extends Bloc<GoalsEvent, GoalsState> {
       add(_DeleteGoal(goal, widget: widget));
 
   void updateGoal(GoalsModel goal) => add(_UpdateGoal(goal));
+
+  Future<void> clearCache() async => add(_Clear());
 }

@@ -26,4 +26,6 @@ class UserProfileDao {
   UserProfileEntity? getProfile() => _profile!.get('profile');
 
   Future<void> removeProfile() async => await _profile!.delete('profile');
+
+  Future<void> clear() => _profile!.clear();
 }

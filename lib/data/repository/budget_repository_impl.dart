@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/main.dart';
 import 'package:flutter/material.dart';
 
 import '../dto/dto.dart';
@@ -85,7 +84,6 @@ class BudgetRepositoryImpl implements BudgetRepository {
       await cache.deleteBudget(BudgetDto.fromModel(budget).toEntity());
       return Resource.data(data: null);
     } on DioError catch (dio) {
-      logger.fine(dio.response?.data);
       return Resource.error(
         err: dio,
         errorMessage: dio.type == DioErrorType.response
@@ -129,4 +127,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   Future<List<BudgetModel>> cachedBudget() async => (await cache.getBudget())
       .map((e) => BudgetDto.fromEntity(e).toModel())
       .toList();
+
+  @override
+  Future<void> clearCache() async => await cache.deleteAll();
 }

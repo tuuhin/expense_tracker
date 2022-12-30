@@ -143,4 +143,10 @@ class IncomesRepoImpl implements IncomeRepostiory {
       return Resource.error(err: e, errorMessage: "unknown error");
     }
   }
+
+  @override
+  Future<void> clearcachedIncomes() async => await incomeStore.deleteAll();
+
+  @override
+  Future<void> clearcachedSources() async => await sourceStore.deleteAll();
 }

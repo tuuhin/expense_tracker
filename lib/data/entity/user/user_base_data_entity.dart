@@ -1,10 +1,8 @@
 import 'package:hive/hive.dart';
 
-import '../../../domain/models/user/user_base_overview_model.dart';
-
 part 'user_base_data_entity.g.dart';
 
-@HiveType(typeId: 08)
+@HiveType(typeId: 8)
 class UserBaseDataEntity extends HiveObject {
   @HiveField(0)
   final double totalIncome;
@@ -24,11 +22,4 @@ class UserBaseDataEntity extends HiveObject {
     required this.monthlyIncome,
     required this.totalIncome,
   });
-
-  UserBaseOverViewModel toModel() => UserBaseOverViewModel(
-        totalIncome: totalIncome,
-        monthlyIncome: monthlyIncome,
-        totalExpense: totalExpense,
-        monthlyExpense: monthlyExpense,
-      );
 }

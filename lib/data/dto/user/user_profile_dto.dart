@@ -33,21 +33,24 @@ class UserProfileDto {
   });
 
   UserProfileEntity toEntity() => UserProfileEntity(
-      phoneNumber: phoneNumber,
-      firstName: firstName,
-      lastName: lastName,
-      photoURL: photoURL,
-      createdAt: createdAt,
-      updatedAt: updatedAt);
+        phoneNumber: phoneNumber,
+        firstName: firstName,
+        lastName: lastName,
+        photoURL: photoURL,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        email: email,
+      );
 
   UserProfileModel toModel() => UserProfileModel(
-      phoneNumber: phoneNumber,
-      firstName: firstName,
-      lastName: lastName,
-      photoURL: photoURL,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      email: email,);
+        phoneNumber: phoneNumber,
+        firstName: firstName,
+        lastName: lastName,
+        photoURL: photoURL,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        email: email,
+      );
 
   factory UserProfileDto.fromModel(UserProfileModel model) => UserProfileDto(
       phoneNumber: model.phoneNumber,
@@ -60,13 +63,13 @@ class UserProfileDto {
 
   factory UserProfileDto.fromEntity(UserProfileEntity entity) {
     return UserProfileDto(
-      phoneNumber: entity.phoneNumber,
-      firstName: entity.firstName,
-      lastName: entity.lastName,
-      photoURL: entity.photoURL,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    );
+        phoneNumber: entity.phoneNumber,
+        firstName: entity.firstName,
+        lastName: entity.lastName,
+        photoURL: entity.photoURL,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt,
+        email: entity.email);
   }
   factory UserProfileDto.fromJson(Map<String, dynamic> json) =>
       _$UserProfileDtoFromJson(json);

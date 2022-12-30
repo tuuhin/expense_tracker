@@ -11,4 +11,6 @@ abstract class BudgetRepository {
   Future<Resource<void>> deleteBudget(BudgetModel budget);
 
   Future<List<BudgetModel>> cachedBudget();
+
+  Future<void> clearCache();
 }

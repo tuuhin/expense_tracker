@@ -15,9 +15,9 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   UserProfileModel? cahcedData() => _repo.cachedProfile();
 
-  // Future<UserProfileModel?> getProfile() => _repo.getProfile();
-
   Stream<UserProfileModel?> streamProfile() => _repo.streamProfile();
+
+  Future<void> clearCache() async => await _repo.clearCache();
 
   Future<void> updateProfile(UserProfileModel model) async {
     emit(ProfileState.requesting());

@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/models/models.dart';
-import '../../domain/repositories/notification_repo.dart';
 import '../../utils/resource.dart';
+import '../../domain/models/models.dart';
+import '../../domain/repositories/repositories.dart';
 
 part 'notification_event.dart';
 part 'notification_state.dart';
@@ -34,7 +33,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
   String? _nextURL;
 
-  NotificationBloc(this._repository) : super(const _Loading()) {
+  NotificationBloc(this._repository) : super(_Loading()) {
     on<_FetchSome>((event, emit) async {
       Resource<NotificationModel> entries = await _repository.getNotification();
 
@@ -44,19 +43,18 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
           if (_nextURL != null) {
             _offset = _offsetFromString(_nextURL!) ?? 1;
           }
-          if (data.data.isEmpty) {
-            emit(const NotificationState.noData(message: "No data found"));
-            return;
-          }
-          emit(NotificationState.data(data: _data..addAll(data.data)));
+          (data.data.isEmpty)
+              ? emit(NotificationState.noData(message: "No data found"))
+              : emit(NotificationState.data(data: _data..addAll(data.data)));
         },
-        error: (err, errorMessage, data) {
-          emit(NotificationState.error(err: err, message: errorMessage));
-        },
+        error: (err, errorMessage, data) =>
+            emit(NotificationState.error(err: err, message: errorMessage)),
       );
     });
 
     on<_FetchMore>((event, emit) async {
+      if (state is _Loading || state is _Error) return;
+
       if (_nextURL == null) {
         emit(NotificationState.end(data: _data, message: "END OF THE LIST"));
         return;
@@ -85,23 +83,25 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
             );
           }
         },
-        error: (err, errorMessage, data) {
-          emit(NotificationState.errorLoadMore(
-              err: err, data: _data, message: errorMessage));
-        },
+        error: (err, errorMessage, data) => emit(
+            NotificationState.errorLoadMore(
+                err: err, data: _data, message: errorMessage)),
       );
     });
 
     on<_Refresh>((event, emit) {
-      _data.clear();
-      emit(const NotificationState.loading());
-      add(const _FetchSome());
+      add(_Clear());
+      emit(NotificationState.loading());
+      add(_FetchSome());
     });
+
+    on<_Clear>((event, emit) => _data.clear());
   }
-  void fetchMore() => add(const _FetchMore());
+  void fetchMore() => add(_FetchMore());
 
-  Future<void> refresh() async => add(const _Refresh());
+  Future<void> refresh() async => add(_Refresh());
 
-  void init() =>
-      _data.isEmpty ? add(const _FetchSome()) : add(const _FetchMore());
+  void init() => _data.isEmpty ? add(_FetchSome()) : add(_FetchMore());
+
+  Future<void> clear() async => add(_Clear());
 }

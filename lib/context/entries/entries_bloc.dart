@@ -32,7 +32,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
 
   String? _nextURL;
 
-  EntriesBloc(this._repository) : super(const _Loading()) {
+  EntriesBloc(this._repository) : super(_Loading()) {
     on<_FetchSome>((event, emit) async {
       Resource<EntriesModel> entries = await _repository.getEntries();
 
@@ -42,19 +42,17 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
           if (_nextURL != null) {
             _offset = _offsetFromString(_nextURL!) ?? 1;
           }
-          if (data.entries.isEmpty) {
-            emit(const EntriesState.noData(message: "No data found"));
-            return;
-          }
-          emit(EntriesState.data(data: _entries..addAll(data.entries)));
+          data.entries.isEmpty
+              ? emit(EntriesState.noData(message: "No data found"))
+              : emit(EntriesState.data(data: _entries..addAll(data.entries)));
         },
-        error: (err, errorMessage, data) {
-          emit(EntriesState.error(error: errorMessage));
-        },
+        error: (err, errorMessage, data) =>
+            emit(EntriesState.error(error: errorMessage)),
       );
     });
 
     on<_FetchMore>((event, emit) async {
+      if (state is _Loading || state is _Error) return;
       if (_nextURL == null) {
         emit(EntriesState.end(data: _entries, message: "END OF THE LIST"));
         return;
@@ -81,30 +79,28 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
             );
           }
         },
-        error: (err, errorMessage, data) {
-          emit(EntriesState.errorLoadMore(data: _entries, error: errorMessage));
-        },
+        error: (err, errorMessage, data) => emit(
+            EntriesState.errorLoadMore(data: _entries, error: errorMessage)),
       );
     });
 
     on<_Referesh>((event, emit) {
       _entries.clear();
-      emit(const EntriesState.loading());
-      add(const _FetchSome());
+      emit(EntriesState.loading());
+      add(_FetchSome());
     });
 
     on<_Clear>((event, emit) {
       _entries.clear();
-      emit(const EntriesState.loading());
+      emit(EntriesState.loading());
     });
   }
 
-  Future<void> refresh() async => add(const _Referesh());
+  Future<void> refresh() async => add(_Referesh());
 
-  void fetchMore() => add(const _FetchMore());
+  void fetchMore() => add(_FetchMore());
 
-  void clear() => add(const _Clear());
+  Future<void> clear() async => add(_Clear());
 
-  void init() =>
-      _entries.isEmpty ? add(const _FetchSome()) : add(const _FetchMore());
+  void init() => _entries.isEmpty ? add(_FetchSome()) : add(_FetchMore());
 }

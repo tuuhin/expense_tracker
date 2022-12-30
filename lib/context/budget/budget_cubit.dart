@@ -26,6 +26,8 @@ class BudgetCubit extends Cubit<BudgetState> {
 
   Future<List<BudgetModel>> cachedBudget() => _repo.cachedBudget();
 
+  Future<void> clearCache() async => await _repo.clearCache();
+
   Future<void> addBudget(CreateBudgetModel budget) async {
     Resource<BudgetModel?> newBudget = await _repo.createBudget(budget);
 
@@ -96,9 +98,11 @@ class BudgetCubit extends Cubit<BudgetState> {
             .showSnackBar(message ?? "Updated budget: ${data?.title ?? ''}"),
         data: (prevData, _) {
           if (data == null) return;
+          int index =
+              prevData.toList().indexWhere((item) => item.id == budget.id);
           List<BudgetModel> newSet = prevData.toList()
             ..removeWhere((item) => item.id == budget.id)
-            ..add(data);
+            ..insert(index, data);
 
           emit(BudgetState.data(data: newSet));
           _uiEvent.showSnackBar("Budget: ${data.title} has been updated.");

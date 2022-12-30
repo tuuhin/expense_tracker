@@ -9,10 +9,10 @@ class CategoriesStorage {
     _categories = await Hive.openLazyBox<CategoryEntity>('expense_categories');
   }
 
-  Future<void> addExpenseCategory(CategoryEntity entity) async =>
+  Future<void> addCategory(CategoryEntity entity) async =>
       await _categories!.put(entity.id, entity);
 
-  Future<void> addExpenseCategories(List<CategoryEntity> enities) async =>
+  Future<void> addCategories(List<CategoryEntity> enities) async =>
       await _categories!
           .putAll(enities.asMap().map((key, e) => MapEntry(e.id, e)));
 
@@ -27,5 +27,5 @@ class CategoriesStorage {
   Future<void> deleteCategory(CategoryEntity entity) async =>
       await _categories!.delete(entity.id);
 
-  Future<void> deleteAllCategory() async => _categories!.clear();
+  Future<void> deleteAll() async => _categories!.clear();
 }

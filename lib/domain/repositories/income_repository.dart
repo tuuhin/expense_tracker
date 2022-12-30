@@ -9,8 +9,12 @@ abstract class IncomeRepostiory {
   Future<Resource<void>> deleteSource(IncomeSourceModel source);
   Future<List<IncomeSourceModel>> cachedSources();
 
+  Future<void> clearcachedSources();
+
   Future<Resource<List<IncomeModel>>> getIncomes();
   Future<Resource<IncomeModel?>> createIncome(CreateIncomeModel income);
   Future<Resource<void>> deleteIncome(IncomeModel income);
   Future<Resource<IncomeModel?>> updateIncome(UpdateIncomeModel income);
+
+  Future<void> clearcachedIncomes();
 }

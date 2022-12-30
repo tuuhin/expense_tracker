@@ -6,4 +6,6 @@ abstract class GoalsRepository {
   Future<Resource<GoalsModel?>> addGoal(CreateGoalModel goal);
   Future<Resource<GoalsModel?>> updateGoal(GoalsModel goal);
   Future<Resource<void>> removeGoal(GoalsModel goal);
+
+  Future<void> clearCache();
 }

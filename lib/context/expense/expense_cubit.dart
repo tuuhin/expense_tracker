@@ -32,6 +32,11 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<List<ExpenseCategoriesModel>> get cahedCategories async =>
       _repo.cachedCategories();
 
+  Future<void> clearCache() async {
+    await _repo.clearCategoryCached();
+    await _repo.clearExpenseCached();
+  }
+
   Future<void> addExpense(CreateExpenseModel expense) async {
     Resource<ExpenseModel?> newExpense = await _repo.createExpense(expense);
 

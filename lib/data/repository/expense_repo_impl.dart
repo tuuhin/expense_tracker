@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
 import '../dto/dto.dart';
 import '../entity/entity.dart';
 import '../local/storage.dart';
@@ -26,9 +25,9 @@ class ExpenseRepoImpl implements ExpenseRespository {
   Future<Resource<List<ExpenseCategoriesModel>>> getCategories() async {
     try {
       Iterable<ExpenseCategoryDto> categories = await api.getCategories();
-      await categoryStore.deleteAllCategory();
+      await categoryStore.deleteAll();
       await categoryStore
-          .addExpenseCategories(categories.map((e) => e.toEntity()).toList());
+          .addCategories(categories.map((e) => e.toEntity()).toList());
       return Resource.data(
         data: (await categoryStore.getCategories())
             .map((e) => ExpenseCategoryDto.fromEntity(e).toModel())
@@ -57,7 +56,7 @@ class ExpenseRepoImpl implements ExpenseRespository {
     try {
       ExpenseCategoryDto dto =
           await api.createCategory(CreateCategoryDto.fromModel(category));
-      await categoryStore.addExpenseCategory(dto.toEntity());
+      await categoryStore.addCategory(dto.toEntity());
       CategoryEntity? entity =
           await categoryStore.getCategoryById(dto.toEntity());
       if (entity == null) return Resource.data(data: null);
@@ -81,7 +80,6 @@ class ExpenseRepoImpl implements ExpenseRespository {
 
       return Resource.data(data: ExpenseDto.fromEntity(entity).toModel());
     } on DioError catch (e) {
-      logger.fine(e.response?.data);
       return Resource.error(err: e, errorMessage: "Dioerror");
     } catch (e) {
       return Resource.error(err: e, errorMessage: "Error");
@@ -148,10 +146,15 @@ class ExpenseRepoImpl implements ExpenseRespository {
       if (entity == null) return Resource.data(data: null);
       return Resource.data(data: ExpenseDto.fromEntity(entity).toModel());
     } on DioError catch (e) {
-      logger.fine(e.response?.data);
       return Resource.error(err: e, errorMessage: "Dioerror");
     } catch (e) {
       return Resource.error(err: e, errorMessage: "Error");
     }
   }
+
+  @override
+  Future<void> clearCategoryCached() async => await categoryStore.deleteAll();
+
+  @override
+  Future<void> clearExpenseCached() async => await expenseStore.deleteAll();
 }

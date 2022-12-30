@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../main.dart';
 import '../dto/dto.dart';
 import '../entity/entity.dart';
 import '../remote/remote.dart';
@@ -105,7 +104,6 @@ class GoalsRepositoryImpl implements GoalsRepository {
       return Resource.data(
           data: GoalsDto.fromEntity(entity).toModel(), message: "Goal added");
     } on DioError catch (dio) {
-      logger.fine(dio.response?.data);
       return Resource.error(
         err: dio,
         errorMessage: dio.type == DioErrorType.response
@@ -120,4 +118,7 @@ class GoalsRepositoryImpl implements GoalsRepository {
       return Resource.error(err: e, errorMessage: "Unknown Error Occured");
     }
   }
+
+  @override
+  Future<void> clearCache() async => await dao.deleteAll();
 }
