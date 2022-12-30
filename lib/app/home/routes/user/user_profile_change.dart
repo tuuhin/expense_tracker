@@ -33,7 +33,8 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
 
   void _pickImage(ImageSource source) async {
     try {
-      XFile? file = await ImagePicker().pickImage(source: source);
+      XFile? file =
+          await ImagePicker().pickImage(source: source, imageQuality: 80);
       if (file == null) return;
       setState(() => _file = File(file.path));
     } on PlatformException {
@@ -41,7 +42,8 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
         ..clearSnackBars()
         ..showSnackBar(
             const SnackBar(content: Text("Platform exception occured")));
-    } catch (e) {
+    } catch (e, stk) {
+      debugPrintStack(stackTrace: stk);
       logger.severe(e);
     }
   }
@@ -81,11 +83,11 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
   @override
   void initState() {
     super.initState();
-    _firstName = TextEditingController(text: widget.profile?.firstName ?? '');
-    _lastName = TextEditingController(text: widget.profile?.lastName ?? '');
-    _email = TextEditingController(text: widget.profile?.email ?? '');
-    _phoneNumber = TextEditingController(
-        text: widget.profile?.phoneNumber?.toString() ?? '');
+    _firstName = TextEditingController(text: widget.profile?.firstName);
+    _lastName = TextEditingController(text: widget.profile?.lastName);
+    _email = TextEditingController(text: widget.profile?.email);
+    _phoneNumber =
+        TextEditingController(text: widget.profile?.phoneNumber?.toString());
 
     _imageURL = widget.profile?.photoURL;
     _createdAt = widget.profile?.createdAt;
@@ -106,7 +108,6 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(),
       resizeToAvoidBottomInset: false,
       body: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) => state.whenOrNull(
@@ -122,6 +123,7 @@ class _ChangeUserProfileState extends State<ChangeUserProfile> {
         ),
         child: CustomScrollView(
           slivers: [
+            const SliverAppBar(floating: true),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),

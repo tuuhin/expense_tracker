@@ -41,6 +41,7 @@ class GoalsCard extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: CachedNetworkImage(
+                          key: ValueKey(goal.imageUrl!),
                           imageUrl: goal.imageUrl!,
                           height: 150,
                           width: 150,

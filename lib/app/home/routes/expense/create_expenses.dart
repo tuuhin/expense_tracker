@@ -73,7 +73,8 @@ class _CreateExpenseState extends State<CreateExpense> {
 
   void _pickImage(ImageSource source) async {
     try {
-      XFile? file = await ImagePicker().pickImage(source: source);
+      XFile? file =
+          await ImagePicker().pickImage(source: source, imageQuality: 50);
       if (file == null) return;
       setState(() => _receipt = File(file.path));
     } on PlatformException {

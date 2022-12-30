@@ -38,19 +38,11 @@ class GoalImagePicker extends StatelessWidget {
                     ],
                   ),
                 )
-              : DropImageShadow(
-                  scale: 1,
-                  offset: const Offset(10, 10),
-                  blurRadius: 10,
-                  borderRadius: 10,
-                  image: Image(
-                    image: CachedNetworkImageProvider(
-                      imageURL!,
-                    ),
-                    height: size.height * .3,
-                    width: size.height * .3,
-                    fit: BoxFit.cover,
-                  ),
+              : CachedNetworkImage(
+                  imageUrl: imageURL!,
+                  height: size.height * .3,
+                  width: size.height * .3,
+                  fit: BoxFit.cover,
                 )
           : DropImageShadow(
               scale: 1,
@@ -68,16 +60,3 @@ class GoalImagePicker extends StatelessWidget {
     );
   }
 }
-// ClipRRect(
-//                   borderRadius: BorderRadius.circular(size.height * .125),
-//                   child: CachedNetworkImage(
-//                     alignment: Alignment.center,
-//                     imageUrl: imageURL!,
-//                     height: size.height * .2,
-//                     width: size.height * .2,
-//                     fit: BoxFit.cover,
-//                     errorWidget: (context, url, error) => Container(
-//                       color: Colors.black26,
-//                     ),
-//                   ),
-//                 )

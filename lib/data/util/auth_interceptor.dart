@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/data/local/storage.dart';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../main.dart';
+import '../dto/dto.dart';
+import '../local/storage.dart';
 
 class AuthInterceptors extends QueuedInterceptor {
   static final String _auth = dotenv.get('AUTH_ENDPOINT');
@@ -23,22 +26,23 @@ class AuthInterceptors extends QueuedInterceptor {
     if (err.response?.statusCode == 401) {
       logger.fine('UNAUTHORIZE ERROR');
       String? refreshToken = await _storage.getRefreshToken();
+      final Dio resolveHandler = Dio()
+        ..options = BaseOptions(
+          baseUrl: endPoint,
+          headers: {'Content-type': 'application/json'},
+        );
       try {
         Response ref = await _tokenBearer
             .post('/refresh', data: {'refresh': refreshToken});
-        String newAccessToken = ref.data['access'];
-        await _storage.setAccessToken(newAccessToken);
+        TokensDto dto = TokensDto.fromJson(ref.data);
+        await _storage.setAccessToken(dto.access);
         logger.finer('A new token has been assinged');
-        final Dio resolveHandler = Dio()
-          ..options = BaseOptions(
-            baseUrl: endPoint,
-            headers: {'Content-type': 'application/json'},
-          );
+
         Response response = await resolveHandler.request(
           err.requestOptions.path,
           data: err.requestOptions.data,
           options: Options(
-            headers: {'Authorization': 'Bearer $newAccessToken'},
+            headers: {'Authorization': 'Bearer ${dto.access}'},
             method: err.requestOptions.method,
           ),
         );
@@ -47,9 +51,13 @@ class AuthInterceptors extends QueuedInterceptor {
         logger.info('Removing the previous connection');
       } on DioError catch (dio) {
         logger.severe('DIO ERROR HAPPED!! ${dio.type}');
-      } catch (e) {
-        logger.severe(e.toString());
+        // handler.next(err);
+      } catch (e, stk) {
+        debugPrintStack(stackTrace: stk);
+        logger.severe(e);
       }
+    } else {
+      handler.next(err);
     }
   }
 

@@ -32,7 +32,8 @@ class _CreateGoalsState extends State<CreateGoals> {
 
   void _pickImage(ImageSource source) async {
     try {
-      XFile? file = await ImagePicker().pickImage(source: source);
+      XFile? file =
+          await ImagePicker().pickImage(source: source, imageQuality: 50);
       if (file == null) return;
       setState(() => _file = File(file.path));
     } on PlatformException {

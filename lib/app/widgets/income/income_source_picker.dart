@@ -92,7 +92,7 @@ class _IncomeSourcePickerState extends State<IncomeSourcePicker> {
               fixedSize: Size(size.width, 50),
             ),
             onPressed: _createSource,
-            child: const Text('Add Income'),
+            child: const Text('Add Source'),
           ),
         )
       ],

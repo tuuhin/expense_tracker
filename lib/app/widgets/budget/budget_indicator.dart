@@ -1,4 +1,3 @@
-import 'package:expense_tracker/main.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/models.dart';
@@ -28,22 +27,50 @@ class _BudgetIndicatorState extends State<BudgetIndicator>
     super.initState();
 
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
     _amount = Tween<double>(begin: 0, end: ratio * 100).animate(
       CurvedAnimation(parent: _controller, curve: Curves.decelerate),
     );
-    _scale = Tween<double>(begin: 0.0, end: 1).animate(
+    _scale = Tween<double>(begin: 0.0, end: 1.25).animate(
       CurvedAnimation(parent: _controller, curve: Curves.bounceOut),
     );
 
-    _graph = Tween<double>(begin: 0.0, end: ratio * 360).animate(
+    _graph = Tween<double>(begin: 0.0, end: ratio * 270).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.4, 1, curve: Curves.easeIn),
       ),
     );
     _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant BudgetIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    bool isChangeNeeded = oldWidget.budget.amount != widget.budget.amount ||
+        oldWidget.budget.amountUsed != widget.budget.amountUsed;
+    if (isChangeNeeded) {
+      _amount = Tween<double>(begin: 0, end: ratio * 100).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.decelerate),
+      );
+
+      _graph = Tween<double>(begin: 0.0, end: ratio * 270).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.4, 1, curve: Curves.easeIn),
+        ),
+      );
+      _controller.reset();
+      _controller.forward();
+    }
   }
 
   @override
