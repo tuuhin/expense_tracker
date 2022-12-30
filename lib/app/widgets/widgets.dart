@@ -51,6 +51,7 @@ export './user/async_profile_image.dart';
 export './user/user_profile_form.dart';
 export './user/change_profile_header.dart';
 export './user/user_options_header.dart';
+export './user/logout_dialog.dart';
 
 export './notifications/notification_list.dart';
 export './notifications/notification_card.dart';

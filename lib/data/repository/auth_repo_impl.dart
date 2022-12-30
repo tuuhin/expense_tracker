@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:expense_tracker/main.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../dto/dto.dart';
 import '../local/storage.dart';
@@ -12,7 +11,7 @@ import '../../domain/repositories/repositories.dart';
 class AuthRespositoryImpl implements AuthRespository {
   final SecureStorage storage;
   final AuthApi auth;
-  final UserProfileRepository profileData;
+  final ProfileRepository profileData;
 
   AuthRespositoryImpl({
     required this.storage,
@@ -29,6 +28,15 @@ class AuthRespositoryImpl implements AuthRespository {
       await storage.setTokens(
           access: dto.token.access, refresh: dto.token.refresh);
       return Resource.data(data: null);
+    } on DioError catch (dio) {
+      if (dio.type == DioErrorType.response) {
+        return Resource.error(
+          err: dio,
+          errorMessage: ErrorDetialsDto.fromJson(dio.response!.data).details ??
+              'DONT KNOW',
+        );
+      }
+      return Resource.error(err: dio, errorMessage: "DIO ERROR");
     } catch (e) {
       return Resource.error(err: e, errorMessage: "Unknown error");
     }
@@ -43,6 +51,15 @@ class AuthRespositoryImpl implements AuthRespository {
       await storage.setTokens(
           access: dto.token.access, refresh: dto.token.refresh);
       return Resource.data(data: null);
+    } on DioError catch (dio) {
+      if (dio.type == DioErrorType.response) {
+        return Resource.error(
+          err: dio,
+          errorMessage: ErrorDetialsDto.fromJson(dio.response!.data).details ??
+              'DIO ERROR',
+        );
+      }
+      return Resource.error(err: dio, errorMessage: "DIO ERROR");
     } catch (e, stk) {
       debugPrintStack(stackTrace: stk);
       return Resource.error(err: e, errorMessage: "unknown error");
@@ -53,9 +70,11 @@ class AuthRespositoryImpl implements AuthRespository {
   Future<Resource> checkAuthState() async {
     try {
       String? token = await storage.getAccessToken();
-      TokensDto dto = await auth.checkAuthState(token: token ?? "");
+      if (token == null) {
+        return Resource.error(err: Object(), errorMessage: "unauthorized");
+      }
+      TokensDto dto = await auth.checkAuthState(token: token);
       await storage.setTokens(access: dto.access, refresh: dto.refresh);
-      logger.fine("setting new tokens");
       return Resource.data(data: null);
     } on DioError catch (e) {
       if (e.response?.statusCode == 401) {
@@ -69,7 +88,5 @@ class AuthRespositoryImpl implements AuthRespository {
   }
 
   @override
-  Future<void> logOut() async {
-    await storage.removeTokens();
-  }
+  Future<void> logOut() async => await storage.removeTokens();
 }

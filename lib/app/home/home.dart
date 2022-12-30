@@ -49,14 +49,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabInfo.length, vsync: this);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
     context.read<EntriesBloc>().init();
     context.read<NotificationBloc>().init();
-    context.read<BaseInformationCubit>().getBaseOverView();
+    context.read<BaseInformationCubit>().init();
+    context.read<BudgetCubit>().getBudgetInfo();
   }
 
   @override

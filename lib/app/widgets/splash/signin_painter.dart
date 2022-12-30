@@ -1,4 +1,3 @@
-import 'package:expense_tracker/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 class SignInSplash extends CustomPainter {

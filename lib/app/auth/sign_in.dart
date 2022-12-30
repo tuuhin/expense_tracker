@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../context/context.dart';
 import '../../domain/models/models.dart';
-import '../../utils/utils.dart';
+import '../../utils/color_palettes.dart';
 import '../widgets/splash/signin_painter.dart';
 
 class SignInPage extends StatefulWidget {

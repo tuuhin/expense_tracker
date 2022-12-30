@@ -1,3 +1,4 @@
+import 'package:expense_tracker/app/widgets/widgets.dart';
 import 'package:expense_tracker/context/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,24 +21,8 @@ class _AccountSettingsState extends State<AccountSettings> {
       ..pop();
   }
 
-  void _logoutDialog() async => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to log out?'),
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary),
-              onPressed: logOut,
-              child: const Text(
-                'Logout',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            )
-          ],
-        ),
-      );
+  void _logoutDialog() async =>
+      showDialog(context: context, builder: (context) => const LogoutDialog());
 
   void _changeProfile() => context.push(
         "/change-profile",

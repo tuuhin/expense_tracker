@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../utils/color_palettes.dart';
 import '../../utils/utils.dart';
 import '../widgets/widgets.dart';
 import '../../context/context.dart';
@@ -148,7 +149,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   TextFormField(
                     validator: (value) => value != null && value.isEmpty
                         ? "Enter an email"
-                        : value != null && !validateEmail(value)
+                        : value != null && validateEmail(value)
                             ? "Invalid Email"
                             : null,
                     controller: _email,

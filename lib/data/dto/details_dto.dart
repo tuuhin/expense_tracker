@@ -4,7 +4,7 @@ part 'details_dto.g.dart';
 
 @JsonSerializable()
 class ErrorDetialsDto {
-  @JsonKey(name: 'details')
+  @JsonKey(name: 'detail')
   String? details;
 
   ErrorDetialsDto({this.details});

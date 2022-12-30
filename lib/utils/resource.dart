@@ -4,11 +4,11 @@ part 'resource.freezed.dart';
 
 @freezed
 class Resource<T> with _$Resource<T> {
-  factory Resource.loading() = Loading;
-  factory Resource.data({required T data, String? message}) = Data;
+  factory Resource.loading() = _Loading;
+  factory Resource.data({required T data, String? message}) = _Data;
   factory Resource.error({
     required Object err,
-    String? errorMessage,
+    required String errorMessage,
     T? data,
-  }) = ErrorDetails;
+  }) = _ErrorDetails;
 }

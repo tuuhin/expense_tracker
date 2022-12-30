@@ -64,8 +64,8 @@ ThemeData lightTheme = ThemeData(
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
       elevation: 0,
+      side: const BorderSide(width: 1, color: primary),
       shape: RoundedRectangleBorder(
-        side: const BorderSide(width: 1, color: primary),
         borderRadius: BorderRadius.circular(10),
       ),
     ),
@@ -164,8 +164,8 @@ ThemeData darkTheme = ThemeData(
   outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
     elevation: 0,
+    side: const BorderSide(width: 1, color: primary),
     shape: RoundedRectangleBorder(
-      side: const BorderSide(width: 1, color: primary),
       borderRadius: BorderRadius.circular(10),
     ),
   )),

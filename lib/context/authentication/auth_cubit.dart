@@ -16,9 +16,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final AuthRespository _repo;
 
   Future<void> createUser(CreateUserModel user) async {
+    emit(AuthenticationState.requesting(message: "Creating user"));
     Resource resource = await _repo.createUser(user);
 
-    resource.whenOrNull();
+    resource.whenOrNull(
+      data: (data, message) => emit(AuthenticationState.loggedIn()),
+      error: (err, errorMessage, data) => emit(
+        AuthenticationState.requestFailed(err: err, message: errorMessage),
+      ),
+    );
   }
 
   Future<void> logUserIn(LoginUserModel user) async {
@@ -27,12 +33,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     Resource login = await _repo.logUserIn(user);
 
     login.whenOrNull(
-      data: (data, message) {
-        emit(AuthenticationState.loggedIn());
-      },
-      error: (err, errorMessage, data) {
-        emit(AuthenticationState.requestFailed(err: err, message: ""));
-      },
+      data: (data, message) => emit(AuthenticationState.loggedIn()),
+      error: (err, errorMessage, data) => emit(
+        AuthenticationState.requestFailed(err: err, message: errorMessage),
+      ),
     );
   }
 
@@ -40,12 +44,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     Resource authState = await _repo.checkAuthState();
 
     authState.whenOrNull(
-      data: (data, message) {
-        emit(AuthenticationState.loggedIn());
-      },
-      error: (err, errorMessage, data) {
-        emit(AuthenticationState.loggedOut());
-      },
+      data: (data, message) => emit(AuthenticationState.loggedIn()),
+      error: (err, errorMessage, data) => emit(AuthenticationState.loggedOut()),
     );
   }
 
